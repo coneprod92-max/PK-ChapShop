@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon panier — PK ChapShop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+  <a href="index.html" class="logo">PK <span>ChapShop</span></a>
+
+  <a href="cart.html" class="cart-link">
+    🛒 <span id="cartCount">0</span>
+  </a>
+</header>
+
+<main class="container cart-page">
+
+  <a href="index.html" class="back-link">← Continuer mes achats</a>
+
+  <div class="section-title">
+    <div>
+      <small>COMMANDE</small>
+      <h1>Mon panier</h1>
+    </div>
+  </div>
+
+  <div id="cartItems"></div>
+
+  <section id="cartSummary" class="cart-summary"></section>
+
+</main>
+
+<script src="cart.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Suivre ma commande — PK ChapShop</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+
+  <a href="index.html" class="logo">
+    PK <span>ChapShop</span>
+  </a>
+
+  <a href="cart.html" class="cart-link">
+    🛒 <span id="cartCount">0</span>
+  </a>
+
+</header>
+
+<main class="container tracking-page">
+
+  <a href="index.html" class="back-link">
+    ← Retour à l'accueil
+  </a>
+
+  <div class="section-title">
+    <div>
+      <small>SUIVI</small>
+      <h1>Suivre ma commande</h1>
+    </div>
+  </div>
+
+  <section class="tracking-form-card">
+
+    <p>
+      Entrez votre numéro de commande et le numéro de téléphone
+      utilisé lors de la commande.
+    </p>
+
+    <form id="trackingForm">
+
+      <label>Numéro de commande</label>
+
+      <input
+        id="orderNumber"
+        type="number"
+        placeholder="Ex : 1001"
+        required
+      >
+
+      <label>Numéro de téléphone</label>
+
+      <input
+        id="phone"
+        type="tel"
+        placeholder="+229 01 60 88 53 50"
+        required
+      >
+
+      <button
+        type="submit"
+        class="checkout-button"
+        id="trackingButton"
+      >
+        🔎 Suivre ma commande
+      </button>
+
+    </form>
+
+  </section>
+
+  <div id="trackingResult"></div>
+
+</main>
+
+<script src="tracking.js"></script>
+
+</body>
+</html>

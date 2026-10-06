@@ -559,3 +559,44 @@ footer p {
   }
 
 }
+/* FORMULAIRE DE COMMANDE */
+
+#orderForm {
+  margin-top: 20px;
+}
+
+#orderForm label {
+  display: block;
+  margin: 16px 0 7px;
+  font-weight: bold;
+  color: #dce4ed;
+}
+
+#orderForm input,
+#orderForm textarea,
+#orderForm select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  background: white;
+  color: #172033;
+  font-size: 15px;
+  outline: none;
+}
+
+#orderForm textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+#orderForm input:focus,
+#orderForm textarea:focus,
+#orderForm select:focus {
+  border-color: #d8ad55;
+}
+
+#submitOrderButton:disabled {
+  opacity: .6;
+  cursor: wait;
+}

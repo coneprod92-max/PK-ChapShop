@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commerce — PK ChapShop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+  <a href="index.html" class="logo">PK <span>ChapShop</span></a>
+
+  <a href="cart.html" class="cart-link">
+    🛒 <span id="cartCount">0</span>
+  </a>
+</header>
+
+<main class="container store-page">
+
+  <a href="index.html" class="back-link">← Retour aux commerces</a>
+
+  <section id="storeInfo" class="store-hero">
+    <div class="loading">Chargement du commerce...</div>
+  </section>
+
+  <section>
+    <div class="section-title">
+      <div>
+        <small>CATALOGUE</small>
+        <h2>Produits</h2>
+      </div>
+    </div>
+
+    <div id="products" class="products-grid">
+      <div class="loading">Chargement des produits...</div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="store.js"></script>
+
+</body>
+</html>

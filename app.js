@@ -3,138 +3,191 @@ const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 
 const headers = {
   apikey: SUPABASE_KEY,
-  Authorization: "Bearer " + SUPABASE_KEY
+  Authorization: `Bearer ${SUPABASE_KEY}`
 };
 
-let allStores = [];
+const categoriesEl = document.getElementById("categories");
+const storesEl = document.getElementById("stores");
+const searchInput = document.getElementById("searchInput");
+const cartCountEl = document.getElementById("cartCount");
+
+let categories = [];
+let stores = [];
 let selectedCategory = null;
 
-const esc = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#039;"
-}[char]));
-
-async function api(path) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers });
-  if (!response.ok) throw new Error(await response.text());
-  return response.json();
+function esc(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-function renderCategories(categories) {
-  const box = document.getElementById("categories");
+async function loadCategories() {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/store_categories?select=id,name,slug,icon&order=name.asc`,
+      { headers }
+    );
 
-  box.innerHTML = categories.map(category => `
-    <div class="cat" data-id="${category.id}">
-      <span class="icon">${esc(category.icon || "📍")}</span>
-      <b>${esc(category.name)}</b>
+    categories = await response.json();
+    renderCategories();
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function renderCategories() {
+
+  categoriesEl.innerHTML = `
+    <div class="category ${selectedCategory === null ? "active" : ""}"
+         onclick="filterCategory(null)">
+      <span class="category-icon">✨</span>
+      <span class="category-name">Tous</span>
     </div>
-  `).join("");
+  `;
 
-  document.querySelectorAll(".cat").forEach(element => {
-    element.onclick = () => {
-      selectedCategory =
-        selectedCategory === element.dataset.id
-          ? null
-          : element.dataset.id;
+  categories.forEach(category => {
 
-      document.querySelectorAll(".cat").forEach(item => {
-        item.classList.toggle(
-          "active",
-          item.dataset.id === selectedCategory
-        );
-      });
+    categoriesEl.innerHTML += `
+      <div class="category ${selectedCategory === category.id ? "active" : ""}"
+           onclick="filterCategory('${category.id}')">
 
-      renderStores();
-    };
+        <span class="category-icon">
+          ${esc(category.icon || "🏪")}
+        </span>
+
+        <span class="category-name">
+          ${esc(category.name)}
+        </span>
+
+      </div>
+    `;
   });
+}
+
+async function loadStores() {
+
+  storesEl.innerHTML = `<div class="loading">Chargement...</div>`;
+
+  try {
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/stores?select=id,name,slug,description,phone,address,city,logo_url,cover_url,is_open,delivery_available,category_id&is_published=eq.true&order=created_at.desc`,
+      { headers }
+    );
+
+    stores = await response.json();
+
+    renderStores();
+
+  } catch (error) {
+
+    console.error(error);
+
+    storesEl.innerHTML = `
+      <div class="empty error">
+        Impossible de charger les commerces.
+      </div>
+    `;
+  }
 }
 
 function renderStores() {
-  const query = document
-    .getElementById("search")
-    .value
-    .toLowerCase()
-    .trim();
 
-  const filtered = allStores.filter(store => {
-    const matchesCategory =
-      !selectedCategory || store.category_id === selectedCategory;
+  const search = searchInput.value.toLowerCase().trim();
 
-    const text =
-      `${store.name} ${store.description || ""} ${store.address || ""}`
-        .toLowerCase();
+  const filtered = stores.filter(store => {
 
-    return matchesCategory && (!query || text.includes(query));
+    const categoryMatch =
+      selectedCategory === null ||
+      store.category_id === selectedCategory;
+
+    const searchMatch =
+      !search ||
+      store.name.toLowerCase().includes(search) ||
+      (store.description || "").toLowerCase().includes(search) ||
+      (store.city || "").toLowerCase().includes(search);
+
+    return categoryMatch && searchMatch;
   });
 
-  const box = document.getElementById("stores");
-
   if (!filtered.length) {
-    box.innerHTML = `
+
+    storesEl.innerHTML = `
       <div class="empty">
-        Aucun commerce publié pour le moment.
+        Aucun commerce trouvé.
       </div>
     `;
+
     return;
   }
 
-  box.innerHTML = filtered.map(store => {
-    const status = store.is_open
-      ? `<span class="badge">OUVERT</span>`
-      : `<span class="badge closed">FERMÉ</span>`;
+  storesEl.innerHTML = filtered.map(store => {
 
-    const image = store.logo_url
-      ? `<img src="${esc(store.logo_url)}" alt="${esc(store.name)}">`
-      : "🛍️";
+    const image = store.cover_url || store.logo_url;
 
     return `
-      <article class="card">
-        <div class="cover">${image}</div>
+      <article class="store-card">
 
-        <div class="body">
-          ${status}
+        <div class="store-cover"
+             ${image ? `style="background-image:url('${esc(image)}');background-size:cover;background-position:center;"` : ""}>
+          ${!image ? "🏪" : ""}
+        </div>
+
+        <div class="store-content">
+
           <h3>${esc(store.name)}</h3>
 
-          <div class="meta">
-            📍 ${esc(store.address || store.city || "Parakou")}
+          <p>
+            ${esc(
+              store.description ||
+              "Découvrez les produits et services de ce commerce."
+            )}
+          </p>
+
+          <div class="store-meta">
+            📍 ${esc(store.city || "Parakou")}
+            ${store.is_open ? " • 🟢 Ouvert" : " • 🔴 Fermé"}
           </div>
 
-          <div class="meta">
-            ${esc(store.description || "Commerce local sur PK ChapShop")}
-          </div>
+          <a class="view-button"
+             href="store.html?id=${encodeURIComponent(store.id)}">
+            Voir le commerce →
+          </a>
+
         </div>
+
       </article>
     `;
+
   }).join("");
 }
 
-document.getElementById("search").addEventListener("input", renderStores);
-
-async function start() {
-  try {
-    const categories = await api(
-      "store_categories?select=id,name,icon&order=name"
-    );
-
-    renderCategories(categories);
-
-    allStores = await api(
-      "stores?select=id,name,category_id,description,address,city,logo_url,is_open&is_published=eq.true&order=name"
-    );
-
-    renderStores();
-  } catch (error) {
-    console.error(error);
-
-    document.getElementById("categories").innerHTML =
-      `<div class="empty">Impossible de charger les catégories.</div>`;
-
-    document.getElementById("stores").innerHTML =
-      `<div class="empty">Impossible de charger les commerces pour le moment.</div>`;
-  }
+function filterCategory(categoryId) {
+  selectedCategory = categoryId;
+  renderCategories();
+  renderStores();
 }
 
-start();
+searchInput.addEventListener("input", renderStores);
+
+function updateCartCount() {
+
+  const cart = JSON.parse(
+    localStorage.getItem("pk_cart") || "[]"
+  );
+
+  const count = cart.reduce(
+    (total, item) => total + Number(item.quantity || 0),
+    0
+  );
+
+  cartCountEl.textContent = count;
+}
+
+loadCategories();
+loadStores();
+updateCartCount();

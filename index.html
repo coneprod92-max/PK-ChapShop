@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PK ChapShop — Parakou</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+  <a href="index.html" class="logo">PK <span>ChapShop</span></a>
+
+  <a href="cart.html" class="cart-link">
+    🛒 <span id="cartCount">0</span>
+  </a>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <span class="badge">📍 Parakou & environs</span>
+
+    <h1>Tout ce dont vous avez besoin,<br><span>au même endroit.</span></h1>
+
+    <p>
+      Restaurants, boutiques, garages, agences et services.
+      Trouvez rapidement ce qu'il vous faut.
+    </p>
+
+    <div class="search-box">
+      <span>🔎</span>
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Que recherchez-vous ?"
+      >
+    </div>
+  </div>
+</section>
+
+<main class="container">
+
+  <section>
+    <div class="section-title">
+      <div>
+        <small>EXPLORER</small>
+        <h2>Catégories</h2>
+      </div>
+    </div>
+
+    <div id="categories" class="categories"></div>
+  </section>
+
+  <section class="stores-section">
+    <div class="section-title">
+      <div>
+        <small>À DÉCOUVRIR</small>
+        <h2>Nos commerces</h2>
+      </div>
+    </div>
+
+    <div id="stores" class="stores-grid">
+      <div class="loading">Chargement...</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>PK ChapShop</strong>
+  <p>Le commerce local, simplement.</p>
+</footer>
+
+<script src="app.js"></script>
+
+</body>
+</html>

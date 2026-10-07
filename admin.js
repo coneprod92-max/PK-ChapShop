@@ -2053,3 +2053,366 @@ refreshOrders.addEventListener(
 // =====================================================
 
 checkAdmin();
+// =====================================================
+// DEMANDES ANNONCEURS
+// =====================================================
+
+const advertisersList =
+  document.getElementById("advertisersList");
+
+const advertisersMessage =
+  document.getElementById("advertisersMessage");
+
+const refreshAdvertisers =
+  document.getElementById("refreshAdvertisers");
+
+
+async function loadAdvertiserApplications() {
+
+  advertisersList.innerHTML =
+    "<p>Chargement des demandes...</p>";
+
+  advertisersMessage.innerHTML = "";
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("advertiser_applications")
+    .select(`
+      id,
+      full_name,
+      business_name,
+      category,
+      phone,
+      whatsapp,
+      city,
+      address,
+      description,
+      goal,
+      status,
+      created_at
+    `)
+    .order("created_at", {
+      ascending: false
+    });
+
+
+  if (error) {
+
+    advertisersList.innerHTML = "";
+
+    advertisersMessage.innerHTML = `
+      <div class="admin-error">
+        ❌ ${escapeHTML(error.message)}
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    advertisersList.innerHTML = `
+      <p>
+        📭 Aucune demande pour le moment.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  advertisersList.innerHTML = "";
+
+
+  data.forEach(application => {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "item-row";
+
+
+    const date =
+      new Date(
+        application.created_at
+      ).toLocaleString("fr-FR");
+
+
+    card.innerHTML = `
+
+      <div class="item-head">
+
+        <div class="item-title">
+
+          📣 ${escapeHTML(
+            application.business_name
+          )}
+
+        </div>
+
+        <strong>
+
+          ${getAdvertiserStatus(
+            application.status
+          )}
+
+        </strong>
+
+      </div>
+
+
+      <div class="item-meta">
+
+        👤 ${escapeHTML(
+          application.full_name
+        )}
+
+        <br>
+
+        📞 ${escapeHTML(
+          application.phone
+        )}
+
+        <br>
+
+        💬 ${escapeHTML(
+          application.whatsapp ||
+          "WhatsApp non renseigné"
+        )}
+
+        <br>
+
+        🏷️ ${escapeHTML(
+          application.category
+        )}
+
+        <br>
+
+        📍 ${escapeHTML(
+          application.address ||
+          application.city ||
+          "Adresse non renseignée"
+        )}
+
+        <br>
+
+        🕒 ${date}
+
+      </div>
+
+
+      ${
+        application.description
+          ? `
+            <p>
+              <strong>Activité :</strong><br>
+              ${escapeHTML(
+                application.description
+              )}
+            </p>
+          `
+          : ""
+      }
+
+
+      ${
+        application.goal
+          ? `
+            <p>
+              <strong>Objectif :</strong><br>
+              ${escapeHTML(
+                application.goal
+              )}
+            </p>
+          `
+          : ""
+      }
+
+
+      <div class="status-line">
+
+        <select class="advertiser-status">
+
+          <option
+            value="pending"
+            ${
+              application.status === "pending"
+                ? "selected"
+                : ""
+            }
+          >
+            ⏳ En attente
+          </option>
+
+          <option
+            value="contacted"
+            ${
+              application.status === "contacted"
+                ? "selected"
+                : ""
+            }
+          >
+            📞 Contacté
+          </option>
+
+          <option
+            value="approved"
+            ${
+              application.status === "approved"
+                ? "selected"
+                : ""
+            }
+          >
+            ✅ Approuvé
+          </option>
+
+          <option
+            value="rejected"
+            ${
+              application.status === "rejected"
+                ? "selected"
+                : ""
+            }
+          >
+            ❌ Refusé
+          </option>
+
+        </select>
+
+
+        <button
+          class="admin-button update-advertiser"
+        >
+          💾 Mettre à jour
+        </button>
+
+      </div>
+
+    `;
+
+
+    const select =
+      card.querySelector(
+        ".advertiser-status"
+      );
+
+
+    const button =
+      card.querySelector(
+        ".update-advertiser"
+      );
+
+
+    button.addEventListener(
+      "click",
+      async function() {
+
+        button.disabled = true;
+
+        button.textContent =
+          "Enregistrement...";
+
+
+        const {
+          error
+        } = await supabaseClient
+          .from(
+            "advertiser_applications"
+          )
+          .update({
+            status:
+              select.value
+          })
+          .eq(
+            "id",
+            application.id
+          );
+
+
+        if (error) {
+
+          alert(
+            "Erreur : " +
+            error.message
+          );
+
+          button.disabled = false;
+
+          button.textContent =
+            "💾 Mettre à jour";
+
+          return;
+        }
+
+
+        button.textContent =
+          "✅ Enregistré";
+
+
+        await loadAdvertiserApplications();
+
+      }
+    );
+
+
+    advertisersList.appendChild(
+      card
+    );
+
+  });
+
+}
+
+
+function getAdvertiserStatus(status) {
+
+  const statuses = {
+
+    pending:
+      "⏳ En attente",
+
+    contacted:
+      "📞 Contacté",
+
+    approved:
+      "✅ Approuvé",
+
+    rejected:
+      "❌ Refusé"
+
+  };
+
+
+  return (
+    statuses[status] ||
+    "⏳ En attente"
+  );
+
+}
+
+
+refreshAdvertisers.addEventListener(
+  "click",
+  loadAdvertiserApplications
+);
+
+
+// Charger automatiquement les demandes
+// lorsque l'espace admin est ouvert.
+
+const originalLoadEverything =
+  loadEverything;
+
+
+loadEverything = async function() {
+
+  await originalLoadEverything();
+
+  await loadAdvertiserApplications();
+
+};

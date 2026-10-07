@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Administration — PK ChapShop</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .admin-page {
+      padding-bottom: 60px;
+    }
+
+    .admin-login,
+    .admin-card {
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .07);
+      margin: 20px 0;
+    }
+
+    .admin-login {
+      max-width: 480px;
+      margin: 40px auto;
+    }
+
+    .admin-login input,
+    .admin-card select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      font-size: 16px;
+      margin: 8px 0 14px;
+    }
+
+    .admin-button {
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      background: #172033;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .admin-button.gold {
+      background: #d8ad55;
+      color: #172033;
+    }
+
+    .admin-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      align-items: center;
+      margin: 25px 0;
+    }
+
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .admin-stat {
+      background: #172033;
+      color: white;
+      border-radius: 18px;
+      padding: 20px;
+    }
+
+    .admin-stat strong {
+      display: block;
+      font-size: 28px;
+      color: #d8ad55;
+      margin-top: 5px;
+    }
+
+    .order-row {
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px;
+      margin: 14px 0;
+    }
+
+    .order-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .order-number {
+      font-weight: 900;
+      font-size: 20px;
+    }
+
+    .order-meta {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+
+    .status-line {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .status-line select {
+      width: auto;
+      min-width: 210px;
+      margin: 0;
+    }
+
+    .admin-hidden {
+      display: none;
+    }
+
+    .admin-error {
+      background: #fef2f2;
+      color: #b91c1c;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+
+    .admin-success {
+      background: #ecfdf5;
+      color: #047857;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 650px) {
+      .admin-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .order-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header">
+
+  <a href="index.html" class="logo">
+    PK <span>ChapShop</span>
+  </a>
+
+  <a href="cart.html" class="cart-link">
+    🛒 <span id="cartCount">0</span>
+  </a>
+
+</header>
+
+<main class="container admin-page">
+
+  <a href="index.html" class="back-link">
+    ← Retour au site
+  </a>
+
+  <!-- CONNEXION -->
+
+  <section id="loginSection" class="admin-login">
+
+    <div class="section-title">
+
+      <div>
+        <small>ESPACE PRIVÉ</small>
+        <h1>Administration</h1>
+      </div>
+
+    </div>
+
+    <p>
+      Connectez-vous avec votre compte administrateur.
+    </p>
+
+    <form id="loginForm">
+
+      <label>Email</label>
+
+      <input
+        id="adminEmail"
+        type="email"
+        value="coneprod92@gmail.com"
+        required
+      >
+
+      <label>Mot de passe</label>
+
+      <input
+        id="adminPassword"
+        type="password"
+        required
+      >
+
+      <button
+        class="admin-button"
+        type="submit"
+      >
+        🔐 Se connecter
+      </button>
+
+    </form>
+
+    <div id="loginMessage"></div>
+
+  </section>
+
+
+  <!-- TABLEAU DE BORD -->
+
+  <section id="dashboard" class="admin-hidden">
+
+    <div class="admin-top">
+
+      <div>
+
+        <small>TABLEAU DE BORD</small>
+
+        <h1>
+          Administration PK ChapShop
+        </h1>
+
+      </div>
+
+      <button
+        id="logoutButton"
+        class="admin-button"
+      >
+        Déconnexion
+      </button>
+
+    </div>
+
+
+    <!-- STATISTIQUES -->
+
+    <div class="admin-stats">
+
+      <div class="admin-stat">
+
+        Commandes
+
+        <strong id="statOrders">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="admin-stat">
+
+        En attente
+
+        <strong id="statPending">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="admin-stat">
+
+        Livrées
+
+        <strong id="statDelivered">
+          0
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- COMMANDES -->
+
+    <section class="admin-card">
+
+      <div class="section-title">
+
+        <div>
+
+          <small>GESTION</small>
+
+          <h2>
+            Commandes récentes
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="refreshOrders"
+        class="admin-button gold"
+      >
+        ↻ Actualiser
+      </button>
+
+
+      <div id="ordersList"></div>
+
+      <div id="ordersMessage"></div>
+
+    </section>
+
+  </section>
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="admin.js"></script>
+
+</body>
+</html>

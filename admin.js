@@ -282,17 +282,14 @@ async function loadOrders() {
       delivery_address,
       customer_note,
       created_at,
-
       customers (
         full_name,
         phone,
         whatsapp
       ),
-
       stores (
         name
       ),
-
       deliveries (
         status,
         driver_name,
@@ -534,7 +531,7 @@ function createOrderCard(order) {
 
 
 // =====================================================
-// STATUT COMMANDE
+// OPTIONS STATUT
 // =====================================================
 
 function statusOption(
@@ -554,6 +551,10 @@ function statusOption(
 
 }
 
+
+// =====================================================
+// MODIFIER STATUT COMMANDE
+// =====================================================
 
 async function updateOrderStatus(
   orderId,
@@ -629,7 +630,10 @@ async function loadCategories() {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Erreur catégories :",
+      error
+    );
 
     return;
 
@@ -637,16 +641,23 @@ async function loadCategories() {
 
 
   storeCategory.innerHTML =
-    `<option value="">Choisir une catégorie</option>`;
+    `<option value="">
+      Choisir une catégorie
+    </option>`;
 
 
   data.forEach(category => {
 
-    storeCategory.innerHTML += `
-      <option value="${category.id}">
-        ${escapeHTML(category.name)}
-      </option>
-    `;
+    const option =
+      document.createElement("option");
+
+    option.value =
+      category.id;
+
+    option.textContent =
+      category.name;
+
+    storeCategory.appendChild(option);
 
   });
 
@@ -680,9 +691,7 @@ async function loadStores() {
       is_open,
       is_published,
       delivery_available,
-      store_categories (
-        name
-      )
+      category_id
     `)
     .order("created_at", {
       ascending: false
@@ -690,6 +699,12 @@ async function loadStores() {
 
 
   if (error) {
+
+    console.error(
+      "Erreur boutiques :",
+      error
+    );
+
 
     storesList.innerHTML = `
       <div class="admin-error">
@@ -706,27 +721,55 @@ async function loadStores() {
     stores.length;
 
 
-  productStore.innerHTML =
-    `<option value="">Choisir une boutique</option>`;
+  // ===============================
+  // LISTE BOUTIQUE POUR PRODUITS
+  // ===============================
 
-  mediaStore.innerHTML =
-    `<option value="">Choisir une boutique</option>`;
+  productStore.innerHTML = `
+    <option value="">
+      Choisir une boutique
+    </option>
+  `;
+
+
+  // ===============================
+  // LISTE BOUTIQUE POUR MEDIA
+  // ===============================
+
+  mediaStore.innerHTML = `
+    <option value="">
+      Choisir une boutique
+    </option>
+  `;
 
 
   stores.forEach(store => {
 
-    const option = `
-      <option value="${store.id}">
-        ${escapeHTML(store.name)}
-      </option>
-    `;
+    const option =
+      document.createElement("option");
 
-    productStore.innerHTML += option;
+    option.value =
+      store.id;
 
-    mediaStore.innerHTML += option;
+    option.textContent =
+      store.name;
+
+
+    productStore.appendChild(
+      option.cloneNode(true)
+    );
+
+
+    mediaStore.appendChild(
+      option
+    );
 
   });
 
+
+  // ===============================
+  // AFFICHAGE DES BOUTIQUES
+  // ===============================
 
   if (stores.length === 0) {
 
@@ -746,7 +789,8 @@ async function loadStores() {
     const card =
       document.createElement("div");
 
-    card.className = "item-row";
+    card.className =
+      "item-row";
 
 
     card.innerHTML = `
@@ -754,13 +798,22 @@ async function loadStores() {
       <div class="item-head">
 
         <div class="item-title">
-          🏪 ${escapeHTML(store.name)}
+
+          🏪 ${escapeHTML(
+            store.name
+          )}
+
         </div>
 
+
         <strong>
-          ${store.is_published
-            ? "🟢 Publiée"
-            : "⚪ Brouillon"}
+
+          ${
+            store.is_published
+              ? "🟢 Publiée"
+              : "⚪ Brouillon"
+          }
+
         </strong>
 
       </div>
@@ -768,21 +821,17 @@ async function loadStores() {
 
       <div class="item-meta">
 
-        📂 ${escapeHTML(
-          store.store_categories?.name ||
-          "Sans catégorie"
-        )}
-
-        <br>
-
         📍 ${escapeHTML(
-          store.address || store.city || ""
+          store.address ||
+          store.city ||
+          "Adresse non renseignée"
         )}
 
         <br>
 
         📞 ${escapeHTML(
-          store.phone || "Non renseigné"
+          store.phone ||
+          "Non renseigné"
         )}
 
         <br>
@@ -801,11 +850,13 @@ async function loadStores() {
         <button
           class="admin-button toggle-store"
         >
+
           ${
             store.is_published
               ? "⏸ Dépublier"
               : "🚀 Publier"
           }
+
         </button>
 
       </div>
@@ -814,7 +865,9 @@ async function loadStores() {
 
 
     card
-      .querySelector(".toggle-store")
+      .querySelector(
+        ".toggle-store"
+      )
       .addEventListener(
         "click",
         () => toggleStore(store)
@@ -829,7 +882,7 @@ async function loadStores() {
 
 
 // =====================================================
-// AJOUTER BOUTIQUE
+// CREER UNE BOUTIQUE
 // =====================================================
 
 storeForm.addEventListener(
@@ -840,8 +893,20 @@ storeForm.addEventListener(
 
 
     const name =
-      document.getElementById("storeName")
-        .value.trim();
+      document.getElementById(
+        "storeName"
+      ).value.trim();
+
+
+    if (!storeCategory.value) {
+
+      showStoreMessage(
+        "❌ Choisis une catégorie."
+      );
+
+      return;
+
+    }
 
 
     const {
@@ -850,7 +915,7 @@ storeForm.addEventListener(
       .from("stores")
       .insert({
 
-        name,
+        name: name,
 
         slug:
           makeSlug(name),
@@ -921,6 +986,7 @@ storeForm.addEventListener(
 
     storeForm.reset();
 
+
     document.getElementById(
       "storeDelivery"
     ).checked = true;
@@ -943,10 +1009,15 @@ async function toggleStore(store) {
   } = await supabaseClient
     .from("stores")
     .update({
+
       is_published:
         !store.is_published
+
     })
-    .eq("id", store.id);
+    .eq(
+      "id",
+      store.id
+    );
 
 
   if (error) {
@@ -1001,7 +1072,9 @@ async function loadProducts() {
 
     productsList.innerHTML = `
       <div class="admin-error">
-        ❌ ${escapeHTML(error.message)}
+        ❌ ${escapeHTML(
+          error.message
+        )}
       </div>
     `;
 
@@ -1028,7 +1101,8 @@ async function loadProducts() {
     const card =
       document.createElement("div");
 
-    card.className = "item-row";
+    card.className =
+      "item-row";
 
 
     card.innerHTML = `
@@ -1036,12 +1110,24 @@ async function loadProducts() {
       <div class="item-head">
 
         <div class="item-title">
-          📦 ${escapeHTML(product.name)}
+
+          📦 ${escapeHTML(
+            product.name
+          )}
+
         </div>
 
+
         <strong>
-          ${Number(product.price)
-            .toLocaleString("fr-FR")} FCFA
+
+          ${Number(
+            product.price
+          ).toLocaleString(
+            "fr-FR"
+          )}
+
+          FCFA
+
         </strong>
 
       </div>
@@ -1070,11 +1156,13 @@ async function loadProducts() {
         <button
           class="admin-button toggle-product"
         >
+
           ${
             product.is_available
               ? "⏸ Indisponible"
               : "▶ Disponible"
           }
+
         </button>
 
       </div>
@@ -1083,7 +1171,9 @@ async function loadProducts() {
 
 
     card
-      .querySelector(".toggle-product")
+      .querySelector(
+        ".toggle-product"
+      )
       .addEventListener(
         "click",
         () => toggleProduct(product)
@@ -1108,6 +1198,17 @@ productForm.addEventListener(
     event.preventDefault();
 
 
+    if (!productStore.value) {
+
+      showProductMessage(
+        "❌ Choisis une boutique."
+      );
+
+      return;
+
+    }
+
+
     const name =
       document.getElementById(
         "productName"
@@ -1123,7 +1224,7 @@ productForm.addEventListener(
         store_id:
           productStore.value,
 
-        name,
+        name: name,
 
         slug:
           makeSlug(name),
@@ -1172,6 +1273,7 @@ productForm.addEventListener(
 
     productForm.reset();
 
+
     document.getElementById(
       "productAvailable"
     ).checked = true;
@@ -1194,10 +1296,15 @@ async function toggleProduct(product) {
   } = await supabaseClient
     .from("products")
     .update({
+
       is_available:
         !product.is_available
+
     })
-    .eq("id", product.id);
+    .eq(
+      "id",
+      product.id
+    );
 
 
   if (error) {
@@ -1217,11 +1324,8 @@ async function toggleProduct(product) {
 
 
 // =====================================================
-// GALERIE MEDIA
+// CHANGEMENT DE BOUTIQUE POUR MEDIA
 // =====================================================
-
-// Quand on choisit une boutique,
-// on charge immédiatement sa galerie.
 
 mediaStore.addEventListener(
   "change",
@@ -1236,7 +1340,10 @@ mediaStore.addEventListener(
 
     }
 
-    await loadStoreMedia(mediaStore.value);
+
+    await loadStoreMedia(
+      mediaStore.value
+    );
 
   }
 );
@@ -1265,17 +1372,25 @@ async function loadStoreMedia(storeId) {
       is_cover,
       created_at
     `)
-    .eq("store_id", storeId)
-    .order("created_at", {
-      ascending: false
-    });
+    .eq(
+      "store_id",
+      storeId
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
 
   if (error) {
 
     mediaList.innerHTML = `
       <div class="admin-error">
-        ❌ ${escapeHTML(error.message)}
+        ❌ ${escapeHTML(
+          error.message
+        )}
       </div>
     `;
 
@@ -1284,7 +1399,10 @@ async function loadStoreMedia(storeId) {
   }
 
 
-  if (!media || media.length === 0) {
+  if (
+    !media ||
+    media.length === 0
+  ) {
 
     mediaList.innerHTML =
       "<p>Aucun média pour cette boutique.</p>";
@@ -1313,25 +1431,36 @@ async function loadStoreMedia(storeId) {
     let visual = "";
 
 
-    if (item.media_type === "video") {
+    if (
+      item.media_type === "video"
+    ) {
 
       visual = `
+
         <video
-          src="${escapeHTML(item.media_url)}"
+          src="${escapeHTML(
+            item.media_url
+          )}"
           controls
           preload="metadata"
         ></video>
+
       `;
 
     } else {
 
       visual = `
+
         <img
-          src="${escapeHTML(item.media_url)}"
+          src="${escapeHTML(
+            item.media_url
+          )}"
           alt="${escapeHTML(
-            item.title || "Photo boutique"
+            item.title ||
+            "Photo boutique"
           )}"
         >
+
       `;
 
     }
@@ -1341,15 +1470,21 @@ async function loadStoreMedia(storeId) {
 
       ${visual}
 
+
       <div class="media-info">
 
         <strong>
+
           ${escapeHTML(
-            item.title || "Sans titre"
+            item.title ||
+            "Sans titre"
           )}
+
         </strong>
 
+
         <br>
+
 
         ${
           item.media_type === "video"
@@ -1357,22 +1492,29 @@ async function loadStoreMedia(storeId) {
             : "📸 Photo"
         }
 
+
         ${
           item.is_cover
-            ? `<br><span class="media-cover">
+            ? `
+              <br>
+
+              <span class="media-cover">
                 ⭐ Couverture
-              </span>`
+              </span>
+            `
             : ""
         }
 
+
         <br><br>
+
 
         <button
           class="admin-button danger delete-media"
-          data-id="${item.id}"
-          data-url="${escapeHTML(item.media_url)}"
         >
+
           🗑️ Supprimer
+
         </button>
 
       </div>
@@ -1381,7 +1523,9 @@ async function loadStoreMedia(storeId) {
 
 
     card
-      .querySelector(".delete-media")
+      .querySelector(
+        ".delete-media"
+      )
       .addEventListener(
         "click",
         () => deleteMedia(item)
@@ -1395,13 +1539,15 @@ async function loadStoreMedia(storeId) {
 
   mediaList.innerHTML = "";
 
-  mediaList.appendChild(container);
+  mediaList.appendChild(
+    container
+  );
 
 }
 
 
 // =====================================================
-// UPLOAD MEDIA
+// UPLOAD PHOTO / VIDEO
 // =====================================================
 
 mediaForm.addEventListener(
@@ -1414,23 +1560,28 @@ mediaForm.addEventListener(
     const storeId =
       mediaStore.value;
 
+
     const type =
       document.getElementById(
         "mediaType"
       ).value;
+
 
     const title =
       document.getElementById(
         "mediaTitle"
       ).value.trim();
 
+
     const fileInput =
       document.getElementById(
         "mediaFile"
       );
 
+
     const file =
       fileInput.files[0];
+
 
     const isCover =
       document.getElementById(
@@ -1460,11 +1611,11 @@ mediaForm.addEventListener(
     }
 
 
-    // Une couverture doit être une image.
-
     if (
       isCover &&
-      !file.type.startsWith("image/")
+      !file.type.startsWith(
+        "image/"
+      )
     ) {
 
       showMediaMessage(
@@ -1476,11 +1627,11 @@ mediaForm.addEventListener(
     }
 
 
-    // Vérification du type.
-
     if (
       type === "image" &&
-      !file.type.startsWith("image/")
+      !file.type.startsWith(
+        "image/"
+      )
     ) {
 
       showMediaMessage(
@@ -1494,7 +1645,9 @@ mediaForm.addEventListener(
 
     if (
       type === "video" &&
-      !file.type.startsWith("video/")
+      !file.type.startsWith(
+        "video/"
+      )
     ) {
 
       showMediaMessage(
@@ -1506,10 +1659,9 @@ mediaForm.addEventListener(
     }
 
 
-    // Limites raisonnables.
-
     const maxImageSize =
       10 * 1024 * 1024;
+
 
     const maxVideoSize =
       100 * 1024 * 1024;
@@ -1566,21 +1718,21 @@ mediaForm.addEventListener(
 
       const safeName =
         makeSlug(
-          file.name
-            .replace(
-              /\.[^/.]+$/,
-              ""
-            )
-        ) || "media";
+          file.name.replace(
+            /\.[^/.]+$/,
+            ""
+          )
+        ) ||
+        "media";
 
 
       const filePath =
         `${storeId}/${Date.now()}-${safeName}.${extension}`;
 
 
-      // ===============================
-      // ENVOI DANS SUPABASE STORAGE
-      // ===============================
+      // =========================
+      // STORAGE
+      // =========================
 
       const {
         error: uploadError
@@ -1605,25 +1757,27 @@ mediaForm.addEventListener(
       }
 
 
-      // ===============================
+      // =========================
       // URL PUBLIQUE
-      // ===============================
+      // =========================
 
       const {
         data: publicUrlData
       } = supabaseClient
         .storage
         .from("store-media")
-        .getPublicUrl(filePath);
+        .getPublicUrl(
+          filePath
+        );
 
 
       const publicUrl =
         publicUrlData.publicUrl;
 
 
-      // ===============================
-      // SI COUVERTURE
-      // ===============================
+      // =========================
+      // COUVERTURE
+      // =========================
 
       if (isCover) {
 
@@ -1632,7 +1786,10 @@ mediaForm.addEventListener(
           .update({
             is_cover: false
           })
-          .eq("store_id", storeId);
+          .eq(
+            "store_id",
+            storeId
+          );
 
 
         await supabaseClient
@@ -1640,14 +1797,17 @@ mediaForm.addEventListener(
           .update({
             cover_url: publicUrl
           })
-          .eq("id", storeId);
+          .eq(
+            "id",
+            storeId
+          );
 
       }
 
 
-      // ===============================
-      // ENREGISTREMENT BDD
-      // ===============================
+      // =========================
+      // BASE DE DONNEES
+      // =========================
 
       const {
         error: mediaError
@@ -1655,28 +1815,33 @@ mediaForm.addEventListener(
         .from("store_media")
         .insert({
 
-          store_id: storeId,
+          store_id:
+            storeId,
 
-          media_type: type,
+          media_type:
+            type,
 
-          media_url: publicUrl,
+          media_url:
+            publicUrl,
 
-          title: title || null,
+          title:
+            title || null,
 
-          is_cover: isCover
+          is_cover:
+            isCover
 
         });
 
 
       if (mediaError) {
 
-        // Si la BDD échoue, on tente
-        // de supprimer le fichier envoyé.
-
         await supabaseClient
           .storage
           .from("store-media")
-          .remove([filePath]);
+          .remove([
+            filePath
+          ]);
+
 
         throw mediaError;
 
@@ -1691,19 +1856,24 @@ mediaForm.addEventListener(
 
       mediaForm.reset();
 
-      document.getElementById(
-        "mediaCover"
-      ).checked = false;
 
-
-      await loadStoreMedia(storeId);
+      await loadStoreMedia(
+        storeId
+      );
 
     }
 
     catch (error) {
 
+      console.error(
+        "Erreur upload :",
+        error
+      );
+
+
       showMediaMessage(
-        "❌ " + (
+        "❌ " +
+        (
           error.message ||
           "Erreur pendant l'envoi."
         )
@@ -1745,13 +1915,17 @@ async function deleteMedia(media) {
   } = await supabaseClient
     .from("store_media")
     .delete()
-    .eq("id", media.id);
+    .eq(
+      "id",
+      media.id
+    );
 
 
   if (error) {
 
     alert(
-      "Erreur : " + error.message
+      "Erreur : " +
+      error.message
     );
 
     return;
@@ -1759,16 +1933,16 @@ async function deleteMedia(media) {
   }
 
 
-  // Essayer également de supprimer
-  // le fichier Storage.
-
   try {
 
     const marker =
       "/store-media/";
 
+
     const index =
-      media.media_url.indexOf(marker);
+      media.media_url.indexOf(
+        marker
+      );
 
 
     if (index !== -1) {
@@ -1865,7 +2039,7 @@ function escapeHTML(value) {
 
 
 // =====================================================
-// ACTUALISER
+// ACTUALISER COMMANDES
 // =====================================================
 
 refreshOrders.addEventListener(

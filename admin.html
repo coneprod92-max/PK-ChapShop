@@ -10,7 +10,7 @@
 
   <style>
     .admin-page {
-      padding-bottom: 60px;
+      padding-bottom: 70px;
     }
 
     .admin-login,
@@ -28,6 +28,8 @@
     }
 
     .admin-login input,
+    .admin-card input,
+    .admin-card textarea,
     .admin-card select {
       width: 100%;
       box-sizing: border-box;
@@ -36,6 +38,11 @@
       border-radius: 12px;
       font-size: 16px;
       margin: 8px 0 14px;
+    }
+
+    .admin-card textarea {
+      min-height: 100px;
+      resize: vertical;
     }
 
     .admin-button {
@@ -53,6 +60,14 @@
       color: #172033;
     }
 
+    .admin-button.danger {
+      background: #b91c1c;
+    }
+
+    .admin-button:disabled {
+      opacity: .6;
+    }
+
     .admin-top {
       display: flex;
       justify-content: space-between;
@@ -63,7 +78,7 @@
 
     .admin-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 15px;
     }
 
@@ -81,29 +96,39 @@
       margin-top: 5px;
     }
 
-    .order-row {
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .admin-form {
+      margin-top: 20px;
+    }
+
+    .item-row {
       border: 1px solid #e2e8f0;
       border-radius: 18px;
       padding: 18px;
       margin: 14px 0;
     }
 
-    .order-head {
+    .item-head {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       align-items: center;
     }
 
-    .order-number {
+    .item-title {
       font-weight: 900;
-      font-size: 20px;
+      font-size: 18px;
     }
 
-    .order-meta {
+    .item-meta {
       color: #64748b;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.7;
       margin: 8px 0;
     }
 
@@ -116,7 +141,7 @@
 
     .status-line select {
       width: auto;
-      min-width: 210px;
+      min-width: 190px;
       margin: 0;
     }
 
@@ -140,8 +165,13 @@
       margin-top: 12px;
     }
 
-    @media (max-width: 650px) {
-      .admin-stats {
+    .section-separator {
+      margin-top: 35px;
+    }
+
+    @media (max-width: 800px) {
+      .admin-stats,
+      .admin-grid {
         grid-template-columns: 1fr;
       }
 
@@ -150,7 +180,7 @@
         flex-direction: column;
       }
 
-      .order-head {
+      .item-head {
         align-items: flex-start;
         flex-direction: column;
       }
@@ -172,23 +202,23 @@
 
 </header>
 
+
 <main class="container admin-page">
 
   <a href="index.html" class="back-link">
     ← Retour au site
   </a>
 
+
   <!-- CONNEXION -->
 
   <section id="loginSection" class="admin-login">
 
     <div class="section-title">
-
       <div>
         <small>ESPACE PRIVÉ</small>
         <h1>Administration</h1>
       </div>
-
     </div>
 
     <p>
@@ -214,10 +244,7 @@
         required
       >
 
-      <button
-        class="admin-button"
-        type="submit"
-      >
+      <button class="admin-button" type="submit">
         🔐 Se connecter
       </button>
 
@@ -228,26 +255,18 @@
   </section>
 
 
-  <!-- TABLEAU DE BORD -->
+  <!-- DASHBOARD -->
 
   <section id="dashboard" class="admin-hidden">
 
     <div class="admin-top">
 
       <div>
-
         <small>TABLEAU DE BORD</small>
-
-        <h1>
-          Administration PK ChapShop
-        </h1>
-
+        <h1>Administration PK ChapShop</h1>
       </div>
 
-      <button
-        id="logoutButton"
-        class="admin-button"
-      >
+      <button id="logoutButton" class="admin-button">
         Déconnexion
       </button>
 
@@ -259,35 +278,23 @@
     <div class="admin-stats">
 
       <div class="admin-stat">
-
         Commandes
-
-        <strong id="statOrders">
-          0
-        </strong>
-
+        <strong id="statOrders">0</strong>
       </div>
 
-
       <div class="admin-stat">
-
         En attente
-
-        <strong id="statPending">
-          0
-        </strong>
-
+        <strong id="statPending">0</strong>
       </div>
 
+      <div class="admin-stat">
+        Livrées
+        <strong id="statDelivered">0</strong>
+      </div>
 
       <div class="admin-stat">
-
-        Livrées
-
-        <strong id="statDelivered">
-          0
-        </strong>
-
+        Boutiques
+        <strong id="statStores">0</strong>
       </div>
 
     </div>
@@ -298,31 +305,229 @@
     <section class="admin-card">
 
       <div class="section-title">
+        <div>
+          <small>COMMANDES</small>
+          <h2>Gestion des commandes</h2>
+        </div>
+      </div>
+
+      <button id="refreshOrders" class="admin-button gold">
+        ↻ Actualiser
+      </button>
+
+      <div id="ordersList"></div>
+
+      <div id="ordersMessage"></div>
+
+    </section>
+
+
+    <!-- BOUTIQUES -->
+
+    <section class="admin-card section-separator">
+
+      <div class="section-title">
+        <div>
+          <small>MARKETPLACE</small>
+          <h2>Gestion des boutiques</h2>
+        </div>
+      </div>
+
+
+      <div class="admin-grid">
 
         <div>
 
-          <small>GESTION</small>
+          <h3>➕ Ajouter une boutique</h3>
 
-          <h2>
-            Commandes récentes
-          </h2>
+          <form id="storeForm" class="admin-form">
+
+            <label>Nom de la boutique</label>
+
+            <input
+              id="storeName"
+              placeholder="Ex : ChadoElectrodesign"
+              required
+            >
+
+            <label>Catégorie</label>
+
+            <select id="storeCategory" required>
+              <option value="">Choisir une catégorie</option>
+            </select>
+
+            <label>Description</label>
+
+            <textarea
+              id="storeDescription"
+              placeholder="Description de la boutique"
+            ></textarea>
+
+            <label>Téléphone</label>
+
+            <input
+              id="storePhone"
+              placeholder="+229..."
+            >
+
+            <label>WhatsApp</label>
+
+            <input
+              id="storeWhatsapp"
+              placeholder="+229..."
+            >
+
+            <label>Adresse</label>
+
+            <input
+              id="storeAddress"
+              placeholder="Adresse à Parakou"
+            >
+
+            <label>Logo URL</label>
+
+            <input
+              id="storeLogo"
+              placeholder="https://..."
+            >
+
+            <label>Cover URL</label>
+
+            <input
+              id="storeCover"
+              placeholder="https://..."
+            >
+
+            <label>
+              <input
+                id="storeDelivery"
+                type="checkbox"
+                checked
+                style="width:auto;margin-right:8px;"
+              >
+              Livraison disponible
+            </label>
+
+            <br><br>
+
+            <button class="admin-button gold" type="submit">
+              🏪 Créer la boutique
+            </button>
+
+          </form>
+
+          <div id="storeMessage"></div>
+
+        </div>
+
+
+        <div>
+
+          <h3>🏪 Boutiques existantes</h3>
+
+          <div id="storesList">
+            Chargement...
+          </div>
 
         </div>
 
       </div>
 
-
-      <button
-        id="refreshOrders"
-        class="admin-button gold"
-      >
-        ↻ Actualiser
-      </button>
+    </section>
 
 
-      <div id="ordersList"></div>
+    <!-- PRODUITS -->
 
-      <div id="ordersMessage"></div>
+    <section class="admin-card section-separator">
+
+      <div class="section-title">
+        <div>
+          <small>CATALOGUE</small>
+          <h2>Gestion des produits</h2>
+        </div>
+      </div>
+
+
+      <div class="admin-grid">
+
+        <div>
+
+          <h3>➕ Ajouter un produit</h3>
+
+          <form id="productForm" class="admin-form">
+
+            <label>Boutique</label>
+
+            <select id="productStore" required>
+              <option value="">Choisir une boutique</option>
+            </select>
+
+            <label>Nom du produit</label>
+
+            <input
+              id="productName"
+              placeholder="Ex : Téléviseur Smart TV"
+              required
+            >
+
+            <label>Description</label>
+
+            <textarea
+              id="productDescription"
+              placeholder="Description du produit"
+            ></textarea>
+
+            <label>Prix FCFA</label>
+
+            <input
+              id="productPrice"
+              type="number"
+              min="0"
+              placeholder="150000"
+              required
+            >
+
+            <label>Image URL</label>
+
+            <input
+              id="productImage"
+              placeholder="https://..."
+            >
+
+            <label>
+              <input
+                id="productAvailable"
+                type="checkbox"
+                checked
+                style="width:auto;margin-right:8px;"
+              >
+              Produit disponible
+            </label>
+
+            <br><br>
+
+            <button class="admin-button gold" type="submit">
+              📦 Ajouter le produit
+            </button>
+
+          </form>
+
+          <div id="productMessage"></div>
+
+        </div>
+
+
+        <div>
+
+          <h3>📦 Produits existants</h3>
+
+          <div id="productsList">
+            Chargement...
+          </div>
+
+        </div>
+
+      </div>
 
     </section>
 

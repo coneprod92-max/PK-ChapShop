@@ -9,9 +9,9 @@ const supabaseClient = supabase.createClient(
 );
 
 
-// ===============================
+// =====================================================
 // ELEMENTS
-// ===============================
+// =====================================================
 
 const loginSection = document.getElementById("loginSection");
 const dashboard = document.getElementById("dashboard");
@@ -23,50 +23,32 @@ const logoutButton = document.getElementById("logoutButton");
 
 const ordersList = document.getElementById("ordersList");
 const ordersMessage = document.getElementById("ordersMessage");
+const refreshOrders = document.getElementById("refreshOrders");
 
-const refreshOrders =
-  document.getElementById("refreshOrders");
+const statOrders = document.getElementById("statOrders");
+const statPending = document.getElementById("statPending");
+const statDelivered = document.getElementById("statDelivered");
+const statStores = document.getElementById("statStores");
 
-const statOrders =
-  document.getElementById("statOrders");
+const storeForm = document.getElementById("storeForm");
+const storeMessage = document.getElementById("storeMessage");
+const storesList = document.getElementById("storesList");
+const storeCategory = document.getElementById("storeCategory");
 
-const statPending =
-  document.getElementById("statPending");
+const productForm = document.getElementById("productForm");
+const productMessage = document.getElementById("productMessage");
+const productsList = document.getElementById("productsList");
+const productStore = document.getElementById("productStore");
 
-const statDelivered =
-  document.getElementById("statDelivered");
-
-const statStores =
-  document.getElementById("statStores");
-
-const storeForm =
-  document.getElementById("storeForm");
-
-const storeMessage =
-  document.getElementById("storeMessage");
-
-const storesList =
-  document.getElementById("storesList");
-
-const storeCategory =
-  document.getElementById("storeCategory");
-
-const productForm =
-  document.getElementById("productForm");
-
-const productMessage =
-  document.getElementById("productMessage");
-
-const productsList =
-  document.getElementById("productsList");
-
-const productStore =
-  document.getElementById("productStore");
+const mediaForm = document.getElementById("mediaForm");
+const mediaMessage = document.getElementById("mediaMessage");
+const mediaList = document.getElementById("mediaList");
+const mediaStore = document.getElementById("mediaStore");
 
 
-// ===============================
+// =====================================================
 // MESSAGES
-// ===============================
+// =====================================================
 
 function showLoginMessage(message, success = false) {
 
@@ -101,9 +83,20 @@ function showProductMessage(message, success = false) {
 }
 
 
-// ===============================
+function showMediaMessage(message, success = false) {
+
+  mediaMessage.innerHTML = `
+    <div class="${success ? "admin-success" : "admin-error"}">
+      ${message}
+    </div>
+  `;
+
+}
+
+
+// =====================================================
 // AFFICHAGE
-// ===============================
+// =====================================================
 
 function showLogin() {
 
@@ -123,9 +116,9 @@ function showDashboard() {
 }
 
 
-// ===============================
+// =====================================================
 // VERIFICATION ADMIN
-// ===============================
+// =====================================================
 
 async function checkAdmin() {
 
@@ -173,9 +166,9 @@ async function checkAdmin() {
 }
 
 
-// ===============================
+// =====================================================
 // CONNEXION
-// ===============================
+// =====================================================
 
 loginForm.addEventListener(
   "submit",
@@ -223,9 +216,9 @@ loginForm.addEventListener(
 );
 
 
-// ===============================
+// =====================================================
 // DECONNEXION
-// ===============================
+// =====================================================
 
 logoutButton.addEventListener(
   "click",
@@ -244,9 +237,9 @@ logoutButton.addEventListener(
 );
 
 
-// ===============================
+// =====================================================
 // CHARGEMENT GLOBAL
-// ===============================
+// =====================================================
 
 async function loadEverything() {
 
@@ -261,9 +254,9 @@ async function loadEverything() {
 }
 
 
-// ===============================
+// =====================================================
 // COMMANDES
-// ===============================
+// =====================================================
 
 async function loadOrders() {
 
@@ -353,9 +346,9 @@ async function loadOrders() {
 }
 
 
-// ===============================
+// =====================================================
 // STATISTIQUES
-// ===============================
+// =====================================================
 
 function updateStats(orders) {
 
@@ -377,9 +370,9 @@ function updateStats(orders) {
 }
 
 
-// ===============================
+// =====================================================
 // CARTE COMMANDE
-// ===============================
+// =====================================================
 
 function createOrderCard(order) {
 
@@ -540,9 +533,9 @@ function createOrderCard(order) {
 }
 
 
-// ===============================
+// =====================================================
 // STATUT COMMANDE
-// ===============================
+// =====================================================
 
 function statusOption(
   value,
@@ -619,9 +612,9 @@ async function updateOrderStatus(
 }
 
 
-// ===============================
+// =====================================================
 // CATEGORIES
-// ===============================
+// =====================================================
 
 async function loadCategories() {
 
@@ -660,9 +653,9 @@ async function loadCategories() {
 }
 
 
-// ===============================
+// =====================================================
 // BOUTIQUES
-// ===============================
+// =====================================================
 
 async function loadStores() {
 
@@ -716,6 +709,24 @@ async function loadStores() {
   productStore.innerHTML =
     `<option value="">Choisir une boutique</option>`;
 
+  mediaStore.innerHTML =
+    `<option value="">Choisir une boutique</option>`;
+
+
+  stores.forEach(store => {
+
+    const option = `
+      <option value="${store.id}">
+        ${escapeHTML(store.name)}
+      </option>
+    `;
+
+    productStore.innerHTML += option;
+
+    mediaStore.innerHTML += option;
+
+  });
+
 
   if (stores.length === 0) {
 
@@ -725,17 +736,6 @@ async function loadStores() {
     return;
 
   }
-
-
-  stores.forEach(store => {
-
-    productStore.innerHTML += `
-      <option value="${store.id}">
-        ${escapeHTML(store.name)}
-      </option>
-    `;
-
-  });
 
 
   storesList.innerHTML = "";
@@ -828,9 +828,9 @@ async function loadStores() {
 }
 
 
-// ===============================
+// =====================================================
 // AJOUTER BOUTIQUE
-// ===============================
+// =====================================================
 
 storeForm.addEventListener(
   "submit",
@@ -844,10 +844,6 @@ storeForm.addEventListener(
         .value.trim();
 
 
-    const slug =
-      makeSlug(name);
-
-
     const {
       error
     } = await supabaseClient
@@ -856,7 +852,8 @@ storeForm.addEventListener(
 
         name,
 
-        slug,
+        slug:
+          makeSlug(name),
 
         category_id:
           storeCategory.value,
@@ -935,9 +932,9 @@ storeForm.addEventListener(
 );
 
 
-// ===============================
+// =====================================================
 // PUBLIER / DEPUBLIER
-// ===============================
+// =====================================================
 
 async function toggleStore(store) {
 
@@ -968,9 +965,9 @@ async function toggleStore(store) {
 }
 
 
-// ===============================
+// =====================================================
 // PRODUITS
-// ===============================
+// =====================================================
 
 async function loadProducts() {
 
@@ -1100,9 +1097,9 @@ async function loadProducts() {
 }
 
 
-// ===============================
+// =====================================================
 // AJOUTER PRODUIT
-// ===============================
+// =====================================================
 
 productForm.addEventListener(
   "submit",
@@ -1186,9 +1183,9 @@ productForm.addEventListener(
 );
 
 
-// ===============================
+// =====================================================
 // DISPONIBILITE PRODUIT
-// ===============================
+// =====================================================
 
 async function toggleProduct(product) {
 
@@ -1219,41 +1216,657 @@ async function toggleProduct(product) {
 }
 
 
-// ===============================
+// =====================================================
+// GALERIE MEDIA
+// =====================================================
+
+// Quand on choisit une boutique,
+// on charge immédiatement sa galerie.
+
+mediaStore.addEventListener(
+  "change",
+  async function() {
+
+    if (!mediaStore.value) {
+
+      mediaList.innerHTML =
+        "Choisis une boutique pour voir ses médias.";
+
+      return;
+
+    }
+
+    await loadStoreMedia(mediaStore.value);
+
+  }
+);
+
+
+// =====================================================
+// CHARGER LES MEDIAS
+// =====================================================
+
+async function loadStoreMedia(storeId) {
+
+  mediaList.innerHTML =
+    "Chargement des médias...";
+
+
+  const {
+    data: media,
+    error
+  } = await supabaseClient
+    .from("store_media")
+    .select(`
+      id,
+      media_type,
+      media_url,
+      title,
+      is_cover,
+      created_at
+    `)
+    .eq("store_id", storeId)
+    .order("created_at", {
+      ascending: false
+    });
+
+
+  if (error) {
+
+    mediaList.innerHTML = `
+      <div class="admin-error">
+        ❌ ${escapeHTML(error.message)}
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  if (!media || media.length === 0) {
+
+    mediaList.innerHTML =
+      "<p>Aucun média pour cette boutique.</p>";
+
+    return;
+
+  }
+
+
+  const container =
+    document.createElement("div");
+
+  container.className =
+    "media-preview";
+
+
+  media.forEach(item => {
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "media-item";
+
+
+    let visual = "";
+
+
+    if (item.media_type === "video") {
+
+      visual = `
+        <video
+          src="${escapeHTML(item.media_url)}"
+          controls
+          preload="metadata"
+        ></video>
+      `;
+
+    } else {
+
+      visual = `
+        <img
+          src="${escapeHTML(item.media_url)}"
+          alt="${escapeHTML(
+            item.title || "Photo boutique"
+          )}"
+        >
+      `;
+
+    }
+
+
+    card.innerHTML = `
+
+      ${visual}
+
+      <div class="media-info">
+
+        <strong>
+          ${escapeHTML(
+            item.title || "Sans titre"
+          )}
+        </strong>
+
+        <br>
+
+        ${
+          item.media_type === "video"
+            ? "🎥 Vidéo"
+            : "📸 Photo"
+        }
+
+        ${
+          item.is_cover
+            ? `<br><span class="media-cover">
+                ⭐ Couverture
+              </span>`
+            : ""
+        }
+
+        <br><br>
+
+        <button
+          class="admin-button danger delete-media"
+          data-id="${item.id}"
+          data-url="${escapeHTML(item.media_url)}"
+        >
+          🗑️ Supprimer
+        </button>
+
+      </div>
+
+    `;
+
+
+    card
+      .querySelector(".delete-media")
+      .addEventListener(
+        "click",
+        () => deleteMedia(item)
+      );
+
+
+    container.appendChild(card);
+
+  });
+
+
+  mediaList.innerHTML = "";
+
+  mediaList.appendChild(container);
+
+}
+
+
+// =====================================================
+// UPLOAD MEDIA
+// =====================================================
+
+mediaForm.addEventListener(
+  "submit",
+  async function(event) {
+
+    event.preventDefault();
+
+
+    const storeId =
+      mediaStore.value;
+
+    const type =
+      document.getElementById(
+        "mediaType"
+      ).value;
+
+    const title =
+      document.getElementById(
+        "mediaTitle"
+      ).value.trim();
+
+    const fileInput =
+      document.getElementById(
+        "mediaFile"
+      );
+
+    const file =
+      fileInput.files[0];
+
+    const isCover =
+      document.getElementById(
+        "mediaCover"
+      ).checked;
+
+
+    if (!storeId) {
+
+      showMediaMessage(
+        "❌ Choisis une boutique."
+      );
+
+      return;
+
+    }
+
+
+    if (!file) {
+
+      showMediaMessage(
+        "❌ Choisis un fichier."
+      );
+
+      return;
+
+    }
+
+
+    // Une couverture doit être une image.
+
+    if (
+      isCover &&
+      !file.type.startsWith("image/")
+    ) {
+
+      showMediaMessage(
+        "❌ La couverture doit être une photo."
+      );
+
+      return;
+
+    }
+
+
+    // Vérification du type.
+
+    if (
+      type === "image" &&
+      !file.type.startsWith("image/")
+    ) {
+
+      showMediaMessage(
+        "❌ Le fichier sélectionné n'est pas une image."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      type === "video" &&
+      !file.type.startsWith("video/")
+    ) {
+
+      showMediaMessage(
+        "❌ Le fichier sélectionné n'est pas une vidéo."
+      );
+
+      return;
+
+    }
+
+
+    // Limites raisonnables.
+
+    const maxImageSize =
+      10 * 1024 * 1024;
+
+    const maxVideoSize =
+      100 * 1024 * 1024;
+
+
+    if (
+      type === "image" &&
+      file.size > maxImageSize
+    ) {
+
+      showMediaMessage(
+        "❌ Photo trop lourde. Maximum : 10 Mo."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      type === "video" &&
+      file.size > maxVideoSize
+    ) {
+
+      showMediaMessage(
+        "❌ Vidéo trop lourde. Maximum : 100 Mo."
+      );
+
+      return;
+
+    }
+
+
+    const button =
+      document.getElementById(
+        "uploadMediaButton"
+      );
+
+
+    button.disabled = true;
+
+    button.textContent =
+      "⏳ Envoi en cours...";
+
+
+    try {
+
+      const extension =
+        file.name
+          .split(".")
+          .pop()
+          .toLowerCase();
+
+
+      const safeName =
+        makeSlug(
+          file.name
+            .replace(
+              /\.[^/.]+$/,
+              ""
+            )
+        ) || "media";
+
+
+      const filePath =
+        `${storeId}/${Date.now()}-${safeName}.${extension}`;
+
+
+      // ===============================
+      // ENVOI DANS SUPABASE STORAGE
+      // ===============================
+
+      const {
+        error: uploadError
+      } = await supabaseClient
+        .storage
+        .from("store-media")
+        .upload(
+          filePath,
+          file,
+          {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type
+          }
+        );
+
+
+      if (uploadError) {
+
+        throw uploadError;
+
+      }
+
+
+      // ===============================
+      // URL PUBLIQUE
+      // ===============================
+
+      const {
+        data: publicUrlData
+      } = supabaseClient
+        .storage
+        .from("store-media")
+        .getPublicUrl(filePath);
+
+
+      const publicUrl =
+        publicUrlData.publicUrl;
+
+
+      // ===============================
+      // SI COUVERTURE
+      // ===============================
+
+      if (isCover) {
+
+        await supabaseClient
+          .from("store_media")
+          .update({
+            is_cover: false
+          })
+          .eq("store_id", storeId);
+
+
+        await supabaseClient
+          .from("stores")
+          .update({
+            cover_url: publicUrl
+          })
+          .eq("id", storeId);
+
+      }
+
+
+      // ===============================
+      // ENREGISTREMENT BDD
+      // ===============================
+
+      const {
+        error: mediaError
+      } = await supabaseClient
+        .from("store_media")
+        .insert({
+
+          store_id: storeId,
+
+          media_type: type,
+
+          media_url: publicUrl,
+
+          title: title || null,
+
+          is_cover: isCover
+
+        });
+
+
+      if (mediaError) {
+
+        // Si la BDD échoue, on tente
+        // de supprimer le fichier envoyé.
+
+        await supabaseClient
+          .storage
+          .from("store-media")
+          .remove([filePath]);
+
+        throw mediaError;
+
+      }
+
+
+      showMediaMessage(
+        "✅ Média ajouté avec succès.",
+        true
+      );
+
+
+      mediaForm.reset();
+
+      document.getElementById(
+        "mediaCover"
+      ).checked = false;
+
+
+      await loadStoreMedia(storeId);
+
+    }
+
+    catch (error) {
+
+      showMediaMessage(
+        "❌ " + (
+          error.message ||
+          "Erreur pendant l'envoi."
+        )
+      );
+
+    }
+
+
+    button.disabled = false;
+
+    button.textContent =
+      "📤 Envoyer le média";
+
+  }
+);
+
+
+// =====================================================
+// SUPPRIMER MEDIA
+// =====================================================
+
+async function deleteMedia(media) {
+
+  const confirmed =
+    confirm(
+      "Supprimer définitivement ce média ?"
+    );
+
+
+  if (!confirmed) {
+
+    return;
+
+  }
+
+
+  const {
+    error
+  } = await supabaseClient
+    .from("store_media")
+    .delete()
+    .eq("id", media.id);
+
+
+  if (error) {
+
+    alert(
+      "Erreur : " + error.message
+    );
+
+    return;
+
+  }
+
+
+  // Essayer également de supprimer
+  // le fichier Storage.
+
+  try {
+
+    const marker =
+      "/store-media/";
+
+    const index =
+      media.media_url.indexOf(marker);
+
+
+    if (index !== -1) {
+
+      const filePath =
+        decodeURIComponent(
+          media.media_url.substring(
+            index + marker.length
+          )
+        );
+
+
+      await supabaseClient
+        .storage
+        .from("store-media")
+        .remove([
+          filePath
+        ]);
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.log(
+      "Nettoyage Storage :",
+      error
+    );
+
+  }
+
+
+  await loadStoreMedia(
+    mediaStore.value
+  );
+
+}
+
+
+// =====================================================
 // SLUG
-// ===============================
+// =====================================================
 
 function makeSlug(text) {
 
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+    .replace(
+      /^-+|-+$/g,
+      "");
 
 }
 
 
-// ===============================
+// =====================================================
 // SECURITE HTML
-// ===============================
+// =====================================================
 
 function escapeHTML(value) {
 
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
 
-// ===============================
+// =====================================================
 // ACTUALISER
-// ===============================
+// =====================================================
 
 refreshOrders.addEventListener(
   "click",
@@ -1261,8 +1874,8 @@ refreshOrders.addEventListener(
 );
 
 
-// ===============================
+// =====================================================
 // DEMARRAGE
-// ===============================
+// =====================================================
 
 checkAdmin();

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Devenir annonceur — PK ChapShop</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .advertiser-page {
+      padding: 30px 0 60px;
+    }
+
+    .advertiser-hero {
+      background: #0b1628;
+      color: white;
+      border-radius: 28px;
+      padding: 30px 24px;
+      margin-bottom: 24px;
+    }
+
+    .advertiser-hero small {
+      color: #d8ad55;
+      font-weight: 900;
+      letter-spacing: 3px;
+    }
+
+    .advertiser-hero h1 {
+      font-size: 38px;
+      line-height: 1.05;
+      margin: 12px 0;
+    }
+
+    .advertiser-hero h1 span {
+      color: #d8ad55;
+    }
+
+    .advertiser-hero p {
+      color: #dbe4f0;
+      line-height: 1.6;
+    }
+
+    .benefits {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 22px 0;
+    }
+
+    .benefit {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .07);
+    }
+
+    .benefit strong {
+      display: block;
+      font-size: 18px;
+      margin: 8px 0;
+    }
+
+    .advertiser-form {
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .07);
+    }
+
+    .advertiser-form h2 {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border: 1px solid #dbe2ea;
+      border-radius: 13px;
+      font-size: 16px;
+      background: white;
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .advertiser-submit {
+      border: 0;
+      border-radius: 14px;
+      padding: 15px 20px;
+      background: #d8ad55;
+      color: #172033;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .form-message {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .form-message.success {
+      display: block;
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .form-message.error {
+      display: block;
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .already {
+      margin-top: 18px;
+      text-align: center;
+      color: #64748b;
+    }
+
+    @media (max-width: 700px) {
+
+      .benefits,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .advertiser-hero h1 {
+        font-size: 32px;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header">
+
+  <a href="index.html" class="logo">
+    PK <span>ChapShop</span>
+  </a>
+
+  <a href="cart.html" class="cart-link">
+    🛒 <span id="cartCount">0</span>
+  </a>
+
+</header>
+
+
+<main class="container advertiser-page">
+
+  <a href="index.html" class="back-link">
+    ← Retour au site
+  </a>
+
+
+  <section class="advertiser-hero">
+
+    <small>
+      REJOIGNEZ LE MARKETPLACE
+    </small>
+
+    <h1>
+      Développez votre activité avec
+      <span>PK ChapShop.</span>
+    </h1>
+
+    <p>
+      Présentez votre entreprise, vos produits ou vos services
+      à de nouveaux clients à Parakou et dans les environs.
+      Déposez votre demande et notre équipe vous contactera.
+    </p>
+
+  </section>
+
+
+  <section class="benefits">
+
+    <div class="benefit">
+
+      📣
+
+      <strong>
+        Plus de visibilité
+      </strong>
+
+      Présentez votre activité à une nouvelle clientèle.
+
+    </div>
+
+
+    <div class="benefit">
+
+      🛍️
+
+      <strong>
+        Plus de ventes
+      </strong>
+
+      Recevez des commandes directement depuis la plateforme.
+
+    </div>
+
+
+    <div class="benefit">
+
+      🚚
+
+      <strong>
+        Commerce simplifié
+      </strong>
+
+      Profitez de nos outils de commande,
+      livraison et suivi.
+
+    </div>
+
+  </section>
+
+
+  <section class="advertiser-form">
+
+    <h2>
+      🚀 Demander à rejoindre PK ChapShop
+    </h2>
+
+    <p>
+      Remplissez le formulaire.
+      Les champs marqués * sont obligatoires.
+    </p>
+
+
+    <form id="advertiserForm">
+
+      <div class="form-grid">
+
+
+        <div class="form-group">
+
+          <label for="fullName">
+            Votre nom *
+          </label>
+
+          <input
+            id="fullName"
+            required
+            placeholder="Nom et prénom"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="businessName">
+            Nom de l'activité *
+          </label>
+
+          <input
+            id="businessName"
+            required
+            placeholder="Ex : ChadoElectrodesign"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="category">
+            Catégorie *
+          </label>
+
+          <select id="category" required>
+
+            <option value="">
+              Choisir une catégorie
+            </option>
+
+            <option>
+              Restaurants
+            </option>
+
+            <option>
+              Boutiques
+            </option>
+
+            <option>
+              Agences
+            </option>
+
+            <option>
+              Entreprises
+            </option>
+
+            <option>
+              Garages
+            </option>
+
+            <option>
+              Services
+            </option>
+
+            <option>
+              Autre
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="phone">
+            Téléphone *
+          </label>
+
+          <input
+            id="phone"
+            type="tel"
+            required
+            placeholder="+229..."
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="whatsapp">
+            WhatsApp
+          </label>
+
+          <input
+            id="whatsapp"
+            type="tel"
+            placeholder="+229..."
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="city">
+            Ville *
+          </label>
+
+          <input
+            id="city"
+            value="Parakou"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label for="address">
+            Adresse / localisation
+          </label>
+
+          <input
+            id="address"
+            placeholder="Quartier, rue, repère..."
+          >
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label for="description">
+            Présentez votre activité
+          </label>
+
+          <textarea
+            id="description"
+            placeholder="Que vendez-vous ou quels services proposez-vous ?"
+          ></textarea>
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label for="goal">
+            Que souhaitez-vous obtenir grâce à PK ChapShop ?
+          </label>
+
+          <textarea
+            id="goal"
+            placeholder="Plus de visibilité, plus de commandes, livraison, présence en ligne..."
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <button
+        class="advertiser-submit"
+        type="submit"
+      >
+        🚀 Envoyer ma demande
+      </button>
+
+
+      <div
+        id="formMessage"
+        class="form-message"
+      ></div>
+
+    </form>
+
+
+    <div class="already">
+
+      Vous avez déjà une boutique sur PK ChapShop ?
+      Contactez-nous pour la faire évoluer.
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script src="advertiser.js"></script>
+
+</body>
+</html>

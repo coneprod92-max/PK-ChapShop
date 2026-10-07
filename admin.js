@@ -45,6 +45,15 @@ const mediaMessage = document.getElementById("mediaMessage");
 const mediaList = document.getElementById("mediaList");
 const mediaStore = document.getElementById("mediaStore");
 
+const advertisersList =
+  document.getElementById("advertisersList");
+
+const advertisersMessage =
+  document.getElementById("advertisersMessage");
+
+const refreshAdvertisers =
+  document.getElementById("refreshAdvertisers");
+
 
 // =====================================================
 // MESSAGES
@@ -250,6 +259,8 @@ async function loadEverything() {
   await loadStores();
 
   await loadProducts();
+
+  await loadAdvertiserApplications();
 
 }
 
@@ -721,20 +732,12 @@ async function loadStores() {
     stores.length;
 
 
-  // ===============================
-  // LISTE BOUTIQUE POUR PRODUITS
-  // ===============================
-
   productStore.innerHTML = `
     <option value="">
       Choisir une boutique
     </option>
   `;
 
-
-  // ===============================
-  // LISTE BOUTIQUE POUR MEDIA
-  // ===============================
 
   mediaStore.innerHTML = `
     <option value="">
@@ -766,10 +769,6 @@ async function loadStores() {
 
   });
 
-
-  // ===============================
-  // AFFICHAGE DES BOUTIQUES
-  // ===============================
 
   if (stores.length === 0) {
 
@@ -1730,10 +1729,6 @@ mediaForm.addEventListener(
         `${storeId}/${Date.now()}-${safeName}.${extension}`;
 
 
-      // =========================
-      // STORAGE
-      // =========================
-
       const {
         error: uploadError
       } = await supabaseClient
@@ -1757,10 +1752,6 @@ mediaForm.addEventListener(
       }
 
 
-      // =========================
-      // URL PUBLIQUE
-      // =========================
-
       const {
         data: publicUrlData
       } = supabaseClient
@@ -1774,10 +1765,6 @@ mediaForm.addEventListener(
       const publicUrl =
         publicUrlData.publicUrl;
 
-
-      // =========================
-      // COUVERTURE
-      // =========================
 
       if (isCover) {
 
@@ -1804,10 +1791,6 @@ mediaForm.addEventListener(
 
       }
 
-
-      // =========================
-      // BASE DE DONNEES
-      // =========================
 
       const {
         error: mediaError
@@ -1841,7 +1824,6 @@ mediaForm.addEventListener(
           .remove([
             filePath
           ]);
-
 
         throw mediaError;
 
@@ -1984,95 +1966,19 @@ async function deleteMedia(media) {
 
 
 // =====================================================
-// SLUG
-// =====================================================
-
-function makeSlug(text) {
-
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-    .replace(
-      /[^a-z0-9]+/g,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      "");
-
-}
-
-
-// =====================================================
-// SECURITE HTML
-// =====================================================
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
-}
-
-
-// =====================================================
-// ACTUALISER COMMANDES
-// =====================================================
-
-refreshOrders.addEventListener(
-  "click",
-  loadOrders
-);
-
-
-// =====================================================
-// DEMARRAGE
-// =====================================================
-
-checkAdmin();
-// =====================================================
 // DEMANDES ANNONCEURS
 // =====================================================
 
-const advertisersList =
-  document.getElementById("advertisersList");
-
-const advertisersMessage =
-  document.getElementById("advertisersMessage");
-
-const refreshAdvertisers =
-  document.getElementById("refreshAdvertisers");
-
-
 async function loadAdvertiserApplications() {
+
+  if (!advertisersList) return;
 
   advertisersList.innerHTML =
     "<p>Chargement des demandes...</p>";
 
-  advertisersMessage.innerHTML = "";
+  if (advertisersMessage) {
+    advertisersMessage.innerHTML = "";
+  }
 
 
   const {
@@ -2103,11 +2009,13 @@ async function loadAdvertiserApplications() {
 
     advertisersList.innerHTML = "";
 
-    advertisersMessage.innerHTML = `
-      <div class="admin-error">
-        ❌ ${escapeHTML(error.message)}
-      </div>
-    `;
+    if (advertisersMessage) {
+      advertisersMessage.innerHTML = `
+        <div class="admin-error">
+          ❌ ${escapeHTML(error.message)}
+        </div>
+      `;
+    }
 
     return;
   }
@@ -2141,6 +2049,10 @@ async function loadAdvertiserApplications() {
       new Date(
         application.created_at
       ).toLocaleString("fr-FR");
+
+
+    const isApproved =
+      application.status === "approved";
 
 
     card.innerHTML = `
@@ -2291,6 +2203,22 @@ async function loadAdvertiserApplications() {
           💾 Mettre à jour
         </button>
 
+        ${
+          !isApproved
+            ? `
+              <button
+                class="admin-button gold approve-advertiser"
+              >
+                🏪 Approuver & créer la boutique
+              </button>
+            `
+            : `
+              <span class="admin-success">
+                🏪 Boutique déjà créée
+              </span>
+            `
+        }
+
       </div>
 
     `;
@@ -2302,19 +2230,19 @@ async function loadAdvertiserApplications() {
       );
 
 
-    const button =
+    const updateButton =
       card.querySelector(
         ".update-advertiser"
       );
 
 
-    button.addEventListener(
+    updateButton.addEventListener(
       "click",
       async function() {
 
-        button.disabled = true;
+        updateButton.disabled = true;
 
-        button.textContent =
+        updateButton.textContent =
           "Enregistrement...";
 
 
@@ -2326,7 +2254,9 @@ async function loadAdvertiserApplications() {
           )
           .update({
             status:
-              select.value
+              select.value,
+            updated_at:
+              new Date().toISOString()
           })
           .eq(
             "id",
@@ -2341,16 +2271,16 @@ async function loadAdvertiserApplications() {
             error.message
           );
 
-          button.disabled = false;
+          updateButton.disabled = false;
 
-          button.textContent =
+          updateButton.textContent =
             "💾 Mettre à jour";
 
           return;
         }
 
 
-        button.textContent =
+        updateButton.textContent =
           "✅ Enregistré";
 
 
@@ -2358,6 +2288,85 @@ async function loadAdvertiserApplications() {
 
       }
     );
+
+
+    const approveButton =
+      card.querySelector(
+        ".approve-advertiser"
+      );
+
+
+    if (approveButton) {
+
+      approveButton.addEventListener(
+        "click",
+        async function() {
+
+          const confirmed =
+            confirm(
+              `Créer automatiquement la boutique "${application.business_name}" et la publier sur PK ChapShop ?`
+            );
+
+
+          if (!confirmed) {
+            return;
+          }
+
+
+          approveButton.disabled = true;
+
+          approveButton.textContent =
+            "⏳ Création en cours...";
+
+
+          const {
+            data: storeId,
+            error
+          } = await supabaseClient
+            .rpc(
+              "approve_advertiser_application",
+              {
+                p_application_id:
+                  application.id
+              }
+            );
+
+
+          if (error) {
+
+            alert(
+              "❌ Impossible de créer la boutique :\n\n" +
+              error.message
+            );
+
+            approveButton.disabled = false;
+
+            approveButton.textContent =
+              "🏪 Approuver & créer la boutique";
+
+            return;
+          }
+
+
+          console.log(
+            "Boutique créée :",
+            storeId
+          );
+
+
+          await loadAdvertiserApplications();
+
+          await loadStores();
+
+
+          alert(
+            `✅ Boutique "${application.business_name}" créée et publiée avec succès !`
+          );
+
+        }
+      );
+
+    }
 
 
     advertisersList.appendChild(
@@ -2402,17 +2411,73 @@ refreshAdvertisers.addEventListener(
 );
 
 
-// Charger automatiquement les demandes
-// lorsque l'espace admin est ouvert.
+// =====================================================
+// SLUG
+// =====================================================
 
-const originalLoadEverything =
-  loadEverything;
+function makeSlug(text) {
+
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+    .replace(
+      /^-+|-+$/g,
+      "");
+
+}
 
 
-loadEverything = async function() {
+// =====================================================
+// SECURITE HTML
+// =====================================================
 
-  await originalLoadEverything();
+function escapeHTML(value) {
 
-  await loadAdvertiserApplications();
+  return String(value)
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
-};
+}
+
+
+// =====================================================
+// ACTUALISER COMMANDES
+// =====================================================
+
+refreshOrders.addEventListener(
+  "click",
+  loadOrders
+);
+
+
+// =====================================================
+// DEMARRAGE
+// =====================================================
+
+checkAdmin();

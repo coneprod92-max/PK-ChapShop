@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PK ChapShop — Espace commerçant</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f6f8;
+  color:#151922;
+}
+
+header{
+  background:#05070b;
+  color:white;
+  padding:18px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:800;
+}
+
+.logo span{
+  color:#c9a227;
+}
+
+button{
+  border:0;
+  border-radius:12px;
+  padding:13px 16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.btn{
+  background:#111827;
+  color:white;
+}
+
+.gold{
+  background:#c9a227;
+  color:#111;
+}
+
+.danger{
+  background:#dc2626;
+  color:white;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px 15px;
+}
+
+.hero{
+  background:linear-gradient(135deg,#111827,#252525);
+  color:white;
+  border-radius:20px;
+  padding:25px;
+  margin-bottom:18px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:18px;
+  box-shadow:0 4px 18px #00000010;
+}
+
+h1,h2{
+  margin-top:0;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:
+  repeat(auto-fit,minmax(260px,1fr));
+  gap:15px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  padding:13px;
+  border:1px solid #ddd;
+  border-radius:11px;
+  margin:7px 0 12px;
+  font:inherit;
+}
+
+label{
+  font-weight:700;
+  font-size:14px;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.msg{
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+
+.ok{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.err{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.product,
+.order{
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:14px;
+  margin:10px 0;
+}
+
+.product img{
+  width:100%;
+  height:170px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+
+.price{
+  font-weight:800;
+  color:#a47f08;
+}
+
+.small{
+  font-size:13px;
+  color:#6b7280;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+video{
+  max-width:100%;
+  border-radius:12px;
+}
+
+@media(max-width:600px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .hero{
+    padding:20px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="logo">
+    PK <span>ChapShop</span>
+  </div>
+
+  <button
+    id="logoutBtn"
+    class="btn hidden"
+  >
+    Déconnexion
+  </button>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- =========================
+     AUTHENTIFICATION
+========================= -->
+
+<section
+  id="authSection"
+  class="card"
+>
+
+  <h1>🏪 Espace commerçant</h1>
+
+  <p>
+    Gérez votre boutique PK ChapShop
+    depuis votre téléphone.
+  </p>
+
+
+  <div class="grid">
+
+
+    <!-- CONNEXION -->
+
+    <form id="loginForm">
+
+      <h2>🔐 Connexion</h2>
+
+      <label>Email</label>
+
+      <input
+        id="loginEmail"
+        type="email"
+        required
+      >
+
+
+      <label>Mot de passe</label>
+
+      <input
+        id="loginPassword"
+        type="password"
+        required
+      >
+
+
+      <button
+        class="gold"
+        type="submit"
+      >
+        Se connecter
+      </button>
+
+
+      <div id="loginMsg"></div>
+
+    </form>
+
+
+
+    <!-- CREATION COMPTE -->
+
+    <form id="signupForm">
+
+      <h2>🆕 Créer mon compte</h2>
+
+      <label>Email</label>
+
+      <input
+        id="signupEmail"
+        type="email"
+        required
+      >
+
+
+      <label>Mot de passe</label>
+
+      <input
+        id="signupPassword"
+        type="password"
+        minlength="6"
+        required
+      >
+
+
+      <button
+        class="btn"
+        type="submit"
+      >
+        Créer mon compte
+      </button>
+
+
+      <div id="signupMsg"></div>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+
+<!-- =========================
+     RATTACHEMENT BOUTIQUE
+========================= -->
+
+<section
+  id="claimSection"
+  class="card hidden"
+>
+
+  <h2>🔗 Rattacher ma boutique</h2>
+
+  <p>
+    Utilisez le
+    <strong>code commerçant</strong>
+    reçu après l'approbation de votre demande.
+  </p>
+
+
+  <form id="claimForm">
+
+
+    <label>
+      Code commerçant
+    </label>
+
+    <input
+      id="merchantCode"
+      placeholder="Ex : PKABC123"
+      required
+    >
+
+
+    <label>
+      Numéro de téléphone utilisé lors de la demande
+    </label>
+
+    <input
+      id="merchantPhone"
+      required
+    >
+
+
+    <button
+      class="gold"
+      type="submit"
+    >
+      🏪 Rattacher ma boutique
+    </button>
+
+  </form>
+
+
+  <div id="claimMsg"></div>
+
+</section>
+
+
+
+<!-- =========================
+     TABLEAU DE BORD
+========================= -->
+
+<section
+  id="dashboard"
+  class="hidden"
+>
+
+
+  <div class="hero">
+
+    <h1 id="storeName">
+      Ma boutique
+    </h1>
+
+    <p id="storeInfo">
+      Chargement...
+    </p>
+
+  </div>
+
+
+  <div id="dashMsg"></div>
+
+
+
+  <!-- =====================
+       INFORMATIONS BOUTIQUE
+  ====================== -->
+
+  <section class="card">
+
+    <h2>
+      ⚙️ Informations de la boutique
+    </h2>
+
+
+    <form
+      id="storeForm"
+      class="grid"
+    >
+
+
+      <div>
+
+        <label>Nom</label>
+
+        <input
+          id="sName"
+          required
+        >
+
+
+        <label>Téléphone</label>
+
+        <input
+          id="sPhone"
+        >
+
+
+        <label>WhatsApp</label>
+
+        <input
+          id="sWhatsapp"
+        >
+
+
+        <label>Adresse</label>
+
+        <input
+          id="sAddress"
+        >
+
+      </div>
+
+
+
+      <div>
+
+        <label>Description</label>
+
+        <textarea
+          id="sDescription"
+          rows="5"
+        ></textarea>
+
+
+        <label>Logo URL</label>
+
+        <input
+          id="sLogo"
+        >
+
+
+        <label>Couverture URL</label>
+
+        <input
+          id="sCover"
+        >
+
+
+        <label>
+
+          <input
+            id="sOpen"
+            type="checkbox"
+          >
+
+          Boutique ouverte
+
+        </label>
+
+        <br>
+
+
+        <label>
+
+          <input
+            id="sDelivery"
+            type="checkbox"
+          >
+
+          Livraison disponible
+
+        </label>
+
+        <br><br>
+
+
+        <button
+          class="gold"
+          type="submit"
+        >
+          💾 Enregistrer
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+
+  <!-- =====================
+       PRODUITS
+  ====================== -->
+
+  <section class="card">
+
+    <h2>
+      📦 Produits
+    </h2>
+
+
+    <form
+      id="productForm"
+      class="grid"
+    >
+
+
+      <div>
+
+        <label>
+          Nom du produit
+        </label>
+
+        <input
+          id="pName"
+          required
+        >
+
+
+        <label>
+          Prix FCFA
+        </label>
+
+        <input
+          id="pPrice"
+          type="number"
+          min="0"
+          required
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          Description
+        </label>
+
+        <textarea
+          id="pDescription"
+        ></textarea>
+
+
+        <label>
+          Image URL
+        </label>
+
+        <input
+          id="pImage"
+        >
+
+
+        <label>
+
+          <input
+            id="pAvailable"
+            type="checkbox"
+            checked
+          >
+
+          Disponible
+
+        </label>
+
+      </div>
+
+
+      <div>
+
+        <button
+          class="gold"
+          type="submit"
+        >
+          ➕ Ajouter le produit
+        </button>
+
+      </div>
+
+    </form>
+
+
+    <div id="productsList">
+      Chargement...
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================
+       MEDIAS
+  ====================== -->
+
+  <section class="card">
+
+    <h2>
+      📸 Médias
+    </h2>
+
+
+    <form
+      id="mediaForm"
+      class="grid"
+    >
+
+
+      <div>
+
+        <label>
+          Type
+        </label>
+
+        <select id="mediaType">
+
+          <option value="image">
+            Photo
+          </option>
+
+          <option value="video">
+            Vidéo
+          </option>
+
+        </select>
+
+
+        <label>
+          Titre
+        </label>
+
+        <input
+          id="mediaTitle"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          Fichier
+        </label>
+
+        <input
+          id="mediaFile"
+          type="file"
+          required
+        >
+
+
+        <label>
+
+          <input
+            id="mediaCover"
+            type="checkbox"
+          >
+
+          Utiliser comme couverture
+
+        </label>
+
+      </div>
+
+
+      <div>
+
+        <button
+          id="mediaBtn"
+          class="gold"
+          type="submit"
+        >
+          📤 Envoyer
+        </button>
+
+      </div>
+
+    </form>
+
+
+    <div id="mediaList"></div>
+
+  </section>
+
+
+
+  <!-- =====================
+       COMMANDES
+  ====================== -->
+
+  <section class="card">
+
+    <h2>
+      🛒 Commandes reçues
+    </h2>
+
+
+    <div id="ordersList">
+      Chargement...
+    </div>
+
+  </section>
+
+
+</section>
+
+</main>
+
+
+<script src="merchant.js"></script>
+
+</body>
+</html>

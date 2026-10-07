@@ -1,14 +1,24 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Administration — PK ChapShop</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 
   <style>
+
     .admin-page {
       padding-bottom: 70px;
     }
@@ -169,7 +179,40 @@
       margin-top: 35px;
     }
 
+    .media-preview {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .media-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    .media-item img,
+    .media-item video {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .media-info {
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    .media-cover {
+      color: #b88620;
+      font-weight: 800;
+    }
+
     @media (max-width: 800px) {
+
       .admin-stats,
       .admin-grid {
         grid-template-columns: 1fr;
@@ -184,19 +227,34 @@
         align-items: flex-start;
         flex-direction: column;
       }
+
+      .media-preview {
+        grid-template-columns: 1fr;
+      }
+
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <header class="header">
 
-  <a href="index.html" class="logo">
+  <a
+    href="index.html"
+    class="logo"
+  >
     PK <span>ChapShop</span>
   </a>
 
-  <a href="cart.html" class="cart-link">
+  <a
+    href="cart.html"
+    class="cart-link"
+  >
     🛒 <span id="cartCount">0</span>
   </a>
 
@@ -205,29 +263,49 @@
 
 <main class="container admin-page">
 
-  <a href="index.html" class="back-link">
+
+  <a
+    href="index.html"
+    class="back-link"
+  >
     ← Retour au site
   </a>
 
 
+  <!-- ========================= -->
   <!-- CONNEXION -->
+  <!-- ========================= -->
 
-  <section id="loginSection" class="admin-login">
+  <section
+    id="loginSection"
+    class="admin-login"
+  >
 
     <div class="section-title">
+
       <div>
+
         <small>ESPACE PRIVÉ</small>
-        <h1>Administration</h1>
+
+        <h1>
+          Administration
+        </h1>
+
       </div>
+
     </div>
+
 
     <p>
       Connectez-vous avec votre compte administrateur.
     </p>
 
+
     <form id="loginForm">
 
-      <label>Email</label>
+      <label>
+        Email
+      </label>
 
       <input
         id="adminEmail"
@@ -236,7 +314,10 @@
         required
       >
 
-      <label>Mot de passe</label>
+
+      <label>
+        Mot de passe
+      </label>
 
       <input
         id="adminPassword"
@@ -244,76 +325,144 @@
         required
       >
 
-      <button class="admin-button" type="submit">
+
+      <button
+        class="admin-button"
+        type="submit"
+      >
         🔐 Se connecter
       </button>
 
     </form>
+
 
     <div id="loginMessage"></div>
 
   </section>
 
 
-  <!-- DASHBOARD -->
 
-  <section id="dashboard" class="admin-hidden">
+  <!-- ========================= -->
+  <!-- DASHBOARD -->
+  <!-- ========================= -->
+
+  <section
+    id="dashboard"
+    class="admin-hidden"
+  >
+
 
     <div class="admin-top">
 
       <div>
-        <small>TABLEAU DE BORD</small>
-        <h1>Administration PK ChapShop</h1>
+
+        <small>
+          TABLEAU DE BORD
+        </small>
+
+        <h1>
+          Administration PK ChapShop
+        </h1>
+
       </div>
 
-      <button id="logoutButton" class="admin-button">
+
+      <button
+        id="logoutButton"
+        class="admin-button"
+      >
         Déconnexion
       </button>
 
     </div>
 
 
+
+    <!-- ========================= -->
     <!-- STATISTIQUES -->
+    <!-- ========================= -->
 
     <div class="admin-stats">
 
+
       <div class="admin-stat">
+
         Commandes
-        <strong id="statOrders">0</strong>
+
+        <strong id="statOrders">
+          0
+        </strong>
+
       </div>
 
+
       <div class="admin-stat">
+
         En attente
-        <strong id="statPending">0</strong>
+
+        <strong id="statPending">
+          0
+        </strong>
+
       </div>
 
+
       <div class="admin-stat">
+
         Livrées
-        <strong id="statDelivered">0</strong>
+
+        <strong id="statDelivered">
+          0
+        </strong>
+
       </div>
 
+
       <div class="admin-stat">
+
         Boutiques
-        <strong id="statStores">0</strong>
+
+        <strong id="statStores">
+          0
+        </strong>
+
       </div>
+
 
     </div>
 
 
+
+    <!-- ========================= -->
     <!-- COMMANDES -->
+    <!-- ========================= -->
 
     <section class="admin-card">
 
       <div class="section-title">
+
         <div>
-          <small>COMMANDES</small>
-          <h2>Gestion des commandes</h2>
+
+          <small>
+            COMMANDES
+          </small>
+
+          <h2>
+            Gestion des commandes
+          </h2>
+
         </div>
+
       </div>
 
-      <button id="refreshOrders" class="admin-button gold">
+
+      <button
+        id="refreshOrders"
+        class="admin-button gold"
+      >
         ↻ Actualiser
       </button>
+
 
       <div id="ordersList"></div>
 
@@ -322,27 +471,51 @@
     </section>
 
 
+
+    <!-- ========================= -->
     <!-- BOUTIQUES -->
+    <!-- ========================= -->
 
     <section class="admin-card section-separator">
 
       <div class="section-title">
+
         <div>
-          <small>MARKETPLACE</small>
-          <h2>Gestion des boutiques</h2>
+
+          <small>
+            MARKETPLACE
+          </small>
+
+          <h2>
+            Gestion des boutiques
+          </h2>
+
         </div>
+
       </div>
 
 
       <div class="admin-grid">
 
+
+        <!-- AJOUT BOUTIQUE -->
+
         <div>
 
-          <h3>➕ Ajouter une boutique</h3>
+          <h3>
+            ➕ Ajouter une boutique
+          </h3>
 
-          <form id="storeForm" class="admin-form">
 
-            <label>Nom de la boutique</label>
+          <form
+            id="storeForm"
+            class="admin-form"
+          >
+
+
+            <label>
+              Nom de la boutique
+            </label>
 
             <input
               id="storeName"
@@ -350,80 +523,125 @@
               required
             >
 
-            <label>Catégorie</label>
 
-            <select id="storeCategory" required>
-              <option value="">Choisir une catégorie</option>
+            <label>
+              Catégorie
+            </label>
+
+            <select
+              id="storeCategory"
+              required
+            >
+
+              <option value="">
+                Choisir une catégorie
+              </option>
+
             </select>
 
-            <label>Description</label>
+
+            <label>
+              Description
+            </label>
 
             <textarea
               id="storeDescription"
               placeholder="Description de la boutique"
             ></textarea>
 
-            <label>Téléphone</label>
+
+            <label>
+              Téléphone
+            </label>
 
             <input
               id="storePhone"
               placeholder="+229..."
             >
 
-            <label>WhatsApp</label>
+
+            <label>
+              WhatsApp
+            </label>
 
             <input
               id="storeWhatsapp"
               placeholder="+229..."
             >
 
-            <label>Adresse</label>
+
+            <label>
+              Adresse
+            </label>
 
             <input
               id="storeAddress"
               placeholder="Adresse à Parakou"
             >
 
-            <label>Logo URL</label>
+
+            <label>
+              Logo URL
+            </label>
 
             <input
               id="storeLogo"
               placeholder="https://..."
             >
 
-            <label>Cover URL</label>
+
+            <label>
+              Cover URL
+            </label>
 
             <input
               id="storeCover"
               placeholder="https://..."
             >
 
+
             <label>
+
               <input
                 id="storeDelivery"
                 type="checkbox"
                 checked
                 style="width:auto;margin-right:8px;"
               >
+
               Livraison disponible
+
             </label>
+
 
             <br><br>
 
-            <button class="admin-button gold" type="submit">
+
+            <button
+              class="admin-button gold"
+              type="submit"
+            >
               🏪 Créer la boutique
             </button>
 
+
           </form>
+
 
           <div id="storeMessage"></div>
 
         </div>
 
 
+
+        <!-- LISTE BOUTIQUES -->
+
         <div>
 
-          <h3>🏪 Boutiques existantes</h3>
+          <h3>
+            🏪 Boutiques existantes
+          </h3>
+
 
           <div id="storesList">
             Chargement...
@@ -431,38 +649,73 @@
 
         </div>
 
+
       </div>
 
     </section>
 
 
+
+    <!-- ========================= -->
     <!-- PRODUITS -->
+    <!-- ========================= -->
 
     <section class="admin-card section-separator">
 
       <div class="section-title">
+
         <div>
-          <small>CATALOGUE</small>
-          <h2>Gestion des produits</h2>
+
+          <small>
+            CATALOGUE
+          </small>
+
+          <h2>
+            Gestion des produits
+          </h2>
+
         </div>
+
       </div>
 
 
       <div class="admin-grid">
 
+
+        <!-- AJOUT PRODUIT -->
+
         <div>
 
-          <h3>➕ Ajouter un produit</h3>
+          <h3>
+            ➕ Ajouter un produit
+          </h3>
 
-          <form id="productForm" class="admin-form">
 
-            <label>Boutique</label>
+          <form
+            id="productForm"
+            class="admin-form"
+          >
 
-            <select id="productStore" required>
-              <option value="">Choisir une boutique</option>
+
+            <label>
+              Boutique
+            </label>
+
+            <select
+              id="productStore"
+              required
+            >
+
+              <option value="">
+                Choisir une boutique
+              </option>
+
             </select>
 
-            <label>Nom du produit</label>
+
+            <label>
+              Nom du produit
+            </label>
 
             <input
               id="productName"
@@ -470,14 +723,20 @@
               required
             >
 
-            <label>Description</label>
+
+            <label>
+              Description
+            </label>
 
             <textarea
               id="productDescription"
               placeholder="Description du produit"
             ></textarea>
 
-            <label>Prix FCFA</label>
+
+            <label>
+              Prix FCFA
+            </label>
 
             <input
               id="productPrice"
@@ -487,39 +746,59 @@
               required
             >
 
-            <label>Image URL</label>
+
+            <label>
+              Image URL
+            </label>
 
             <input
               id="productImage"
               placeholder="https://..."
             >
 
+
             <label>
+
               <input
                 id="productAvailable"
                 type="checkbox"
                 checked
                 style="width:auto;margin-right:8px;"
               >
+
               Produit disponible
+
             </label>
+
 
             <br><br>
 
-            <button class="admin-button gold" type="submit">
+
+            <button
+              class="admin-button gold"
+              type="submit"
+            >
               📦 Ajouter le produit
             </button>
 
+
           </form>
+
 
           <div id="productMessage"></div>
 
         </div>
 
 
+
+        <!-- LISTE PRODUITS -->
+
         <div>
 
-          <h3>📦 Produits existants</h3>
+          <h3>
+            📦 Produits existants
+          </h3>
+
 
           <div id="productsList">
             Chargement...
@@ -527,18 +806,188 @@
 
         </div>
 
+
       </div>
 
     </section>
 
+
+
+    <!-- ========================= -->
+    <!-- GALERIE MEDIA -->
+    <!-- ========================= -->
+
+    <section class="admin-card section-separator">
+
+
+      <div class="section-title">
+
+        <div>
+
+          <small>
+            VISIBILITÉ
+          </small>
+
+          <h2>
+            🎨 Galerie des boutiques
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <p>
+        Ajoute des photos et vidéos pour présenter chaque boutique.
+      </p>
+
+
+      <div class="admin-grid">
+
+
+        <!-- UPLOAD -->
+
+        <div>
+
+          <h3>
+            📤 Ajouter un média
+          </h3>
+
+
+          <form
+            id="mediaForm"
+            class="admin-form"
+          >
+
+
+            <label>
+              Boutique
+            </label>
+
+            <select
+              id="mediaStore"
+              required
+            >
+
+              <option value="">
+                Choisir une boutique
+              </option>
+
+            </select>
+
+
+            <label>
+              Type de média
+            </label>
+
+            <select
+              id="mediaType"
+              required
+            >
+
+              <option value="image">
+                📸 Photo
+              </option>
+
+              <option value="video">
+                🎥 Vidéo
+              </option>
+
+            </select>
+
+
+            <label>
+              Titre
+            </label>
+
+            <input
+              id="mediaTitle"
+              type="text"
+              placeholder="Ex : Notre boutique à Parakou"
+            >
+
+
+            <label>
+              Fichier
+            </label>
+
+            <input
+              id="mediaFile"
+              type="file"
+              accept="image/*,video/*"
+              required
+            >
+
+
+            <label>
+
+              <input
+                id="mediaCover"
+                type="checkbox"
+                style="width:auto;margin-right:8px;"
+              >
+
+              Utiliser comme couverture de la boutique
+
+            </label>
+
+
+            <br><br>
+
+
+            <button
+              type="submit"
+              class="admin-button gold"
+              id="uploadMediaButton"
+            >
+              📤 Envoyer le média
+            </button>
+
+
+          </form>
+
+
+          <div id="mediaMessage"></div>
+
+        </div>
+
+
+
+        <!-- MEDIA EXISTANTS -->
+
+        <div>
+
+          <h3>
+            🖼️ Médias existants
+          </h3>
+
+
+          <div id="mediaList">
+
+            Choisis une boutique pour voir ses médias.
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
   </section>
 
+
 </main>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="admin.js"></script>
 
+
 </body>
+
 </html>

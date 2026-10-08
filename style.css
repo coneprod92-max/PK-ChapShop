@@ -952,3 +952,15 @@ footer p {
   }
 
 }
+
+.admin-link {
+  display: inline-block;
+  margin-top: 15px;
+  color: #d8ad55;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.admin-link:hover {
+  text-decoration: underline;
+}

@@ -11,32 +11,298 @@ let currentStoreId = null;
 
 
 // ======================================================
-// AUTHENTIFICATION
+// INITIALISATION
+// ======================================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  setupEvents();
+
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  if (session) {
+    currentUser = session.user;
+    await openAdmin();
+  } else {
+    showLogin();
+  }
+
+});
+
+
+// ======================================================
+// ÉVÉNEMENTS
+// ======================================================
+
+function setupEvents() {
+
+  const loginForm = document.getElementById("loginForm");
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", handleLogin);
+  }
+
+  const logoutButton = document.getElementById("logoutButton");
+
+  if (logoutButton) {
+    logoutButton.addEventListener("click", logout);
+  }
+
+  const refreshOrders =
+    document.getElementById("refreshOrders");
+
+  if (refreshOrders) {
+    refreshOrders.addEventListener(
+      "click",
+      loadOrders
+    );
+  }
+
+  const refreshAdvertisers =
+    document.getElementById("refreshAdvertisers");
+
+  if (refreshAdvertisers) {
+    refreshAdvertisers.addEventListener(
+      "click",
+      loadAdvertiserApplications
+    );
+  }
+
+  const storeForm =
+    document.getElementById("storeForm");
+
+  if (storeForm) {
+    storeForm.addEventListener(
+      "submit",
+      handleStoreSubmit
+    );
+  }
+
+  const productForm =
+    document.getElementById("productForm");
+
+  if (productForm) {
+    productForm.addEventListener(
+      "submit",
+      handleProductSubmit
+    );
+  }
+
+  const mediaForm =
+    document.getElementById("mediaForm");
+
+  if (mediaForm) {
+    mediaForm.addEventListener(
+      "submit",
+      handleMediaUpload
+    );
+  }
+
+  const mediaStore =
+    document.getElementById("mediaStore");
+
+  if (mediaStore) {
+    mediaStore.addEventListener(
+      "change",
+      () => loadGallery(mediaStore.value)
+    );
+  }
+
+  const productStore =
+    document.getElementById("productStore");
+
+  if (productStore) {
+    productStore.addEventListener(
+      "change",
+      () => loadProducts(productStore.value)
+    );
+  }
+
+}
+
+
+// ======================================================
+// AFFICHAGE CONNEXION
+// ======================================================
+
+function showLogin(message = "") {
+
+  const loginSection =
+    document.getElementById("loginSection");
+
+  const dashboard =
+    document.getElementById("dashboard");
+
+  if (loginSection) {
+    loginSection.classList.remove("admin-hidden");
+  }
+
+  if (dashboard) {
+    dashboard.classList.add("admin-hidden");
+  }
+
+  const loginMessage =
+    document.getElementById("loginMessage");
+
+  if (loginMessage) {
+    loginMessage.innerHTML = message
+      ? `<div class="admin-error">${escapeHtml(message)}</div>`
+      : "";
+  }
+
+}
+
+
+// ======================================================
+// AFFICHAGE ADMIN
+// ======================================================
+
+function showDashboard() {
+
+  const loginSection =
+    document.getElementById("loginSection");
+
+  const dashboard =
+    document.getElementById("dashboard");
+
+  if (loginSection) {
+    loginSection.classList.add("admin-hidden");
+  }
+
+  if (dashboard) {
+    dashboard.classList.remove("admin-hidden");
+  }
+
+}
+
+
+// ======================================================
+// CONNEXION
+// ======================================================
+
+async function handleLogin(event) {
+
+  event.preventDefault();
+
+  const email =
+    document.getElementById("adminEmail")?.value.trim();
+
+  const password =
+    document.getElementById("adminPassword")?.value;
+
+  const message =
+    document.getElementById("loginMessage");
+
+  if (!email || !password) {
+
+    if (message) {
+      message.innerHTML =
+        `<div class="admin-error">
+          ⚠️ Email et mot de passe obligatoires.
+        </div>`;
+    }
+
+    return;
+  }
+
+  if (message) {
+    message.innerHTML =
+      `<div class="admin-success">
+        ⏳ Connexion...
+      </div>`;
+  }
+
+  const {
+    data,
+    error
+  } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+
+    console.error(error);
+
+    if (message) {
+      message.innerHTML =
+        `<div class="admin-error">
+          ❌ ${escapeHtml(error.message)}
+        </div>`;
+    }
+
+    return;
+  }
+
+  currentUser = data.user;
+
+  await openAdmin();
+
+}
+
+
+// ======================================================
+// VÉRIFICATION ADMIN
 // ======================================================
 
 async function checkAdmin() {
+
   const {
-    data: { session },
+    data: { session }
   } = await supabaseClient.auth.getSession();
 
   if (!session) {
-    window.location.href = "index.html";
     return false;
   }
 
   currentUser = session.user;
 
-  const { data: isAdmin, error } =
-    await supabaseClient.rpc("is_admin");
+  const {
+    data: isAdmin,
+    error
+  } = await supabaseClient.rpc("is_admin");
 
-  if (error || !isAdmin) {
-    alert("⛔ Accès administrateur refusé.");
-    await supabaseClient.auth.signOut();
-    window.location.href = "index.html";
+  if (error) {
+
+    console.error(error);
+
     return false;
   }
 
-  return true;
+  return isAdmin === true;
+
+}
+
+
+// ======================================================
+// OUVRIR ADMIN
+// ======================================================
+
+async function openAdmin() {
+
+  const allowed = await checkAdmin();
+
+  if (!allowed) {
+
+    await supabaseClient.auth.signOut();
+
+    showLogin(
+      "Accès administrateur refusé. Vérifie que ce compte possède bien les droits administrateur."
+    );
+
+    return;
+  }
+
+  showDashboard();
+
+  await loadStats();
+  await loadOrders();
+  await loadCategories();
+  await loadStores();
+  await loadAdvertiserApplications();
+
 }
 
 
@@ -45,8 +311,101 @@ async function checkAdmin() {
 // ======================================================
 
 async function logout() {
+
   await supabaseClient.auth.signOut();
-  window.location.href = "index.html";
+
+  currentUser = null;
+
+  showLogin(
+    "Vous êtes déconnecté."
+  );
+
+}
+
+
+// ======================================================
+// STATISTIQUES
+// ======================================================
+
+async function loadStats() {
+
+  try {
+
+    const {
+      count: ordersCount
+    } = await supabaseClient
+      .from("orders")
+      .select("*", {
+        count: "exact",
+        head: true
+      });
+
+    const {
+      count: pendingCount
+    } = await supabaseClient
+      .from("orders")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "pending");
+
+    const {
+      count: deliveredCount
+    } = await supabaseClient
+      .from("orders")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .eq("status", "delivered");
+
+    const {
+      count: storesCount
+    } = await supabaseClient
+      .from("stores")
+      .select("*", {
+        count: "exact",
+        head: true
+      });
+
+    const statOrders =
+      document.getElementById("statOrders");
+
+    const statPending =
+      document.getElementById("statPending");
+
+    const statDelivered =
+      document.getElementById("statDelivered");
+
+    const statStores =
+      document.getElementById("statStores");
+
+    if (statOrders)
+      statOrders.textContent =
+        ordersCount || 0;
+
+    if (statPending)
+      statPending.textContent =
+        pendingCount || 0;
+
+    if (statDelivered)
+      statDelivered.textContent =
+        deliveredCount || 0;
+
+    if (statStores)
+      statStores.textContent =
+        storesCount || 0;
+
+  } catch (error) {
+
+    console.error(
+      "Erreur statistiques :",
+      error
+    );
+
+  }
+
 }
 
 
@@ -55,13 +414,19 @@ async function logout() {
 // ======================================================
 
 async function loadOrders() {
-  const container = document.getElementById("ordersList");
+
+  const container =
+    document.getElementById("ordersList");
 
   if (!container) return;
 
-  container.innerHTML = "⏳ Chargement des commandes...";
+  container.innerHTML =
+    "⏳ Chargement des commandes...";
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("orders")
     .select(`
       id,
@@ -83,132 +448,222 @@ async function loadOrders() {
         name
       )
     `)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
+
     console.error(error);
-    container.innerHTML = "❌ Impossible de charger les commandes.";
+
+    container.innerHTML =
+      "❌ Impossible de charger les commandes.";
+
     return;
   }
 
   if (!data || data.length === 0) {
-    container.innerHTML = "Aucune commande pour le moment.";
+
+    container.innerHTML =
+      "Aucune commande pour le moment.";
+
     return;
   }
 
   container.innerHTML = "";
 
-  data.forEach((order) => {
-    const customer = order.customers || {};
-    const store = order.stores || {};
+  data.forEach(order => {
 
-    const card = document.createElement("div");
-    card.className = "admin-card";
+    const customer =
+      order.customers || {};
+
+    const store =
+      order.stores || {};
+
+    const card =
+      document.createElement("div");
+
+    card.className = "item-row";
 
     card.innerHTML = `
-      <h3>📦 Commande #${order.order_number}</h3>
 
-      <p>
-        <strong>Client :</strong>
-        ${escapeHtml(customer.full_name || "-")}
-      </p>
+      <div class="item-head">
 
-      <p>
-        <strong>Téléphone :</strong>
-        ${escapeHtml(customer.phone || "-")}
-      </p>
+        <div class="item-title">
+          📦 Commande #${order.order_number}
+        </div>
 
-      <p>
-        <strong>Boutique :</strong>
-        ${escapeHtml(store.name || "-")}
-      </p>
+        <div>
+          ${formatPrice(order.total)}
+        </div>
 
-      <p>
-        <strong>Adresse :</strong>
-        ${escapeHtml(order.delivery_address || "-")}
-      </p>
+      </div>
 
-      <p>
-        <strong>Paiement :</strong>
-        ${escapeHtml(order.payment_method || "-")}
-      </p>
+      <div class="item-meta">
 
-      <p>
-        <strong>Total :</strong>
-        ${formatPrice(order.total)}
-      </p>
+        👤 ${escapeHtml(customer.full_name || "-")}<br>
 
-      <p>
-        <strong>Date :</strong>
-        ${formatDate(order.created_at)}
-      </p>
+        📱 ${escapeHtml(customer.phone || "-")}<br>
 
-      <label>
+        🏪 ${escapeHtml(store.name || "-")}<br>
+
+        📍 ${escapeHtml(order.delivery_address || "-")}<br>
+
+        💳 ${escapeHtml(order.payment_method || "-")}<br>
+
+        📅 ${formatDate(order.created_at)}
+
+      </div>
+
+      <div class="status-line">
+
         <strong>Statut :</strong>
-        <select onchange="updateOrderStatus('${order.id}', this.value)">
+
+        <select
+          onchange="
+            updateOrderStatus(
+              '${order.id}',
+              this.value
+            )
+          "
+        >
+
           ${orderStatusOptions(order.status)}
+
         </select>
-      </label>
+
+      </div>
 
       ${
         order.customer_note
           ? `
             <p>
-              <strong>Note :</strong>
+              📝
               ${escapeHtml(order.customer_note)}
             </p>
           `
           : ""
       }
+
     `;
 
     container.appendChild(card);
+
   });
+
 }
 
 
 // ======================================================
-// STATUT COMMANDE
+// STATUTS COMMANDES
 // ======================================================
 
 function orderStatusOptions(current) {
+
   const statuses = [
+
     ["pending", "En attente"],
     ["confirmed", "Confirmée"],
     ["preparing", "En préparation"],
     ["ready", "Prête"],
     ["out_for_delivery", "En livraison"],
     ["delivered", "Livrée"],
-    ["cancelled", "Annulée"],
+    ["cancelled", "Annulée"]
+
   ];
 
-  return statuses
-    .map(
-      ([value, label]) => `
-        <option value="${value}" ${
-          current === value ? "selected" : ""
-        }>
-          ${label}
-        </option>
-      `
-    )
-    .join("");
+  return statuses.map(
+    ([value, label]) => `
+
+      <option
+        value="${value}"
+        ${current === value ? "selected" : ""}
+      >
+        ${label}
+      </option>
+
+    `
+  ).join("");
+
 }
 
 
-async function updateOrderStatus(orderId, status) {
-  const { error } = await supabaseClient
+async function updateOrderStatus(
+  orderId,
+  status
+) {
+
+  const {
+    error
+  } = await supabaseClient
     .from("orders")
-    .update({ status })
+    .update({
+      status
+    })
     .eq("id", orderId);
 
   if (error) {
+
     console.error(error);
-    alert("❌ Impossible de modifier le statut.");
+
+    alert(
+      "❌ Impossible de modifier le statut."
+    );
+
     return;
   }
 
   await loadOrders();
+  await loadStats();
+
+}
+
+
+// ======================================================
+// CATÉGORIES
+// ======================================================
+
+async function loadCategories() {
+
+  const select =
+    document.getElementById("storeCategory");
+
+  if (!select) return;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("store_categories")
+    .select("id,name")
+    .order("name");
+
+  if (error) {
+
+    console.error(error);
+    return;
+  }
+
+  select.innerHTML =
+    `<option value="">
+      Choisir une catégorie
+    </option>`;
+
+  data.forEach(category => {
+
+    const option =
+      document.createElement("option");
+
+    option.value =
+      category.id;
+
+    option.textContent =
+      category.name;
+
+    select.appendChild(option);
+
+  });
+
 }
 
 
@@ -217,13 +672,19 @@ async function updateOrderStatus(orderId, status) {
 // ======================================================
 
 async function loadStores() {
-  const container = document.getElementById("storesList");
+
+  const container =
+    document.getElementById("storesList");
 
   if (!container) return;
 
-  container.innerHTML = "⏳ Chargement des boutiques...";
+  container.innerHTML =
+    "⏳ Chargement des boutiques...";
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("stores")
     .select(`
       id,
@@ -234,6 +695,8 @@ async function loadStores() {
       whatsapp,
       address,
       city,
+      logo_url,
+      cover_url,
       is_open,
       is_published,
       delivery_available,
@@ -243,71 +706,82 @@ async function loadStores() {
         name
       )
     `)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
+
     console.error(error);
-    container.innerHTML = "❌ Impossible de charger les boutiques.";
+
+    container.innerHTML =
+      "❌ Impossible de charger les boutiques.";
+
     return;
   }
 
   if (!data || data.length === 0) {
-    container.innerHTML = "Aucune boutique.";
+
+    container.innerHTML =
+      "Aucune boutique.";
+
+    await loadStoreSelectors([]);
+
     return;
   }
 
   container.innerHTML = "";
 
-  data.forEach((store) => {
-    const card = document.createElement("div");
-    card.className = "admin-card";
+  data.forEach(store => {
+
+    const card =
+      document.createElement("div");
+
+    card.className = "item-row";
 
     card.innerHTML = `
-      <h3>🏪 ${escapeHtml(store.name)}</h3>
 
-      <p>
-        <strong>Catégorie :</strong>
-        ${escapeHtml(store.store_categories?.name || "-")}
-      </p>
+      <div class="item-head">
 
-      <p>
-        <strong>Téléphone :</strong>
-        ${escapeHtml(store.phone || "-")}
-      </p>
+        <div class="item-title">
+          🏪 ${escapeHtml(store.name)}
+        </div>
 
-      <p>
-        <strong>Ville :</strong>
-        ${escapeHtml(store.city || "-")}
-      </p>
+        <div>
+          ${
+            store.is_published
+              ? "🟢 Publiée"
+              : "🔴 Non publiée"
+          }
+        </div>
 
-      <p>
-        <strong>Adresse :</strong>
-        ${escapeHtml(store.address || "-")}
-      </p>
+      </div>
 
-      <p>
-        <strong>Code marchand :</strong>
-        ${
-          store.merchant_code
-            ? `<strong>${escapeHtml(store.merchant_code)}</strong>`
-            : "Non attribué"
-        }
-      </p>
+      <div class="item-meta">
 
-      <p>
-        <strong>Publication :</strong>
-        ${store.is_published ? "🟢 Publiée" : "🔴 Non publiée"}
-      </p>
+        🏷️
+        ${escapeHtml(
+          store.store_categories?.name || "-"
+        )}
+        <br>
 
-      <p>
-        <strong>Ouverture :</strong>
-        ${store.is_open ? "🟢 Ouverte" : "🔴 Fermée"}
-      </p>
+        📱 ${escapeHtml(store.phone || "-")}
+        <br>
 
-      <p>
-        <strong>Livraison :</strong>
-        ${store.delivery_available ? "✅ Oui" : "❌ Non"}
-      </p>
+        📍 ${escapeHtml(store.address || "-")}
+        <br>
+
+        🏙️ ${escapeHtml(store.city || "-")}
+        <br>
+
+        🔑 Code marchand :
+        <strong>
+          ${escapeHtml(
+            store.merchant_code || "Non attribué"
+          )}
+        </strong>
+
+      </div>
 
       <button
         class="admin-button"
@@ -315,116 +789,257 @@ async function loadStores() {
       >
         ✏️ Modifier
       </button>
+
     `;
 
     container.appendChild(card);
+
   });
 
   await loadStoreSelectors(data);
+
+  await loadStats();
+
 }
 
 
 // ======================================================
-// SÉLECTEURS DE BOUTIQUES
+// SÉLECTEURS BOUTIQUES
 // ======================================================
 
 async function loadStoreSelectors(stores) {
+
   const selectors = [
+
     document.getElementById("mediaStore"),
-    document.getElementById("galleryStore"),
-    document.getElementById("storeSelector"),
+    document.getElementById("productStore")
+
   ].filter(Boolean);
 
-  selectors.forEach((select) => {
-    select.innerHTML = `
-      <option value="">Sélectionner une boutique</option>
-    `;
+  selectors.forEach(select => {
 
-    stores.forEach((store) => {
-      const option = document.createElement("option");
+    select.innerHTML =
+      `<option value="">
+        Sélectionner une boutique
+      </option>`;
 
-      option.value = store.id;
-      option.textContent = store.name;
+    stores.forEach(store => {
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        store.id;
+
+      option.textContent =
+        store.name;
 
       select.appendChild(option);
+
     });
+
   });
+
 }
 
 
 // ======================================================
-// MODIFIER UNE BOUTIQUE
+// AJOUT / MODIFICATION BOUTIQUE
+// ======================================================
+
+async function handleStoreSubmit(event) {
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("storeName")?.value.trim();
+
+  const category =
+    document.getElementById("storeCategory")?.value;
+
+  const description =
+    document.getElementById("storeDescription")?.value.trim();
+
+  const phone =
+    document.getElementById("storePhone")?.value.trim();
+
+  const whatsapp =
+    document.getElementById("storeWhatsapp")?.value.trim();
+
+  const address =
+    document.getElementById("storeAddress")?.value.trim();
+
+  const logo =
+    document.getElementById("storeLogo")?.value.trim();
+
+  const cover =
+    document.getElementById("storeCover")?.value.trim();
+
+  const delivery =
+    document.getElementById("storeDelivery")?.checked;
+
+  if (!name || !category || !phone) {
+
+    alert(
+      "⚠️ Nom, catégorie et téléphone sont obligatoires."
+    );
+
+    return;
+  }
+
+  const slug =
+    createSlug(name);
+
+  const payload = {
+
+    name,
+    slug,
+    category_id: category,
+    description,
+    phone,
+    whatsapp,
+    address,
+    city: "Parakou",
+    logo_url: logo || null,
+    cover_url: cover || null,
+    is_open: true,
+    is_published: true,
+    delivery_available:
+      delivery !== false
+
+  };
+
+  let result;
+
+  if (currentStoreId) {
+
+    result =
+      await supabaseClient
+        .from("stores")
+        .update(payload)
+        .eq("id", currentStoreId);
+
+  } else {
+
+    result =
+      await supabaseClient
+        .from("stores")
+        .insert(payload);
+
+  }
+
+  if (result.error) {
+
+    console.error(result.error);
+
+    alert(
+      "❌ Erreur : " +
+      result.error.message
+    );
+
+    return;
+  }
+
+  alert(
+    currentStoreId
+      ? "✅ Boutique modifiée avec succès."
+      : "✅ Boutique créée avec succès."
+  );
+
+  currentStoreId = null;
+
+  document.getElementById(
+    "storeForm"
+  )?.reset();
+
+  await loadStores();
+
+}
+
+
+// ======================================================
+// MODIFIER BOUTIQUE
 // ======================================================
 
 async function editStore(storeId) {
-  const { data, error } = await supabaseClient
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("stores")
     .select("*")
     .eq("id", storeId)
     .single();
 
   if (error) {
+
     console.error(error);
-    alert("❌ Impossible de charger la boutique.");
+
+    alert(
+      "❌ Impossible de charger la boutique."
+    );
+
     return;
   }
 
   currentStoreId = storeId;
 
-  const nameInput = document.getElementById("storeName");
-  const descriptionInput = document.getElementById("storeDescription");
-  const phoneInput = document.getElementById("storePhone");
+  setValue(
+    "storeName",
+    data.name
+  );
 
-  if (nameInput) nameInput.value = data.name || "";
-  if (descriptionInput)
-    descriptionInput.value = data.description || "";
-  if (phoneInput) phoneInput.value = data.phone || "";
+  setValue(
+    "storeCategory",
+    data.category_id
+  );
+
+  setValue(
+    "storeDescription",
+    data.description
+  );
+
+  setValue(
+    "storePhone",
+    data.phone
+  );
+
+  setValue(
+    "storeWhatsapp",
+    data.whatsapp
+  );
+
+  setValue(
+    "storeAddress",
+    data.address
+  );
+
+  setValue(
+    "storeLogo",
+    data.logo_url
+  );
+
+  setValue(
+    "storeCover",
+    data.cover_url
+  );
+
+  const delivery =
+    document.getElementById(
+      "storeDelivery"
+    );
+
+  if (delivery) {
+    delivery.checked =
+      data.delivery_available !== false;
+  }
 
   window.scrollTo({
     top: 0,
-    behavior: "smooth",
+    behavior: "smooth"
   });
-}
 
-
-// ======================================================
-// ENREGISTRER UNE BOUTIQUE
-// ======================================================
-
-async function saveStore() {
-  const name = document.getElementById("storeName")?.value.trim();
-  const description =
-    document.getElementById("storeDescription")?.value.trim();
-  const phone = document.getElementById("storePhone")?.value.trim();
-
-  if (!name) {
-    alert("⚠️ Le nom de la boutique est obligatoire.");
-    return;
-  }
-
-  if (!currentStoreId) {
-    alert("⚠️ Sélectionne d'abord une boutique.");
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from("stores")
-    .update({
-      name,
-      description,
-      phone,
-    })
-    .eq("id", currentStoreId);
-
-  if (error) {
-    console.error(error);
-    alert("❌ Erreur lors de la modification.");
-    return;
-  }
-
-  alert("✅ Boutique modifiée avec succès.");
-
-  await loadStores();
 }
 
 
@@ -432,156 +1047,510 @@ async function saveStore() {
 // PRODUITS
 // ======================================================
 
+async function handleProductSubmit(event) {
+
+  event.preventDefault();
+
+  const storeId =
+    document.getElementById(
+      "productStore"
+    )?.value;
+
+  const name =
+    document.getElementById(
+      "productName"
+    )?.value.trim();
+
+  const description =
+    document.getElementById(
+      "productDescription"
+    )?.value.trim();
+
+  const price =
+    Number(
+      document.getElementById(
+        "productPrice"
+      )?.value || 0
+    );
+
+  const image =
+    document.getElementById(
+      "productImage"
+    )?.value.trim();
+
+  const available =
+    document.getElementById(
+      "productAvailable"
+    )?.checked;
+
+  if (!storeId || !name || price <= 0) {
+
+    alert(
+      "⚠️ Boutique, nom et prix sont obligatoires."
+    );
+
+    return;
+  }
+
+  const {
+    error
+  } = await supabaseClient
+    .from("products")
+    .insert({
+
+      store_id: storeId,
+
+      name,
+
+      slug:
+        createSlug(name) +
+        "-" +
+        Date.now(),
+
+      description,
+
+      price,
+
+      image_url:
+        image || null,
+
+      is_available:
+        available !== false
+
+    });
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "❌ Impossible d'ajouter le produit.\n\n" +
+      error.message
+    );
+
+    return;
+  }
+
+  alert(
+    "✅ Produit ajouté avec succès."
+  );
+
+  document.getElementById(
+    "productForm"
+  )?.reset();
+
+  await loadProducts(storeId);
+
+}
+
+
+// ======================================================
+// CHARGER PRODUITS
+// ======================================================
+
 async function loadProducts(storeId) {
-  if (!storeId) return;
 
-  const container = document.getElementById("productsList");
+  const container =
+    document.getElementById(
+      "productsList"
+    );
 
-  if (!container) return;
+  if (!container || !storeId) return;
 
-  container.innerHTML = "⏳ Chargement des produits...";
+  container.innerHTML =
+    "⏳ Chargement...";
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("products")
     .select("*")
     .eq("store_id", storeId)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
+
     console.error(error);
-    container.innerHTML = "❌ Erreur.";
+
+    container.innerHTML =
+      "❌ Erreur.";
+
     return;
   }
 
   if (!data || data.length === 0) {
-    container.innerHTML = "Aucun produit.";
+
+    container.innerHTML =
+      "Aucun produit.";
+
     return;
   }
 
   container.innerHTML = "";
 
-  data.forEach((product) => {
-    const card = document.createElement("div");
+  data.forEach(product => {
 
-    card.className = "admin-card";
+    const item =
+      document.createElement("div");
 
-    card.innerHTML = `
-      <h3>${escapeHtml(product.name)}</h3>
+    item.className = "item-row";
 
-      <p>
+    item.innerHTML = `
+
+      <div class="item-title">
+        ${escapeHtml(product.name)}
+      </div>
+
+      <div class="item-meta">
+
         💰 ${formatPrice(product.price)}
-      </p>
+        <br>
 
-      <p>
-        ${product.is_available ? "🟢 Disponible" : "🔴 Indisponible"}
-      </p>
+        ${
+          product.is_available
+            ? "🟢 Disponible"
+            : "🔴 Indisponible"
+        }
+
+      </div>
 
       ${
         product.image_url
           ? `
             <img
               src="${escapeAttribute(product.image_url)}"
-              alt=""
-              style="max-width:150px;border-radius:12px;"
+              style="
+                width:120px;
+                border-radius:12px;
+              "
             >
           `
           : ""
       }
+
     `;
 
-    container.appendChild(card);
+    container.appendChild(item);
+
   });
+
 }
 
 
 // ======================================================
-// GALERIE / MÉDIAS
+// GALERIE
+// ======================================================
+
+async function handleMediaUpload(event) {
+
+  event.preventDefault();
+
+  const storeId =
+    document.getElementById(
+      "mediaStore"
+    )?.value;
+
+  const mediaType =
+    document.getElementById(
+      "mediaType"
+    )?.value;
+
+  const title =
+    document.getElementById(
+      "mediaTitle"
+    )?.value.trim();
+
+  const file =
+    document.getElementById(
+      "mediaFile"
+    )?.files?.[0];
+
+  const isCover =
+    document.getElementById(
+      "mediaCover"
+    )?.checked;
+
+  if (!storeId || !file) {
+
+    alert(
+      "⚠️ Sélectionne une boutique et un fichier."
+    );
+
+    return;
+  }
+
+  const button =
+    document.getElementById(
+      "uploadMediaButton"
+    );
+
+  if (button) {
+    button.disabled = true;
+    button.textContent =
+      "⏳ Envoi...";
+  }
+
+  try {
+
+    const extension =
+      file.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+    const filename =
+      `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2)}.${extension}`;
+
+    const path =
+      `${storeId}/${filename}`;
+
+    const {
+      error: uploadError
+    } = await supabaseClient
+      .storage
+      .from("store-media")
+      .upload(
+        path,
+        file,
+        {
+          upsert: false
+        }
+      );
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const {
+      data: publicData
+    } = supabaseClient
+      .storage
+      .from("store-media")
+      .getPublicUrl(path);
+
+    if (isCover) {
+
+      await supabaseClient
+        .from("store_media")
+        .update({
+          is_cover: false
+        })
+        .eq("store_id", storeId);
+
+    }
+
+    const {
+      error: mediaError
+    } = await supabaseClient
+      .from("store_media")
+      .insert({
+
+        store_id: storeId,
+
+        media_type:
+          mediaType === "image"
+            ? "image"
+            : "video",
+
+        media_url:
+          publicData.publicUrl,
+
+        title:
+          title || null,
+
+        is_cover:
+          isCover === true
+
+      });
+
+    if (mediaError) {
+      throw mediaError;
+    }
+
+    if (isCover) {
+
+      await supabaseClient
+        .from("stores")
+        .update({
+          cover_url:
+            publicData.publicUrl
+        })
+        .eq("id", storeId);
+
+    }
+
+    alert(
+      "✅ Média ajouté avec succès."
+    );
+
+    document.getElementById(
+      "mediaForm"
+    )?.reset();
+
+    await loadGallery(storeId);
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "❌ Erreur lors de l'envoi :\n\n" +
+      error.message
+    );
+
+  } finally {
+
+    if (button) {
+
+      button.disabled = false;
+
+      button.textContent =
+        "📤 Envoyer le média";
+
+    }
+
+  }
+
+}
+
+
+// ======================================================
+// CHARGER GALERIE
 // ======================================================
 
 async function loadGallery(storeId) {
-  const container = document.getElementById("galleryList");
+
+  const container =
+    document.getElementById(
+      "mediaList"
+    );
 
   if (!container || !storeId) return;
 
-  container.innerHTML = "⏳ Chargement...";
+  container.innerHTML =
+    "⏳ Chargement...";
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("store_media")
     .select("*")
     .eq("store_id", storeId)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false
+    });
 
   if (error) {
+
     console.error(error);
-    container.innerHTML = "❌ Erreur.";
+
+    container.innerHTML =
+      "❌ Erreur.";
+
     return;
   }
 
   if (!data || data.length === 0) {
-    container.innerHTML = "Aucun média.";
+
+    container.innerHTML =
+      "Aucun média.";
+
     return;
   }
 
   container.innerHTML = "";
 
-  data.forEach((media) => {
-    const card = document.createElement("div");
+  data.forEach(media => {
 
-    card.className = "admin-card";
+    const item =
+      document.createElement("div");
 
-    card.innerHTML = `
-      <h3>${escapeHtml(media.title || "Sans titre")}</h3>
+    item.className =
+      "media-item";
 
-      <p>
-        Type : ${escapeHtml(media.media_type)}
-      </p>
+    if (media.media_type === "image") {
 
-      ${
-        media.media_type === "photo"
-          ? `
-            <img
-              src="${escapeAttribute(media.media_url)}"
-              alt=""
-              style="max-width:200px;border-radius:12px;"
-            >
-          `
-          : `
-            <a
-              href="${escapeAttribute(media.media_url)}"
-              target="_blank"
-            >
-              🎥 Voir la vidéo
-            </a>
-          `
-      }
+      item.innerHTML = `
 
-      ${
-        media.is_cover
-          ? "<p>⭐ Couverture</p>"
-          : ""
-      }
-    `;
+        <img
+          src="${escapeAttribute(media.media_url)}"
+          alt=""
+        >
 
-    container.appendChild(card);
+        <div class="media-info">
+
+          ${escapeHtml(
+            media.title || "Sans titre"
+          )}
+
+          ${
+            media.is_cover
+              ? `
+                <div class="media-cover">
+                  ⭐ Couverture
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+      `;
+
+    } else {
+
+      item.innerHTML = `
+
+        <video
+          src="${escapeAttribute(media.media_url)}"
+          controls
+        ></video>
+
+        <div class="media-info">
+
+          ${escapeHtml(
+            media.title || "Vidéo"
+          )}
+
+        </div>
+
+      `;
+
+    }
+
+    container.appendChild(item);
+
   });
+
 }
 
 
 // ======================================================
-// DEMANDES ANNONCEURS
+// ANNONCEURS
 // ======================================================
 
 async function loadAdvertiserApplications() {
-  const container = document.getElementById(
-    "advertiserApplications"
-  );
+
+  const container =
+    document.getElementById(
+      "advertisersList"
+    );
 
   if (!container) return;
 
   container.innerHTML =
     "⏳ Chargement des demandes...";
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("advertiser_applications")
     .select(`
       id,
@@ -600,93 +1569,94 @@ async function loadAdvertiserApplications() {
       merchant_code
     `)
     .order("created_at", {
-      ascending: false,
+      ascending: false
     });
 
   if (error) {
+
     console.error(error);
+
     container.innerHTML =
       "❌ Impossible de charger les demandes.";
+
     return;
   }
 
   if (!data || data.length === 0) {
+
     container.innerHTML =
       "Aucune demande pour le moment.";
+
     return;
   }
 
   container.innerHTML = "";
 
-  data.forEach((application) => {
-    const card = document.createElement("div");
+  data.forEach(application => {
 
-    card.className = "admin-card";
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "item-row";
 
     card.innerHTML = `
-      <h3>
-        📣 ${escapeHtml(application.business_name)}
-      </h3>
 
-      <p>
-        <strong>Responsable :</strong>
-        ${escapeHtml(application.full_name)}
-      </p>
+      <div class="item-head">
 
-      <p>
-        <strong>Catégorie :</strong>
-        ${escapeHtml(application.category)}
-      </p>
+        <div class="item-title">
 
-      <p>
-        <strong>Téléphone :</strong>
-        ${escapeHtml(application.phone)}
-      </p>
+          📣
+          ${escapeHtml(
+            application.business_name
+          )}
 
-      ${
-        application.whatsapp
-          ? `
-            <p>
-              <strong>WhatsApp :</strong>
-              ${escapeHtml(application.whatsapp)}
-            </p>
-          `
-          : ""
-      }
+        </div>
 
-      <p>
-        <strong>Ville :</strong>
-        ${escapeHtml(application.city)}
-      </p>
+        <div>
 
-      ${
-        application.address
-          ? `
-            <p>
-              <strong>Adresse :</strong>
-              ${escapeHtml(application.address)}
-            </p>
-          `
-          : ""
-      }
+          ${advertiserStatusLabel(
+            application.status
+          )}
+
+        </div>
+
+      </div>
+
+      <div class="item-meta">
+
+        👤
+        ${escapeHtml(
+          application.full_name
+        )}
+        <br>
+
+        📱
+        ${escapeHtml(
+          application.phone
+        )}
+        <br>
+
+        🏷️
+        ${escapeHtml(
+          application.category
+        )}
+        <br>
+
+        🏙️
+        ${escapeHtml(
+          application.city
+        )}
+
+      </div>
 
       ${
         application.description
           ? `
             <p>
-              <strong>Description :</strong><br>
-              ${escapeHtml(application.description)}
-            </p>
-          `
-          : ""
-      }
-
-      ${
-        application.goal
-          ? `
-            <p>
-              <strong>Objectif :</strong><br>
-              ${escapeHtml(application.goal)}
+              ${escapeHtml(
+                application.description
+              )}
             </p>
           `
           : ""
@@ -696,54 +1666,60 @@ async function loadAdvertiserApplications() {
         application.merchant_code
           ? `
             <p>
-              🔑 <strong>Code marchand :</strong>
-              ${escapeHtml(application.merchant_code)}
+              🔑
+              <strong>
+                Code marchand :
+                ${escapeHtml(
+                  application.merchant_code
+                )}
+              </strong>
             </p>
           `
           : ""
       }
 
-      <p>
-        <strong>Statut :</strong>
+      <div class="status-line">
 
         <select
-          onchange="updateAdvertiserStatus(
-            '${application.id}',
-            this.value
-          )"
+          onchange="
+            updateAdvertiserStatus(
+              '${application.id}',
+              this.value
+            )
+          "
         >
-          ${advertiserStatusOptions(application.status)}
+
+          ${advertiserStatusOptions(
+            application.status
+          )}
+
         </select>
-      </p>
 
-      ${
-        application.status === "pending"
-          ? `
-            <button
-              class="admin-button"
-              onclick="approveAdvertiser(
-                '${application.id}'
-              )"
-            >
-              ✅ Approuver & créer la boutique
-            </button>
-          `
-          : ""
-      }
+        ${
+          application.status === "pending"
+            ? `
+              <button
+                class="admin-button gold"
+                onclick="
+                  approveAdvertiser(
+                    '${application.id}'
+                  )
+                "
+              >
+                ✅ Approuver
+              </button>
+            `
+            : ""
+        }
 
-      ${
-        application.status === "approved"
-          ? `
-            <p>
-              🟢 <strong>Boutique créée et publiée.</strong>
-            </p>
-          `
-          : ""
-      }
+      </div>
+
     `;
 
     container.appendChild(card);
+
   });
+
 }
 
 
@@ -752,24 +1728,45 @@ async function loadAdvertiserApplications() {
 // ======================================================
 
 function advertiserStatusOptions(current) {
+
   const statuses = [
+
     ["pending", "En attente"],
     ["contacted", "Contacté"],
     ["approved", "Approuvé"],
-    ["rejected", "Refusé"],
+    ["rejected", "Refusé"]
+
   ];
 
-  return statuses
-    .map(
-      ([value, label]) => `
-        <option value="${value}" ${
-          current === value ? "selected" : ""
-        }>
-          ${label}
-        </option>
-      `
-    )
-    .join("");
+  return statuses.map(
+    ([value, label]) => `
+
+      <option
+        value="${value}"
+        ${current === value ? "selected" : ""}
+      >
+        ${label}
+      </option>
+
+    `
+  ).join("");
+
+}
+
+
+function advertiserStatusLabel(status) {
+
+  const labels = {
+
+    pending: "🟡 En attente",
+    contacted: "🔵 Contacté",
+    approved: "🟢 Approuvé",
+    rejected: "🔴 Refusé"
+
+  };
+
+  return labels[status] || status;
+
 }
 
 
@@ -777,56 +1774,80 @@ async function updateAdvertiserStatus(
   applicationId,
   status
 ) {
-  const { error } = await supabaseClient
+
+  const {
+    error
+  } = await supabaseClient
     .from("advertiser_applications")
     .update({
+
       status,
-      updated_at: new Date().toISOString(),
+
+      updated_at:
+        new Date().toISOString()
+
     })
     .eq("id", applicationId);
 
   if (error) {
+
     console.error(error);
-    alert("❌ Impossible de modifier le statut.");
+
+    alert(
+      "❌ Impossible de modifier le statut."
+    );
+
     return;
   }
 
   await loadAdvertiserApplications();
+
 }
 
 
 // ======================================================
-// APPROUVER UN ANNONCEUR
+// APPROUVER ANNONCEUR
 // ======================================================
 
-async function approveAdvertiser(applicationId) {
-  const application = await getApplication(
-    applicationId
-  );
+async function approveAdvertiser(
+  applicationId
+) {
+
+  const application =
+    await getApplication(
+      applicationId
+    );
 
   if (!application) {
-    alert("❌ Demande introuvable.");
+
+    alert(
+      "❌ Demande introuvable."
+    );
+
     return;
   }
 
-  const confirmed = confirm(
-    `Créer et publier la boutique "${application.business_name}" ?`
-  );
+  const confirmed =
+    confirm(
+      `Créer et publier la boutique "${application.business_name}" ?`
+    );
 
   if (!confirmed) return;
 
   const {
     data: storeId,
-    error,
+    error
   } = await supabaseClient
     .rpc(
       "approve_advertiser_application",
       {
-        p_application_id: applicationId,
+        p_application_id:
+          applicationId
       }
     );
 
   if (error) {
+
     console.error(error);
 
     alert(
@@ -838,33 +1859,35 @@ async function approveAdvertiser(applicationId) {
   }
 
   if (!storeId) {
+
     alert(
       "❌ La boutique n'a pas pu être créée."
     );
+
     return;
   }
 
-  // Récupération du code marchand
   const {
     data: storeData,
-    error: storeError,
+    error: storeError
   } = await supabaseClient
     .from("stores")
     .select("merchant_code")
     .eq("id", storeId)
     .single();
 
+  await loadAdvertiserApplications();
+  await loadStores();
+
   if (
     storeError ||
     !storeData?.merchant_code
   ) {
+
     alert(
       `✅ Boutique "${application.business_name}" créée.\n\n` +
-      `⚠️ La boutique est créée, mais le code marchand n'a pas pu être récupéré.`
+      `⚠️ Le code marchand n'a pas pu être récupéré.`
     );
-
-    await loadAdvertiserApplications();
-    await loadStores();
 
     return;
   }
@@ -872,51 +1895,49 @@ async function approveAdvertiser(applicationId) {
   const merchantCode =
     storeData.merchant_code;
 
-  await loadAdvertiserApplications();
-  await loadStores();
-
   alert(
+
     `✅ BOUTIQUE CRÉÉE AVEC SUCCÈS !\n\n` +
+
     `🏪 ${application.business_name}\n\n` +
+
     `🔑 CODE MARCHAND : ${merchantCode}\n\n` +
-    `📱 Donne ce code au commerçant.\n\n` +
+
+    `📱 Donne ce code au commerçant.\n` +
+
     `Il pourra ensuite créer son compte et rattacher sa boutique.`
+
   );
+
 }
 
 
 // ======================================================
-// RÉCUPÉRER UNE DEMANDE
+// RÉCUPÉRER ANNONCEUR
 // ======================================================
 
-async function getApplication(applicationId) {
-  const { data, error } = await supabaseClient
+async function getApplication(
+  applicationId
+) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("advertiser_applications")
     .select("*")
     .eq("id", applicationId)
     .single();
 
   if (error) {
+
     console.error(error);
+
     return null;
   }
 
   return data;
-}
 
-
-// ======================================================
-// INITIALISATION
-// ======================================================
-
-async function initAdmin() {
-  const allowed = await checkAdmin();
-
-  if (!allowed) return;
-
-  await loadOrders();
-  await loadStores();
-  await loadAdvertiserApplications();
 }
 
 
@@ -925,66 +1946,141 @@ async function initAdmin() {
 // ======================================================
 
 function formatPrice(price) {
+
   return (
-    Number(price || 0).toLocaleString(
-      "fr-FR"
-    ) + " FCFA"
+    Number(price || 0)
+      .toLocaleString("fr-FR") +
+    " FCFA"
   );
+
 }
 
 
 function formatDate(date) {
+
   if (!date) return "-";
 
-  return new Date(date).toLocaleString(
-    "fr-FR",
-    {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }
-  );
+  return new Date(date)
+    .toLocaleString(
+      "fr-FR",
+      {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }
+    );
+
+}
+
+
+function createSlug(text) {
+
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+    .replace(
+      /^-+|-+$/g,
+      "");
+
+}
+
+
+function setValue(id, value) {
+
+  const element =
+    document.getElementById(id);
+
+  if (element) {
+    element.value =
+      value || "";
+  }
+
 }
 
 
 function escapeHtml(value) {
-  if (value === null || value === undefined)
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
+  }
 
   return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
 }
 
 
 function escapeAttribute(value) {
+
   return escapeHtml(value);
+
 }
 
 
 // ======================================================
-// LANCEMENT
+// FONCTIONS ACCESSIBLES DEPUIS HTML
 // ======================================================
 
-document.addEventListener(
-  "DOMContentLoaded",
-  initAdmin
-);
+window.logout =
+  logout;
 
+window.updateOrderStatus =
+  updateOrderStatus;
 
-// Exposition des fonctions utilisées par le HTML
-window.logout = logout;
-window.updateOrderStatus = updateOrderStatus;
-window.editStore = editStore;
-window.saveStore = saveStore;
-window.loadProducts = loadProducts;
-window.loadGallery = loadGallery;
+window.editStore =
+  editStore;
+
+window.saveStore =
+  handleStoreSubmit;
+
+window.loadProducts =
+  loadProducts;
+
+window.loadGallery =
+  loadGallery;
+
 window.updateAdvertiserStatus =
   updateAdvertiserStatus;
+
 window.approveAdvertiser =
   approveAdvertiser;
+
 window.loadAdvertiserApplications =
   loadAdvertiserApplications;
-window.loadStores = loadStores;
+
+window.loadStores =
+  loadStores;

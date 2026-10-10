@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /merchant.html
+
+Sitemap: https://coneprod92-max.github.io/PK-ChapShop/sitemap.xml

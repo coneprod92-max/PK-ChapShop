@@ -964,3 +964,273 @@ footer p {
 .admin-link:hover {
   text-decoration: underline;
 }
+
+/* =====================================
+   PK CHAPSHOP — IDENTITÉ PREMIUM
+   Bleu nuit • Or • Blanc
+===================================== */
+
+:root {
+  --navy: #07111f;
+  --navy2: #10243c;
+  --gold: #d8ad55;
+  --gold-light: #f0cf7a;
+  --white: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f4f6f9;
+  color: #172033;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* EN-TÊTE */
+
+.header {
+  min-height: 72px;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(216, 173, 85, 0.2);
+  box-shadow: 0 8px 24px rgba(2, 8, 23, 0.12);
+}
+
+.logo {
+  letter-spacing: -0.6px;
+  font-weight: 900;
+}
+
+.logo span {
+  color: var(--gold);
+}
+
+.cart-link {
+  border: 1px solid rgba(216, 173, 85, 0.3);
+  transition: background 0.2s ease;
+}
+
+/* PAGE D'ACCUEIL */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 95% 5%,
+      rgba(216, 173, 85, 0.2),
+      transparent 35%
+    ),
+    linear-gradient(135deg, #07111f, #10243c);
+  color: var(--white);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(216, 173, 85, 0.55);
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.hero h1 {
+  letter-spacing: -1px;
+  line-height: 1.12;
+}
+
+.hero h1 span {
+  color: var(--gold);
+}
+
+.hero p {
+  color: #d0d8e3;
+}
+
+.search-box {
+  border: 1px solid rgba(216, 173, 85, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.search-box:focus-within {
+  outline: 3px solid rgba(216, 173, 85, 0.25);
+}
+
+.tracking-link {
+  display: inline-block;
+  padding: 11px 16px;
+  border-radius: 12px;
+  color: var(--gold-light);
+  font-weight: 800;
+  transition: background 0.2s ease;
+}
+
+.tracking-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* BANNIÈRE COMMERÇANTS */
+
+.advertiser-banner {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(216, 173, 85, 0.15),
+      transparent 40%
+    ),
+    linear-gradient(135deg, #07111f, #172b46);
+  border: 1px solid rgba(216, 173, 85, 0.25);
+  box-shadow: 0 16px 38px rgba(7, 17, 31, 0.12);
+}
+
+.advertiser-banner small {
+  color: var(--gold-light);
+}
+
+.advertiser-banner h2 {
+  color: var(--white);
+  line-height: 1.25;
+}
+
+.advertiser-banner p {
+  color: #d0d8e3;
+}
+
+.advertiser-button {
+  background: linear-gradient(135deg, #f0cf7a, #d8ad55);
+  color: #07111f;
+  box-shadow: 0 7px 18px rgba(216, 173, 85, 0.18);
+  transition: transform 0.2s ease;
+}
+
+.advertiser-button:hover {
+  transform: translateY(-2px);
+}
+
+/* CATÉGORIES */
+
+.section-title h2 {
+  color: #101c2e;
+  letter-spacing: -0.5px;
+}
+
+.section-title small {
+  color: #b78b32;
+}
+
+.category {
+  border-color: #e5e9ef;
+  box-shadow: 0 5px 16px rgba(7, 17, 31, 0.04);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.category:hover,
+.category.active {
+  background: linear-gradient(135deg, #07111f, #172b46);
+  border-color: var(--gold);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+/* CARTES DES COMMERCES ET PRODUITS */
+
+.store-card,
+.product-card {
+  border: 1px solid #e7eaf0;
+  box-shadow: 0 7px 22px rgba(7, 17, 31, 0.045);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.store-card:hover,
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 32px rgba(7, 17, 31, 0.12);
+}
+
+.store-cover {
+  background: linear-gradient(135deg, #172b46, #07111f);
+  color: var(--gold);
+}
+
+.view-button,
+.add-button {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.view-button:hover,
+.add-button:hover {
+  background: #18304e;
+}
+
+/* PRIX ET COMMANDES */
+
+.price {
+  color: #a77a22;
+}
+
+.checkout-button {
+  background: linear-gradient(135deg, #f0cf7a, #d8ad55);
+  color: #07111f;
+}
+
+/* PIED DE PAGE */
+
+footer {
+  background: var(--navy);
+  border-top: 2px solid rgba(216, 173, 85, 0.55);
+}
+
+footer strong {
+  color: var(--white);
+  font-size: 22px;
+}
+
+footer p {
+  color: #b8c3d1;
+}
+
+.admin-access {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+/* ADAPTATION AUX TÉLÉPHONES */
+
+@media (max-width: 560px) {
+  .header {
+    min-height: 68px;
+  }
+
+  .hero {
+    padding: 48px 5% 58px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 8.5vw, 40px);
+    line-height: 1.12;
+  }
+
+  .hero p {
+    line-height: 1.65;
+  }
+
+  .advertiser-banner {
+    padding: 24px 20px;
+    border-radius: 22px;
+  }
+
+  .advertiser-banner h2 {
+    font-size: 25px;
+  }
+
+  .section-title h2 {
+    font-size: 25px;
+  }
+}

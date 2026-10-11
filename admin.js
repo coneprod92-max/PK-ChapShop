@@ -1809,83 +1809,8 @@ async function updateAdvertiserStatus(
 // APPROUVER ANNONCEUR
 // ======================================================
 
-async function approveAdvertiser(
-  applicationId
-) {
 
-  const application =
-    await getApplication(
-      applicationId
-    );
-
-  if (!application) {
-
-    alert(
-      "❌ Demande introuvable."
-    );
-
-    return;
-  }
-
-  const confirmed =
-    confirm(
-      `Créer et publier la boutique "${application.business_name}" ?`
-    );
-
-  if (!confirmed) return;
-
-  const {
-    data: storeId,
-    error
-  } = await supabaseClient
-    .rpc(
-      "approve_advertiser_application",
-      {
-        p_application_id:
-          applicationId
-      }
-    );
-
-  if (error) {
-
-    console.error(error);
-
-    alert(
-      "❌ Impossible de créer la boutique.\n\n" +
-      error.message
-    );
-
-    return;
-  }
-
-  if (!storeId) {
-
-    alert(
-      "❌ La boutique n'a pas pu être créée."
-    );
-
-    return;
-  }
-
-  const {
-    data: storeData,
-    error: storeError
-  } = await supabaseClient
-    .from("stores")
-    .select("merchant_code")
-    .eq("id", storeId)
-    .single();
-
-  await loadAdvertiserApplications();
-  await loadStores();
-
-  if (
-    storeError ||
-    !storeData?.merchant_code
-  ) {
-
-    alert(
-      `✅ Boutique "${application.business_name}" créée.\n\n` +
+       "${application.business_name}" créée.\n\n` +
       `⚠️ Le code marchand n'a pas pu être récupéré.`
     );
 
@@ -1915,6 +1840,133 @@ async function approveAdvertiser(
 // ======================================================
 // RÉCUPÉRER ANNONCEUR
 // ======================================================
+
+async function approveAdvertiser(applicationId) {
+  const application = await getApplication(applicationId);
+
+  if (!application) {
+    alert("❌ Demande introuvable.");
+    return;
+  }
+
+  const confirmed = confirm(
+    `Créer et publier la boutique "${application.business_name}" ?`
+  );
+
+  if (!confirmed) return;
+
+  // 1. Créer et approuver la boutique
+  const { data: storeId, error } = await supabaseClient.rpc(
+    "approve_advertiser_application",
+    {
+      p_application_id: applicationId
+    }
+  );
+
+  if (error || !storeId) {
+    console.error(error);
+    alert(
+      "❌ Impossible de créer la boutique.\n\n" +
+      (error?.message || "Aucun identifiant de boutique reçu.")
+    );
+    return;
+  }
+
+  // 2. Récupérer le code marchand
+  const { data: storeData, error: storeError } =
+    await supabaseClient
+      .from("stores")
+      .select("merchant_code")
+      .eq("id", storeId)
+      .single();
+
+  await loadAdvertiserApplications();
+  await loadStores();
+
+  if (storeError || !storeData?.merchant_code) {
+    console.error(storeError);
+    alert(
+      `✅ Boutique "${application.business_name}" créée.\n\n` +
+      "⚠️ Impossible de récupérer le code marchand."
+    );
+    return;
+  }
+
+  const merchantCode = storeData.merchant_code;
+
+  // 3. Vérifier la connexion de l'administrateur
+  const { data: sessionData } =
+    await supabaseClient.auth.getSession();
+
+  if (!sessionData?.session) {
+    alert(
+      `✅ Boutique créée : ${application.business_name}\n\n` +
+      `🔑 Code marchand : ${merchantCode}\n\n` +
+      "⚠️ Reconnecte-toi pour tenter l'envoi de l'e-mail."
+    );
+    return;
+  }
+
+  // 4. Vérifier que la demande est bien approuvée
+  const { data: applicationState, error: applicationError } =
+    await supabaseClient
+      .from("advertiser_applications")
+      .select("status, store_id")
+      .eq("id", applicationId)
+      .single();
+
+  if (
+    applicationError ||
+    applicationState?.status !== "approved" ||
+    !applicationState?.store_id
+  ) {
+    console.error(applicationError);
+    alert(
+      `⚠️ Boutique créée : ${application.business_name}\n\n` +
+      `🔑 Code marchand : ${merchantCode}\n\n` +
+      "Vérifie le statut de la demande avant l'envoi."
+    );
+    return;
+  }
+
+  // 5. Demander à la fonction Supabase d'envoyer l'e-mail
+  const { data: emailData, error: emailError } =
+    await supabaseClient.functions.invoke(
+      "send-merchant-code-email",
+      {
+        body: {
+          applicationId: applicationId
+        }
+      }
+    );
+
+  await loadAdvertiserApplications();
+  await loadStores();
+
+  if (emailError) {
+    console.error("Erreur d'envoi de l'e-mail :", emailError);
+
+    alert(
+      `✅ Boutique créée : ${application.business_name}\n\n` +
+      `🔑 Code marchand : ${merchantCode}\n\n` +
+      "⚠️ L'e-mail n'a pas pu être envoyé.\n" +
+      "Vérifie la configuration de la fonction Supabase et de Resend."
+    );
+    return;
+  }
+
+  // Attention : une réponse sans erreur ne garantit pas
+  // que le message est arrivé dans la boîte du destinataire.
+  console.log("Réponse de la fonction e-mail :", emailData);
+
+  alert(
+    `✅ BOUTIQUE CRÉÉE !\n\n` +
+    `🏪 ${application.business_name}\n\n` +
+    `🔑 CODE MARCHAND : ${merchantCode}\n\n` +
+    "📧 Demande d'envoi de l'e-mail transmise.\n" +
+    "Vérifie le résultat dans Resend."
+  );
+}
 
 async function getApplication(
   applicationId

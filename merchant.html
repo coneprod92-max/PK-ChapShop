@@ -39,8 +39,16 @@
 <section class="card"><h2>🛒 Commandes reçues</h2><div id="ordersList">Chargement...</div></section>
 </section>
 </main>
-<script src="merchant.js"></script>
 <script>
+document.getElementById("shareStoreBtn").addEventListener("click", () => {
+  if (window.shareStoreLink) window.shareStoreLink();
+});
+
+document.getElementById("copyStoreBtn").addEventListener("click", () => {
+  if (window.copyStoreLink) window.copyStoreLink();
+});
+</script>
+
 document.getElementById("shareStoreBtn").addEventListener("click",()=>{if(window.copyStoreLink)window.copyStoreLink();});
 document.getElementById("copyStoreBtn").addEventListener("click",()=>{if(window.copyStoreLink)window.copyStoreLink();});
 </script>

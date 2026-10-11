@@ -1831,6 +1831,9 @@ async function approveAdvertiser(applicationId) {
 
   if (!confirmed) return;
 
+  // Ouvrir une fenêtre immédiatement pour éviter le blocage du navigateur
+  const whatsappWindow = window.open("about:blank", "_blank");
+
   // 1. Créer et approuver la boutique
   const { data: storeId, error } = await supabaseClient.rpc(
     "approve_advertiser_application",
@@ -1840,6 +1843,8 @@ async function approveAdvertiser(applicationId) {
   );
 
   if (error || !storeId) {
+    if (whatsappWindow) whatsappWindow.close();
+
     console.error(error);
     alert(
       "❌ Impossible de créer la boutique.\n\n" +
@@ -1860,6 +1865,8 @@ async function approveAdvertiser(applicationId) {
   await loadStores();
 
   if (storeError || !storeData?.merchant_code) {
+    if (whatsappWindow) whatsappWindow.close();
+
     console.error(storeError);
     alert(
       `✅ Boutique "${application.business_name}" créée.\n\n` +
@@ -1870,79 +1877,59 @@ async function approveAdvertiser(applicationId) {
 
   const merchantCode = storeData.merchant_code;
 
-  // 3. Vérifier la connexion de l'administrateur
-  const { data: sessionData } =
-    await supabaseClient.auth.getSession();
-
-  if (!sessionData?.session) {
-    alert(
-      `✅ Boutique créée : ${application.business_name}\n\n` +
-      `🔑 Code marchand : ${merchantCode}\n\n` +
-      "⚠️ Reconnecte-toi pour tenter l'envoi de l'e-mail."
-    );
-    return;
-  }
-
-  // 4. Vérifier que la demande est bien approuvée
-  const { data: applicationState, error: applicationError } =
-    await supabaseClient
-      .from("advertiser_applications")
-      .select("status, store_id")
-      .eq("id", applicationId)
-      .single();
-
-  if (
-    applicationError ||
-    applicationState?.status !== "approved" ||
-    !applicationState?.store_id
-  ) {
-    console.error(applicationError);
-    alert(
-      `⚠️ Boutique créée : ${application.business_name}\n\n` +
-      `🔑 Code marchand : ${merchantCode}\n\n` +
-      "Vérifie le statut de la demande avant l'envoi."
-    );
-    return;
-  }
-
-  // 5. Demander à la fonction Supabase d'envoyer l'e-mail
-  const { data: emailData, error: emailError } =
-    await supabaseClient.functions.invoke(
-      "send-merchant-code-email",
-      {
-        body: {
-          applicationId: applicationId
-        }
-      }
-    );
-
-  await loadAdvertiserApplications();
-  await loadStores();
-
-  if (emailError) {
-    console.error("Erreur d'envoi de l'e-mail :", emailError);
-
-    alert(
-      `✅ Boutique créée : ${application.business_name}\n\n` +
-      `🔑 Code marchand : ${merchantCode}\n\n` +
-      "⚠️ L'e-mail n'a pas pu être envoyé.\n" +
-      "Vérifie la configuration de la fonction Supabase et de Resend."
-    );
-    return;
-  }
-
-  // Attention : une réponse sans erreur ne garantit pas
-  // que le message est arrivé dans la boîte du destinataire.
-  console.log("Réponse de la fonction e-mail :", emailData);
-
-  alert(
-    `✅ BOUTIQUE CRÉÉE !\n\n` +
-    `🏪 ${application.business_name}\n\n` +
-    `🔑 CODE MARCHAND : ${merchantCode}\n\n` +
-    "📧 Demande d'envoi de l'e-mail transmise.\n" +
-    "Vérifie le résultat dans Resend."
+  // 3. Préparer le message destiné au commerçant
+  const rawPhone = String(
+    application.whatsapp || application.phone || ""
   );
+
+  let phone = rawPhone.replace(/\D/g, "");
+
+  // Ajouter l'indicatif du Bénin si nécessaire
+  if (phone && !phone.startsWith("229")) {
+    phone = "229" + phone;
+  }
+
+  const message =
+    `Bonjour ${application.business_name} ! 👋\n\n` +
+    `Bonne nouvelle : votre boutique a été approuvée et publiée sur PK ChapShop. 🎉\n\n` +
+    `🏪 Boutique : ${application.business_name}\n` +
+    `🔑 Votre code marchand : ${merchantCode}\n\n` +
+    `Conservez ce code précieusement. Il pourra vous être demandé pour vos démarches liées à votre boutique.\n\n` +
+    `Merci de votre confiance !\n` +
+    `L'équipe PK ChapShop`;
+
+  // 4. Ouvrir WhatsApp avec le message prérempli
+  if (phone) {
+    const whatsappUrl =
+      "https://wa.me/" + phone +
+      "?text=" + encodeURIComponent(message);
+
+    if (whatsappWindow) {
+      whatsappWindow.location.href = whatsappUrl;
+    } else {
+      window.open(whatsappUrl, "_blank");
+    }
+
+    alert(
+      `✅ BOUTIQUE CRÉÉE !\n\n` +
+      `🏪 ${application.business_name}\n\n` +
+      `🔑 CODE MARCHAND : ${merchantCode}\n\n` +
+      `WhatsApp va s'ouvrir avec le message préparé.\n` +
+      `Vérifie le destinataire puis appuie sur ENVOYER.`
+    );
+  } else {
+    if (whatsappWindow) whatsappWindow.close();
+
+    alert(
+      `✅ BOUTIQUE CRÉÉE !\n\n` +
+      `🏪 ${application.business_name}\n\n` +
+      `🔑 CODE MARCHAND : ${merchantCode}\n\n` +
+      `⚠️ Aucun numéro WhatsApp trouvé pour ce commerçant.\n` +
+      `Contacte-le manuellement pour lui transmettre son code.`
+    );
+  }
 }
+
 
 async function getApplication(
   applicationId

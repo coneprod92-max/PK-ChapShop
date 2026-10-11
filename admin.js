@@ -1810,31 +1810,7 @@ async function updateAdvertiserStatus(
 // ======================================================
 
 
-       "${application.business_name}" créée.\n\n` +
-      `⚠️ Le code marchand n'a pas pu être récupéré.`
-    );
-
-    return;
-  }
-
-  const merchantCode =
-    storeData.merchant_code;
-
-  alert(
-
-    `✅ BOUTIQUE CRÉÉE AVEC SUCCÈS !\n\n` +
-
-    `🏪 ${application.business_name}\n\n` +
-
-    `🔑 CODE MARCHAND : ${merchantCode}\n\n` +
-
-    `📱 Donne ce code au commerçant.\n` +
-
-    `Il pourra ensuite créer son compte et rattacher sa boutique.`
-
-  );
-
-}
+     
 
 
 // ======================================================

@@ -549,12 +549,20 @@ async function submitOrder(event) {
         </p>
 
         <a
-          href="index.html"
-          class="view-button"
-          style="margin-top:20px;"
-        >
-          Retour à l'accueil
-        </a>
+  href="tracking.html?order=${encodeURIComponent(order.order_number)}"
+  class="checkout-button"
+  style="display:block;text-align:center;text-decoration:none;margin-top:20px;"
+>
+  📦 Suivre ma commande
+</a>
+
+<a
+  href="index.html"
+  class="view-button"
+  style="display:block;text-align:center;margin-top:12px;"
+>
+  🏠 Retour à l'accueil
+</a>
 
       </div>
 

@@ -34,13 +34,36 @@ async function shareStoreLink(){
 window.copyStoreLink=copyStoreLink;
 window.shareStoreLink=shareStoreLink;
 function addShareControls(){
-  if($("shareStoreBtn"))return;
-  const hero=document.querySelector(".hero");if(!hero)return;
-  const wrap=document.createElement("div");wrap.className="actions";wrap.style.marginTop="14px";
-  wrap.innerHTML=`<button id="shareStoreBtn" class="gold" type="button">🔗 Partager ma boutique</button><button id="copyStoreBtn" class="btn" type="button">📋 Copier le lien</button>`;
-  hero.appendChild(wrap);
-  $("shareStoreBtn").addEventListener("click",shareStoreLink);
-  $("copyStoreBtn").addEventListener("click",copyStoreLink);
+  const hero = document.querySelector(".hero");
+  if (!hero) return;
+
+  if (!$("shareStoreBtn") || !$("copyStoreBtn")) {
+    const wrap = document.createElement("div");
+    wrap.className = "actions";
+    wrap.style.marginTop = "14px";
+    wrap.innerHTML = `
+      <button id="shareStoreBtn" class="gold" type="button">
+        🔗 Partager ma boutique
+      </button>
+      <button id="copyStoreBtn" class="btn" type="button">
+        📋 Copier le lien
+      </button>
+    `;
+    hero.appendChild(wrap);
+  }
+
+  const shareBtn = $("shareStoreBtn");
+  const copyBtn = $("copyStoreBtn");
+
+  if (shareBtn && !shareBtn.dataset.bound) {
+    shareBtn.dataset.bound = "1";
+    shareBtn.addEventListener("click", shareStoreLink);
+  }
+
+  if (copyBtn && !copyBtn.dataset.bound) {
+    copyBtn.dataset.bound = "1";
+    copyBtn.addEventListener("click", copyStoreLink);
+  }
 }
 $("signupForm").addEventListener("submit",async e=>{
   e.preventDefault();const {data,error}=await sb.auth.signUp({email:$("signupEmail").value.trim(),password:$("signupPassword").value});

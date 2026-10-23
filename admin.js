@@ -2282,3 +2282,71 @@ window.loadAdvertiserApplications =
 
 window.loadStores =
   loadStores;
+
+window.deleteStore = async function(storeId, storeName) {
+  const confirmed = confirm(
+    `Supprimer la boutique "${storeName}" ?\n\n` +
+    "Cette action peut affecter les produits, médias et commandes liés. " +
+    "Aucune suppression ne sera effectuée sans confirmation."
+  );
+
+  if (!confirmed) return;
+
+  const { data: linkedProducts, error: productCheckError } =
+    await supabaseClient
+      .from("products")
+      .select("id")
+      .eq("store_id", storeId)
+      .limit(1);
+
+  if (productCheckError) {
+    alert("Impossible de vérifier les produits liés : " + productCheckError.message);
+    return;
+  }
+
+  if (linkedProducts?.length) {
+    alert(
+      "Cette boutique contient encore des produits.\n\n" +
+      "Supprime d'abord les produits concernés, puis réessaie."
+    );
+    return;
+  }
+
+  const { data: linkedOrders, error: orderCheckError } =
+    await supabaseClient
+      .from("orders")
+      .select("id")
+      .eq("store_id", storeId)
+      .limit(1);
+
+  if (orderCheckError) {
+    alert("Impossible de vérifier les commandes : " + orderCheckError.message);
+    return;
+  }
+
+  if (linkedOrders?.length) {
+    alert(
+      "Cette boutique possède des commandes associées.\n\n" +
+      "Pour protéger l'historique, la suppression est bloquée. " +
+      "Désactive plutôt la boutique."
+    );
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("stores")
+    .delete()
+    .eq("id", storeId);
+
+  if (error) {
+    alert(
+      "Suppression impossible : " + error.message +
+      "\n\nVérifie les relations et les permissions Supabase."
+    );
+    return;
+  }
+
+  alert("Boutique supprimée.");
+  await loadStores();
+};
+

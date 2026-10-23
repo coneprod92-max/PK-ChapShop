@@ -896,6 +896,13 @@ async function loadStores() {
         📲 Renvoyer le code WhatsApp
       </button>
 
+<button
+  class="admin-button danger"
+  onclick="deleteStore('${store.id}', '${escapeHtml(store.name).replace(/'/g, '&#039;')}')"
+>
+  🗑️ Supprimer la boutique
+</button>
+
     `;
 
     container.appendChild(card);

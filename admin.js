@@ -2350,3 +2350,56 @@ window.deleteStore = async function(storeId, storeName) {
   await loadStores();
 };
 
+window.editAdminProduct = async function(productId) {
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .eq("id", productId)
+    .single();
+
+  if (error || !data) {
+    alert("Impossible de charger le produit.");
+    return;
+  }
+
+  setValue("productStore", data.store_id);
+  setValue("productName", data.name);
+  setValue("productDescription", data.description);
+  setValue("productPrice", data.price);
+  setValue("productImage", data.image_url);
+
+  const available = document.getElementById("productAvailable");
+  if (available) available.checked = data.is_available !== false;
+
+  // Mémoriser l'identifiant pour mettre à jour le bon produit.
+  window.adminEditingProductId = data.id;
+
+  const button = document.querySelector("#productForm button[type='submit']");
+  if (button) button.textContent = "💾 Enregistrer les modifications";
+
+  document.getElementById("productForm")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+};
+
+window.deleteAdminProduct = async function(productId, productName) {
+  if (!confirm(
+    `Supprimer définitivement le produit "${productName}" ?`
+  )) return;
+
+  const { error } = await supabaseClient
+    .from("products")
+    .delete()
+    .eq("id", productId);
+
+  if (error) {
+    alert("Suppression impossible : " + error.message);
+    return;
+  }
+
+  alert("Produit supprimé.");
+  const storeId = document.getElementById("productStore")?.value;
+  if (storeId) await loadProducts(storeId);
+};
+

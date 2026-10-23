@@ -122,6 +122,24 @@ function setupEvents() {
 
 }
 
+<div class="status-line">
+  <button
+    class="admin-button gold"
+    type="button"
+    onclick="editAdminProduct('${product.id}')"
+  >
+    ✏️ Modifier
+  </button>
+
+  <button
+    class="admin-button danger"
+    type="button"
+    onclick="deleteAdminProduct('${product.id}', '${escapeHtml(product.name).replace(/'/g, '&#039;')}')"
+  >
+    🗑️ Supprimer
+  </button>
+</div>
+
 
 // ======================================================
 // AFFICHAGE CONNEXION

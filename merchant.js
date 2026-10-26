@@ -96,14 +96,73 @@ async function loadStore(id){
   $("sOpen").checked=!!store.is_open;$("sDelivery").checked=!!store.delivery_available;
   addShareControls();await Promise.all([loadProducts(),loadMedia(),loadOrders()]);
 }
-$("storeForm").addEventListener("submit",async e=>{
-  e.preventDefault();const {error}=await sb.from("stores").update({
-    name:$("sName").value.trim(),phone:$("sPhone").value.trim(),whatsapp:$("sWhatsapp").value.trim(),address:$("sAddress").value.trim(),
-    description:$("sDescription").value.trim(),logo_url:$("sLogo").value.trim()||null,cover_url:$("sCover").value.trim()||null,
-    is_open:$("sOpen").checked,delivery_available:$("sDelivery").checked
-  }).eq("id",store.id);
-  if(error)return setMsg(error.message);setMsg("Boutique mise à jour.",true);await loadStore(store.id);
+
+$("storeForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!store) return;
+
+  const submit = e.submitter ||
+    $("storeForm").querySelector('button[type="submit"]');
+
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = "⏳ Enregistrement...";
+  }
+
+  try {
+    let logoUrl = $("sLogo").value.trim() || null;
+    let coverUrl = $("sCover").value.trim() || null;
+
+    const logoFile = $("sLogoFile")?.files?.[0];
+    const coverFile = $("sCoverFile")?.files?.[0];
+
+    for (const file of [logoFile, coverFile]) {
+      if (!file) continue;
+
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Choisissez uniquement des images.");
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("Chaque image doit faire 10 Mo maximum.");
+      }
+    }
+
+    if (logoFile) {
+      logoUrl = await uploadFile(logoFile, "profile");
+    }
+
+    if (coverFile) {
+      coverUrl = await uploadFile(coverFile, "cover");
+    }
+
+    const { error } = await sb.from("stores").update({
+      name: $("sName").value.trim(),
+      phone: $("sPhone").value.trim(),
+      whatsapp: $("sWhatsapp").value.trim(),
+      address: $("sAddress").value.trim(),
+      description: $("sDescription").value.trim(),
+      logo_url: logoUrl,
+      cover_url: coverUrl,
+      is_open: $("sOpen").checked,
+      delivery_available: $("sDelivery").checked
+    }).eq("id", store.id);
+
+    if (error) throw error;
+
+    setMsg("Informations et photos enregistrées avec succès.", true);
+    await loadStore(store.id);
+
+  } catch (err) {
+    setMsg(err.message || "Erreur lors de l'enregistrement.");
+  } finally {
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = "💾 Enregistrer les informations";
+    }
+  }
 });
+
 function resetProductForm(){
   $("productForm").reset();if($("pId"))$("pId").value="";if($("pImage"))$("pImage").value="";if($("pImageFile"))$("pImageFile").value="";
   $("pAvailable").checked=true;const b=$("productSubmit");if(b)b.textContent="➕ Ajouter le produit";

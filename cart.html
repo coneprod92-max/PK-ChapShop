@@ -1,46 +1,192 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon panier — PK ChapShop</title>
+  <meta name="theme-color" content="#123b2d">
+  <meta name="description" content="Consultez votre panier et préparez votre commande sur PK-ChapShop.">
+  <title>Mon panier — PK-ChapShop</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .cart-page {
+      padding-top: 28px;
+      padding-bottom: 64px;
+      min-height: 65vh;
+    }
+
+    .cart-hero {
+      padding: clamp(24px, 4vw, 42px);
+      margin: 22px 0;
+      border-radius: 26px;
+      color: white;
+      background:
+        radial-gradient(circle at 90% 5%, rgba(213,173,88,.24), transparent 35%),
+        linear-gradient(135deg, #0a261d, #123b2d 68%, #1e5941);
+      box-shadow: 0 18px 42px rgba(10,38,29,.14);
+    }
+
+    .cart-hero small {
+      color: #f0d99c;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .cart-hero h1 {
+      margin: 12px 0;
+      color: white;
+      font-size: clamp(32px, 5vw, 44px);
+      line-height: 1.1;
+    }
+
+    .cart-hero p {
+      max-width: 580px;
+      margin: 0;
+      color: #e2eee7;
+      line-height: 1.7;
+    }
+
+    .cart-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 350px);
+      align-items: start;
+      gap: 22px;
+    }
+
+    #cartItems,
+    #cartSummary {
+      min-width: 0;
+    }
+
+    #cartItems:empty,
+    #cartSummary:empty,
+    #orderResult:empty {
+      display: none;
+    }
+
+    .cart-panel {
+      padding: 22px;
+      border: 1px solid #e4eae5;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(18,59,45,.06);
+    }
+
+    .cart-panel h2 {
+      margin-top: 0;
+      color: #123b2d;
+    }
+
+    .cart-summary {
+      position: sticky;
+      top: 20px;
+    }
+
+    .cart-reassurance {
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 14px;
+      background: #f3f7f3;
+      color: #53675a;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .cart-reassurance strong {
+      color: #123b2d;
+    }
+
+    .cart-bottom-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    .cart-bottom-links a {
+      color: #1e5941;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    #orderResult {
+      margin-top: 24px;
+    }
+
+    @media (max-width: 800px) {
+      .cart-content {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-summary {
+        position: static;
+      }
+
+      .cart-panel {
+        padding: 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
 <header class="header">
-  <a href="index.html" class="logo">
+  <a href="index.html" class="logo" aria-label="PK-ChapShop, accueil">
     PK <span>ChapShop</span>
   </a>
 
-  <a href="cart.html" class="cart-link">
+  <a href="cart.html" class="cart-link" aria-label="Ouvrir mon panier">
     🛒 <span id="cartCount">0</span>
   </a>
 </header>
 
 <main class="container cart-page">
+  <a href="index.html" class="back-link">← Continuer mes achats</a>
 
-  <a href="index.html" class="back-link">
-    ← Continuer mes achats
-  </a>
+  <section class="cart-hero">
+    <small>VOTRE SÉLECTION</small>
+    <h1>Mon panier 🛒</h1>
+    <p>
+      Retrouvez les articles sélectionnés, vérifiez votre commande
+      et poursuivez vers les prochaines étapes.
+    </p>
+  </section>
 
-  <div class="section-title">
-    <div>
-      <small>COMMANDE</small>
-      <h1>Mon panier</h1>
-    </div>
+  <div class="cart-content">
+    <section class="cart-panel" aria-label="Articles du panier">
+      <h2>Mes articles</h2>
+      <div id="cartItems"></div>
+    </section>
+
+    <aside class="cart-panel cart-summary" aria-label="Résumé du panier">
+      <h2>Résumé de la commande</h2>
+      <div id="cartSummary"></div>
+
+      <div class="cart-reassurance">
+        <strong>🛡️ Une commande en toute simplicité</strong><br>
+        Vérifiez vos articles et vos coordonnées avant de confirmer.
+        Les modalités de livraison peuvent dépendre du commerce.
+      </div>
+    </aside>
   </div>
 
-  <div id="cartItems"></div>
+  <div id="orderResult" aria-live="polite"></div>
 
-  <section id="cartSummary" class="cart-summary"></section>
-
-  <div id="orderResult"></div>
-
+  <div class="cart-bottom-links">
+    <a href="index.html">← Découvrir d'autres commerces</a>
+    <a href="tracking.html">📦 Suivre une commande</a>
+  </div>
 </main>
 
 <script src="cart.js"></script>
-
 </body>
 </html>

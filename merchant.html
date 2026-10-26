@@ -251,25 +251,46 @@ footer strong{color:var(--gold)}
             <div class="field"><label class="card-label" for="sWhatsapp">WhatsApp</label><input id="sWhatsapp" type="tel" placeholder="+229…"></div>
             <div class="field"><label class="card-label" for="sAddress">Adresse / localisation</label><input id="sAddress" placeholder="Quartier, ville…"></div>
           </div>
-          <div class="field"><label class="card-label" for="sDescription">Description de la boutique</label><textarea id="sDescription" placeholder="Présentez votre commerce, vos services et vos produits…"></textarea></div>
-          <div class="grid">
-           <div class="grid">
-  <div class="field">
-    <label class="card-label" for="sLogo">Lien du logo (facultatif)</label>
-    <input id="sLogo" type="url" placeholder="https://…">
-    <span class="field-help">Ou choisis une photo sur ton appareil :</span>
-    <input id="sLogoFile" type="file" accept="image/*">
-    <span class="field-help">Photo de profil de la boutique — 10 Mo maximum.</span>
-  </div>
+          <div class="field"><label class="card-label"           <div class="field">
+            <label class="card-label" for="sDescription">Description de la boutique</label>
+            <textarea id="sDescription" placeholder="Présentez votre commerce, vos services et vos produits…"></textarea>
+          </div>
 
-  <div class="field">
-    <label class="card-label" for="sCover">Lien de la couverture (facultatif)</label>
-    <input id="sCover" type="url" placeholder="https://…">
-    <span class="field-help">Ou choisis une photo de couverture :</span>
-    <input id="sCoverFile" type="file" accept="image/*">
-    <span class="field-help">Image de couverture — 10 Mo maximum.</span>
-  </div>
-</div>
+          <div class="grid">
+            <div class="field">
+              <label class="card-label" for="sLogo">Lien du logo (facultatif)</label>
+              <input id="sLogo" type="url" placeholder="https://…">
+              <span class="field-help">Ou choisis une photo sur ton appareil :</span>
+              <input id="sLogoFile" type="file" accept="image/*">
+              <span class="field-help">Photo de profil — 10 Mo maximum.</span>
+            </div>
+
+            <div class="field">
+              <label class="card-label" for="sCover">Lien de la couverture (facultatif)</label>
+              <input id="sCover" type="url" placeholder="https://…">
+              <span class="field-help">Ou choisis une photo de couverture :</span>
+              <input id="sCoverFile" type="file" accept="image/*">
+              <span class="field-help">Couverture — 10 Mo maximum.</span>
+            </div>
+          </div>
+
+          <div class="checks">
+            <label class="checkline">
+              <input id="sOpen" type="checkbox">
+              Boutique ouverte
+            </label>
+            <label class="checkline">
+              <input id="sDelivery" type="checkbox">
+              Livraison disponible
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button class="gold" type="submit">💾 Enregistrer les informations</button>
+          </div>
+        </form>
+      </div>
+    </section>
     </section>
 
     <section id="productSection" class="section">

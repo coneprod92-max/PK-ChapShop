@@ -253,16 +253,23 @@ footer strong{color:var(--gold)}
           </div>
           <div class="field"><label class="card-label" for="sDescription">Description de la boutique</label><textarea id="sDescription" placeholder="Présentez votre commerce, vos services et vos produits…"></textarea></div>
           <div class="grid">
-            <div class="field"><label class="card-label" for="sLogo">Lien du logo (URL)</label><input id="sLogo" type="url" placeholder="https://…"><span class="field-help">Collez le lien public de votre logo.</span></div>
-            <div class="field"><label class="card-label" for="sCover">Lien de la photo de couverture (URL)</label><input id="sCover" type="url" placeholder="https://…"><span class="field-help">Collez le lien public de votre couverture.</span></div>
-          </div>
-          <div class="checks">
-            <label class="checkline"><input id="sOpen" type="checkbox"> Boutique ouverte</label>
-            <label class="checkline"><input id="sDelivery" type="checkbox"> Livraison disponible</label>
-          </div>
-          <div class="form-actions"><button class="gold" type="submit">💾 Enregistrer les informations</button></div>
-        </form>
-      </div>
+           <div class="grid">
+  <div class="field">
+    <label class="card-label" for="sLogo">Lien du logo (facultatif)</label>
+    <input id="sLogo" type="url" placeholder="https://…">
+    <span class="field-help">Ou choisis une photo sur ton appareil :</span>
+    <input id="sLogoFile" type="file" accept="image/*">
+    <span class="field-help">Photo de profil de la boutique — 10 Mo maximum.</span>
+  </div>
+
+  <div class="field">
+    <label class="card-label" for="sCover">Lien de la couverture (facultatif)</label>
+    <input id="sCover" type="url" placeholder="https://…">
+    <span class="field-help">Ou choisis une photo de couverture :</span>
+    <input id="sCoverFile" type="file" accept="image/*">
+    <span class="field-help">Image de couverture — 10 Mo maximum.</span>
+  </div>
+</div>
     </section>
 
     <section id="productSection" class="section">

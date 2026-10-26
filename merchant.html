@@ -1,46 +1,53 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PK ChapShop — Espace commerçant</title>
+<meta name="theme-color" content="#103b2b">
+<title>PK-ChapShop — Espace commerçant</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#151922}header{background:#05070b;color:#fff;padding:18px 16px;display:flex;justify-content:space-between;align-items:center}.logo{font-size:22px;font-weight:800}.logo span{color:#c9a227}button{border:0;border-radius:12px;padding:12px 15px;font-weight:700;cursor:pointer}.btn{background:#111827;color:white}.gold{background:#c9a227;color:#111}.danger{background:#dc2626;color:white}.container{max-width:1100px;margin:auto;padding:20px 15px}.hero{background:linear-gradient(135deg,#111827,#252525);color:white;border-radius:20px;padding:25px;margin-bottom:18px}.card{background:white;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 4px 18px #00000010}h1,h2{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}input,textarea,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;margin:7px 0 12px;font:inherit}input[type=checkbox]{width:auto;margin-right:8px}input[type=file]{background:#fafafa}label{font-weight:700;font-size:14px}.hidden{display:none!important}.msg{padding:12px;border-radius:10px;margin:10px 0}.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}.product,.order{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:10px 0}.product img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:10px}.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.price{font-weight:800;color:#a47f08}.small{font-size:13px;color:#6b7280}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}video{width:100%;max-height:300px;border-radius:12px}.help{font-size:13px;color:#6b7280;margin-top:-6px}@media(max-width:600px){.grid{grid-template-columns:1fr}.hero{padding:20px}}
-</style>
-</head>
-<body>
-<header><div class="logo">PK <span>ChapShop</span></div><button id="logoutBtn" class="btn hidden">Déconnexion</button></header>
-<main class="container">
-<section id="authSection" class="card">
-<h1>🏪 Espace commerçant</h1><p>Gérez votre boutique PK ChapShop depuis votre téléphone.</p>
-<div class="grid">
-<form id="loginForm"><h2>🔐 Connexion</h2><label>Email</label><input id="loginEmail" type="email" required><label>Mot de passe</label><input id="loginPassword" type="password" required><button class="gold" type="submit">Se connecter</button><div id="loginMsg"></div></form>
-<form id="signupForm"><h2>🆕 Créer mon compte</h2><label>Email</label><input id="signupEmail" type="email" required><label>Mot de passe</label><input id="signupPassword" type="password" minlength="6" required><button class="btn" type="submit">Créer mon compte</button><div id="signupMsg"></div></form>
-</div></section>
-<section id="claimSection" class="card hidden"><h2>🔗 Rattacher ma boutique</h2><p>Utilisez le code commerçant reçu après l'approbation de votre demande.</p><form id="claimForm"><label>Code commerçant</label><input id="merchantCode" placeholder="Ex : PKABC123" required><label>Numéro de téléphone utilisé lors de la demande</label><input id="merchantPhone" required><button class="gold" type="submit">🏪 Rattacher ma boutique</button></form><div id="claimMsg"></div></section>
-<section id="dashboard" class="hidden">
-<div class="hero"><h1 id="storeName">Ma boutique</h1><p id="storeInfo">Chargement...</p><p>Partagez votre lien pour attirer des clients.</p><div class="actions"><button id="shareStoreBtn" class="gold" type="button">🔗 Partager ma boutique</button><button id="copyStoreBtn" class="btn" type="button">📋 Copier le lien</button></div></div>
-<div id="dashMsg"></div>
-<section class="card"><h2>⚙️ Informations de la boutique</h2><form id="storeForm" class="grid">
-<div><label>Nom</label><input id="sName" required><label>Téléphone</label><input id="sPhone"><label>WhatsApp</label><input id="sWhatsapp"><label>Adresse</label><input id="sAddress"></div>
-<div><label>Description</label><textarea id="sDescription" rows="4"></textarea><label>Logo URL</label><input id="sLogo" type="url"><label>Couverture URL</label><input id="sCover" type="url"><label><input id="sOpen" type="checkbox"> Boutique ouverte</label><br><label><input id="sDelivery" type="checkbox"> Livraison disponible</label><br><br><button class="gold" type="submit">💾 Enregistrer</button></div>
-</form></section>
-<section class="card"><h2>📦 Produits</h2><form id="productForm" class="grid">
-<input id="pId" type="hidden">
-<div><label>Nom du produit</label><input id="pName" required><label>Prix FCFA</label><input id="pPrice" type="number" min="0" required></div>
-<div><label>Description</label><textarea id="pDescription" rows="3"></textarea><label>Image depuis le téléphone</label><input id="pImageFile" type="file" accept="image/*"><p class="help">Choisissez une photo dans la galerie de votre téléphone (50 Mo maximum).</p><label>Ou lien d'image (facultatif)</label><input id="pImage" type="url" placeholder="https://..."><label><input id="pAvailable" type="checkbox" checked> Disponible</label></div>
-<div class="actions" style="align-content:start"><button id="productSubmit" class="gold" type="submit">➕ Ajouter le produit</button><button id="cancelEditProduct" class="btn hidden" type="button">Annuler la modification</button></div>
-</form><div id="productsList">Chargement...</div></section>
-<section class="card"><h2>📸 Photos et vidéos de la boutique</h2><form id="mediaForm" class="grid">
-<div><label>Type</label><select id="mediaType"><option value="image">Photo</option><option value="video">Vidéo</option></select><label>Titre</label><input id="mediaTitle"></div>
-<div><label>Fichier depuis le téléphone</label><input id="mediaFile" type="file" accept="image/*,video/*" required><label><input id="mediaCover" type="checkbox"> Utiliser comme couverture</label></div>
-<div><button id="mediaBtn" class="gold" type="submit">📤 Envoyer</button></div></form><div id="mediaList"></div></section>
-<section class="card"><h2>🛒 Commandes reçues</h2><div id="ordersList">Chargement...</div></section>
-</section>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="merchant.js?v=20261023"></script>
-
-</body></html>
+:root {
+  --green:#103b2b;
+  --green-dark:#09271d;
+  --green-light:#eaf4ed;
+  --gold:#d5b45b;
+  --gold-light:#f8edc9;
+  --ink:#19271f;
+  --muted:#6c7b72;
+  --paper:#f5f7f1;
+  --white:#fff;
+  --line:#e0e8df;
+  --red:#b42318;
+  --shadow:0 18px 45px rgba(16,59,43,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,sans-serif;line-height:1.55}
+button,input,textarea,select{font:inherit}
+button{border:0;cursor:pointer;transition:transform .2s,background .2s,box-shadow .2s}
+button:hover{transform:translateY(-1px)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #d5b45b88;outline-offset:2px}
+a{color:inherit}
+.hidden{display:none!important}
+.topbar{background:var(--green-dark);color:white;border-bottom:1px solid #ffffff18}
+.topbar-inner{max-width:1200px;margin:auto;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:900;letter-spacing:-.6px}
+.brand-mark{display:grid;place-items:center;width:43px;height:43px;border-radius:14px;background:var(--gold);color:var(--green-dark);font-size:19px;box-shadow:0 5px 18px #0002}
+.brand-name span{color:var(--gold)}
+.brand-sub{display:block;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#c4d2c8}
+.top-actions{display:flex;align-items:center;gap:10px}
+.top-note{font-size:12px;color:#d3e0d6}
+.container{max-width:1200px;margin:auto;padding:30px 22px 60px}
+.page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 25px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#8b6b20;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.eyebrow:before{content:"";width:22px;height:2px;background:var(--gold)}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(30px,4vw,47px);line-height:1.08;letter-spacing:-1.8px;margin:10px 0 12px}
+h2{font-size:21px;letter-spacing:-.5px;margin:0 0 7px}
+h3{font-size:16px;margin:0}
+.page-intro p{color:var(--muted);max-width:620px;margin-bottom:0}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #dce7dc;border-radius:999px;padding:8px 12px;background:#fff;color:var(--green);font-size:12px;font-weight:800;white-space:nowrap}
+.pill-dot{width:7px;height:7px;border-radius:50%;background:#35a66a}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding

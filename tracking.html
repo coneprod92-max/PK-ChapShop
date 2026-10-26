@@ -1,26 +1,281 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#123b2d">
+  <meta name="description" content="Suivez votre commande sur PK-ChapShop et consultez l'avancement de sa livraison.">
 
-  <title>Suivre ma commande — PK ChapShop</title>
+  <title>Suivre ma commande — PK-ChapShop</title>
 
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .tracking-page {
+      padding-top: 28px;
+      padding-bottom: 64px;
+      min-height: 70vh;
+    }
+
+    .tracking-hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(26px, 5vw, 54px);
+      margin: 22px 0;
+      border-radius: 28px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(213,173,88,.25), transparent 34%),
+        linear-gradient(135deg, #0a261d, #123b2d 65%, #1e5941);
+      box-shadow: 0 20px 50px rgba(10,38,29,.16);
+    }
+
+    .tracking-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid rgba(240,217,156,.35);
+      border-radius: 999px;
+      color: #f0d99c;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .tracking-hero h1 {
+      max-width: 650px;
+      margin: 18px 0 12px;
+      color: #fff;
+      font-size: clamp(32px, 5vw, 48px);
+      line-height: 1.08;
+      letter-spacing: -1.3px;
+    }
+
+    .tracking-hero h1 span {
+      color: #f0d99c;
+    }
+
+    .tracking-hero p {
+      max-width: 590px;
+      margin: 0;
+      color: #e2eee7;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .tracking-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .tracking-form-card,
+    .tracking-help-card {
+      padding: clamp(20px, 3vw, 30px);
+      border: 1px solid #e4eae5;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 12px 35px rgba(18,59,45,.07);
+    }
+
+    .tracking-form-card h2,
+    .tracking-help-card h2 {
+      margin: 0 0 10px;
+      color: #123b2d;
+      font-size: 23px;
+    }
+
+    .tracking-intro {
+      margin: 0 0 24px;
+      color: #64746b;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .tracking-field {
+      margin-bottom: 18px;
+    }
+
+    .tracking-field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #24372c;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .tracking-field input {
+      display: block;
+      width: 100%;
+      min-height: 52px;
+      box-sizing: border-box;
+      padding: 14px 15px;
+      border: 1px solid #d7e1d9;
+      border-radius: 13px;
+      outline: none;
+      background: #fbfdfb;
+      color: #17251c;
+      font: inherit;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .tracking-field input:focus {
+      border-color: #1e5941;
+      box-shadow: 0 0 0 4px rgba(30,89,65,.11);
+    }
+
+    .tracking-field input::placeholder {
+      color: #96a49a;
+    }
+
+    .tracking-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 54px;
+      padding: 15px 20px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #d5ad58, #f0d99c);
+      color: #14251b;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .tracking-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 22px rgba(213,173,88,.25);
+    }
+
+    .tracking-submit:focus-visible {
+      outline: 3px solid #1e5941;
+      outline-offset: 3px;
+    }
+
+    .tracking-submit:disabled {
+      cursor: wait;
+      opacity: .7;
+      transform: none;
+    }
+
+    .tracking-help-card {
+      background: #f8fbf8;
+    }
+
+    .tracking-help-card > p {
+      color: #64746b;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .tracking-step {
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+      margin-top: 20px;
+    }
+
+    .tracking-step-icon {
+      display: grid;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 13px;
+      background: #e7f0e8;
+      font-size: 20px;
+    }
+
+    .tracking-step strong {
+      display: block;
+      margin: 2px 0 5px;
+      color: #123b2d;
+      font-size: 14px;
+    }
+
+    .tracking-step span {
+      display: block;
+      color: #66766b;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #trackingResult {
+      margin-top: 24px;
+    }
+
+    #trackingResult:empty {
+      display: none;
+    }
+
+    .tracking-security-note {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 13px;
+      background: #f3f7f3;
+      color: #5c6e61;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .tracking-footer {
+      padding-top: 25px;
+      color: #718075;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .tracking-footer a {
+      color: #1e5941;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    @media (max-width: 760px) {
+      .tracking-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .tracking-hero {
+        border-radius: 22px;
+      }
+
+      .tracking-hero p {
+        font-size: 14px;
+      }
+
+      .tracking-form-card,
+      .tracking-help-card {
+        border-radius: 19px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tracking-submit,
+      .tracking-field input {
+        transition: none;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
 <header class="header">
-
-  <a href="index.html" class="logo">
+  <a href="index.html" class="logo" aria-label="PK-ChapShop, accueil">
     PK <span>ChapShop</span>
   </a>
 
-  <a href="cart.html" class="cart-link">
+  <a href="cart.html" class="cart-link" aria-label="Ouvrir mon panier">
     🛒 <span id="cartCount">0</span>
   </a>
-
 </header>
 
 <main class="container tracking-page">
@@ -29,53 +284,127 @@
     ← Retour à l'accueil
   </a>
 
-  <div class="section-title">
-    <div>
-      <small>SUIVI</small>
-      <h1>Suivre ma commande</h1>
-    </div>
-  </div>
+  <section class="tracking-hero">
+    <span class="tracking-eyebrow">📦 SERVICE DE SUIVI</span>
 
-  <section class="tracking-form-card">
+    <h1>
+      Où est ma <span>commande ?</span>
+    </h1>
 
     <p>
-      Entrez votre numéro de commande et le numéro de téléphone
-      utilisé lors de la commande.
+      Retrouvez les informations de votre commande et suivez
+      son avancement jusqu'à la livraison, en toute simplicité.
     </p>
-
-    <form id="trackingForm">
-
-      <label>Numéro de commande</label>
-
-      <input
-        id="orderNumber"
-        type="number"
-        placeholder="Ex : 1001"
-        required
-      >
-
-      <label>Numéro de téléphone</label>
-
-      <input
-        id="phone"
-        type="tel"
-        placeholder="+229 01 60 88 53 50"
-        required
-      >
-
-      <button
-        type="submit"
-        class="checkout-button"
-        id="trackingButton"
-      >
-        🔎 Suivre ma commande
-      </button>
-
-    </form>
-
   </section>
 
-  <div id="trackingResult"></div>
+  <div class="tracking-layout">
+
+    <section class="tracking-form-card">
+      <h2>Suivre ma commande</h2>
+
+      <p class="tracking-intro">
+        Saisissez le numéro de commande reçu après votre achat
+        et le numéro de téléphone utilisé pour commander.
+      </p>
+
+      <form id="trackingForm">
+
+        <div class="tracking-field">
+          <label for="orderNumber">Numéro de commande</label>
+          <input
+            id="orderNumber"
+            name="orderNumber"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="Ex. : 1001"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div class="tracking-field">
+          <label for="phone">Téléphone utilisé pour la commande</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            placeholder="Ex. : +229 01 60 88 53 50"
+            autocomplete="tel"
+            inputmode="tel"
+            required
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="tracking-submit"
+          id="trackingButton"
+        >
+          <span aria-hidden="true">🔎</span>
+          <span>Rechercher ma commande</span>
+        </button>
+
+      </form>
+
+      <div class="tracking-security-note">
+        🔒 Pour protéger vos informations, utilisez le numéro de
+        téléphone associé à votre commande.
+      </div>
+    </section>
+
+    <aside class="tracking-help-card">
+      <h2>Comment ça marche ?</h2>
+
+      <p>
+        Quelques secondes suffisent pour consulter le statut de
+        votre achat.
+      </p>
+
+      <div class="tracking-step">
+        <div class="tracking-step-icon" aria-hidden="true">🧾</div>
+        <div>
+          <strong>1. Retrouvez votre numéro</strong>
+          <span>
+            Utilisez le numéro de commande communiqué après votre achat.
+          </span>
+        </div>
+      </div>
+
+      <div class="tracking-step">
+        <div class="tracking-step-icon" aria-hidden="true">📱</div>
+        <div>
+          <strong>2. Confirmez votre téléphone</strong>
+          <span>
+            Saisissez le même numéro de téléphone que lors de la commande.
+          </span>
+        </div>
+      </div>
+
+      <div class="tracking-step">
+        <div class="tracking-step-icon" aria-hidden="true">🚚</div>
+        <div>
+          <strong>3. Consultez l'avancement</strong>
+          <span>
+            Retrouvez le statut de la commande et les informations de
+            livraison disponibles.
+          </span>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <section
+    id="trackingResult"
+    aria-live="polite"
+    aria-atomic="true"
+  ></section>
+
+  <div class="tracking-footer">
+    Une question concernant votre achat ?
+    <a href="index.html">Retournez sur PK-ChapShop</a>.
+  </div>
 
 </main>
 

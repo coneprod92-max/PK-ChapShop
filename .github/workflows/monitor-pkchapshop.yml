@@ -1,0 +1,36 @@
+
+name: PK-ChapShop - Surveillance
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Verifier la page d'accueil
+        run: |
+          set -eu
+          curl --fail --silent --show-error \
+            --location --max-time 20 \
+            https://coneprod92-max.github.io/PK-ChapShop/index.html \
+            --output /dev/null
+
+      - name: Verifier les pages importantes
+        run: |
+          set -eu
+          BASE="https://coneprod92-max.github.io/PK-ChapShop"
+          for PAGE in annonceur.html store.html merchant.html; do
+            echo "Verification : $PAGE"
+            curl --fail --silent --show-error \
+              --location --max-time 20 \
+              "$BASE/$PAGE" --output /dev/null
+          done
+          echo "Tous les contrôles HTTP ont réussi."

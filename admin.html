@@ -328,13 +328,39 @@ hr{border:0;border-top:1px solid var(--adm-line);margin:18px 0}
         id="refreshOrders"
         class="admin-button gold"
       >
-        ↻ Actualiser
-      </button>
+        <div class="orders-toolbar">
+  <div class="field">
+    <label for="orderFilter">Afficher les commandes</label>
+    <select id="orderFilter">
+      <option value="active">Commandes non archivées</option>
+      <option value="archived">Commandes archivées</option>
+      <option value="all">Toutes les commandes</option>
+      <option value="pending">En attente</option>
+      <option value="confirmed">Confirmées</option>
+      <option value="preparing">En préparation</option>
+      <option value="ready">Prêtes</option>
+      <option value="out_for_delivery">En cours de livraison</option>
+      <option value="delivered">Livrées</option>
+      <option value="cancelled">Annulées</option>
+    </select>
+  </div>
 
+  <button
+    type="button"
+    id="refreshOrders"
+    class="admin-button gold"
+  >
+    ↻ Actualiser
+  </button>
+</div>
 
-      <div id="ordersList"></div>
+<p>
+  Archive les commandes livrées pour les retrouver séparément.
+  Une commande archivée peut être restaurée ou supprimée définitivement.
+</p>
 
-      <div id="ordersMessage"></div>
+<div id="ordersList"></div>
+<div id="ordersMessage"></div>
 
     </section>
 

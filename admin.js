@@ -894,7 +894,11 @@ async function loadAdvertiserApplications() {
       <select onchange="updateAdvertiserStatus('${application.id}', this.value)">
         ${advertiserStatusOptions(application.status)}
       </select>
-      ${application.status === "pending" ? `<button onclick="approveAdvertiser('${application.id}')">Approuver</button>` : ""}
+      ${application.status === "pending"
+  ? `<button onclick="approveAdvertiser('${application.id}')">Approuver</button>`
+  : application.status === "approved" && application.store_id
+    ? `<button onclick="approveAdvertiser('${application.id}')">Renvoyer le code par e-mail</button>`
+    : ""}
     `;
     container.appendChild(card);
   });

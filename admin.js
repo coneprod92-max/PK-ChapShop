@@ -216,82 +216,219 @@ async function loadStats() {
 // COMMANDES
 async function loadOrders() {
   const container = document.getElementById("ordersList");
+  const message = document.getElementById("ordersMessage");
+  const filter = document.getElementById("orderFilter")?.value || "active";
+
   if (!container) return;
 
   container.textContent = "Chargement des commandes...";
+  if (message) message.textContent = "";
+
+  try {
+    let query = supabaseClient
+      .from("orders")
+      .select(`
+        id, order_number, status, payment_method, total,
+        delivery_address, customer_note, created_at, archived_at,
+        customers(full_name, phone),
+        stores(name),
+        deliveries(driver_name, driver_phone, status, current_location, estimated_minutes)
+      `)
+      .order("created_at", { ascending: false });
+
+    if (filter === "active") {
+      query = query.is("archived_at", null);
+    } else if (filter === "archived") {
+      query = query.not("archived_at", "is", null);
+    } else if (filter !== "all") {
+      query = query.eq("status", filter).is("archived_at", null);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    container.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      container.textContent = "Aucune commande dans cette catégorie.";
+      return;
+    }
+
+    data.forEach(order => {
+      const customer = order.customers || {};
+      const store = order.stores || {};
+      const delivery = Array.isArray(order.deliveries)
+        ? order.deliveries[0] || {}
+        : order.deliveries || {};
+
+      const archived = Boolean(order.archived_at);
+      const card = document.createElement("div");
+      card.className = "item-row";
+
+      const actions = archived
+        ? `
+          <button type="button" class="gold"
+            onclick="restoreOrder('${order.id}')">
+            Restaurer la commande
+          </button>
+          <button type="button" class="danger"
+            onclick="deleteArchivedOrder('${order.id}', '${escapeAttribute(order.order_number || order.id)}')">
+            Supprimer définitivement
+          </button>
+        `
+        : `
+          ${order.status === "delivered" ? `
+            <button type="button" class="gold"
+              onclick="archiveOrder('${order.id}')">
+              Archiver la commande livrée
+            </button>
+          ` : ""}
+        `;
+
+      card.innerHTML = `
+        <div class="item-head">
+          <strong>Commande #${escapeHtml(order.order_number || order.id)}</strong>
+          <strong>${formatPrice(order.total)}</strong>
+        </div>
+
+        ${archived ? '<p class="admin-success">Commande archivée</p>' : ""}
+
+        <div class="item-meta">
+          Client : ${escapeHtml(customer.full_name || "-")}<br>
+          Téléphone : ${escapeHtml(customer.phone || "-")}<br>
+          Boutique : ${escapeHtml(store.name || "-")}<br>
+          Adresse : ${escapeHtml(order.delivery_address || "-")}<br>
+          Paiement : ${escapeHtml(order.payment_method || "-")}<br>
+          Date : ${formatDate(order.created_at)}
+        </div>
+
+        ${!archived ? `
+          <label>Statut de la commande</label>
+          <select onchange="updateOrderStatus('${order.id}', this.value)">
+            ${orderStatusOptions(order.status)}
+          </select>
+        ` : `
+          <p>Statut : ${escapeHtml(order.status || "-")}</p>
+        `}
+
+        ${order.customer_note
+          ? `<p>Note : ${escapeHtml(order.customer_note)}</p>`
+          : ""}
+
+        ${!archived ? `
+          <hr>
+          <label for="driverName-${order.id}">Nom du livreur</label>
+          <input id="driverName-${order.id}" value="${escapeAttribute(delivery.driver_name || "")}">
+
+          <label for="driverPhone-${order.id}">Téléphone du livreur</label>
+          <input id="driverPhone-${order.id}" value="${escapeAttribute(delivery.driver_phone || "")}">
+
+          <label for="deliveryStatus-${order.id}">Statut de livraison</label>
+          <select id="deliveryStatus-${order.id}">
+            ${deliveryStatusOptions(delivery.status || "pending")}
+          </select>
+
+          <label for="deliveryLocation-${order.id}">Position ou note</label>
+          <input id="deliveryLocation-${order.id}" value="${escapeAttribute(delivery.current_location || "")}">
+
+          <label for="deliveryMinutes-${order.id}">Délai estimé en minutes</label>
+          <input id="deliveryMinutes-${order.id}" type="number" min="0" max="10080" value="${delivery.estimated_minutes ?? ""}">
+
+          <button type="button" onclick="saveDelivery('${order.id}')">
+            Enregistrer la livraison
+          </button>
+        ` : ""}
+
+        <div class="status-line" style="margin-top:14px">
+          ${actions}
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error("Chargement des commandes :", error);
+    container.textContent = "Erreur de chargement : " + error.message;
+  }
+  async function archiveOrder(orderId) {
+  if (!confirm("Archiver cette commande livrée ?")) return;
+
+  const { error } = await supabaseClient
+    .from("orders")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("status", "delivered")
+    .is("archived_at", null);
+
+  if (error) {
+    alert("Impossible d'archiver la commande : " + error.message);
+    return;
+  }
+
+  alert("Commande archivée.");
+  await Promise.all([loadOrders(), loadStats()]);
+}
+
+async function restoreOrder(orderId) {
+  if (!confirm("Restaurer cette commande dans les commandes non archivées ?")) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("orders")
+    .update({ archived_at: null })
+    .eq("id", orderId)
+    .not("archived_at", "is", null);
+
+  if (error) {
+    alert("Impossible de restaurer la commande : " + error.message);
+    return;
+  }
+
+  alert("Commande restaurée.");
+  await Promise.all([loadOrders(), loadStats()]);
+}
+
+async function deleteArchivedOrder(orderId, orderNumber) {
+  const confirmed = confirm(
+    "ATTENTION : supprimer définitivement la commande " +
+    orderNumber +
+    " ? Cette action est irréversible. Les éléments associés peuvent également être supprimés."
+  );
+
+  if (!confirmed) return;
+
+  const secondConfirmation = prompt(
+    "Pour confirmer la suppression définitive, écris SUPPRIMER."
+  );
+
+  if (secondConfirmation !== "SUPPRIMER") {
+    alert("Suppression annulée.");
+    return;
+  }
 
   const { data, error } = await supabaseClient
     .from("orders")
-    .select(`
-      id, order_number, status, payment_method, total,
-      delivery_address, customer_note, created_at,
-      customers(full_name, phone),
-      stores(name),
-      deliveries(driver_name, driver_phone, status, current_location, estimated_minutes)
-    `)
-    .order("created_at", { ascending: false });
+    .delete()
+    .eq("id", orderId)
+    .not("archived_at", "is", null)
+    .select("id");
 
   if (error) {
-    container.textContent = "Erreur de chargement : " + error.message;
-    console.error(error);
+    alert("Suppression refusée : " + error.message);
     return;
   }
 
-  if (!data?.length) {
-    container.textContent = "Aucune commande pour le moment.";
+  if (!data || data.length === 0) {
+    alert("Aucune commande archivée supprimée. Vérifie les droits administrateur.");
     return;
   }
 
-  container.innerHTML = "";
-
-  data.forEach(order => {
-    const customer = order.customers || {};
-    const store = order.stores || {};
-    const delivery = Array.isArray(order.deliveries)
-      ? order.deliveries[0] || {}
-      : order.deliveries || {};
-
-    const card = document.createElement("div");
-    card.className = "item-row";
-
-    card.innerHTML = `
-      <div class="item-head">
-        <strong>Commande #${escapeHtml(order.order_number || order.id)}</strong>
-        <strong>${formatPrice(order.total)}</strong>
-      </div>
-      <div class="item-meta">
-        Client : ${escapeHtml(customer.full_name || "-")}<br>
-        Téléphone : ${escapeHtml(customer.phone || "-")}<br>
-        Boutique : ${escapeHtml(store.name || "-")}<br>
-        Adresse : ${escapeHtml(order.delivery_address || "-")}<br>
-        Paiement : ${escapeHtml(order.payment_method || "-")}<br>
-        Date : ${formatDate(order.created_at)}
-      </div>
-      <label>Statut de la commande</label>
-      <select onchange="updateOrderStatus('${order.id}', this.value)">
-        ${orderStatusOptions(order.status)}
-      </select>
-      ${order.customer_note ? `<p>Note : ${escapeHtml(order.customer_note)}</p>` : ""}
-      <hr>
-      <label for="driverName-${order.id}">Nom du livreur</label>
-      <input id="driverName-${order.id}" value="${escapeAttribute(delivery.driver_name || "")}">
-      <label for="driverPhone-${order.id}">Téléphone du livreur</label>
-      <input id="driverPhone-${order.id}" value="${escapeAttribute(delivery.driver_phone || "")}">
-      <label for="deliveryStatus-${order.id}">Statut de livraison</label>
-      <select id="deliveryStatus-${order.id}">
-        ${deliveryStatusOptions(delivery.status || "pending")}
-      </select>
-      <label for="deliveryLocation-${order.id}">Position ou note</label>
-      <input id="deliveryLocation-${order.id}" value="${escapeAttribute(delivery.current_location || "")}">
-      <label for="deliveryMinutes-${order.id}">Délai estimé en minutes</label>
-      <input id="deliveryMinutes-${order.id}" type="number" min="0" max="10080" value="${delivery.estimated_minutes ?? ""}">
-      <button type="button" onclick="saveDelivery('${order.id}')">Enregistrer la livraison</button>
-    `;
-
-    container.appendChild(card);
-  });
+  alert("Commande supprimée définitivement.");
+  await Promise.all([loadOrders(), loadStats()]);
 }
-
+}
 function orderStatusOptions(current) {
   const statuses = [
     ["pending", "En attente"],

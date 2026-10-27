@@ -952,6 +952,7 @@ async function getApplication(applicationId) {
   return data;
 }
 
+
 async function approveAdvertiser(applicationId) {
   const application = await getApplication(applicationId);
 
@@ -960,9 +961,33 @@ async function approveAdvertiser(applicationId) {
     return;
   }
 
-  if (!confirm(`Créer et publier la boutique "${application.business_name}" ?`)) return;
+  if (application.status === "approved" && application.store_id) {
+    const resend = confirm(
+      "Cette demande est déjà approuvée. Veux-tu renvoyer le code marchand par e-mail ?"
+    );
 
-  const whatsappWindow = window.open("about:blank", "_blank");
+    if (!resend) return;
+
+    const { data, error } = await supabaseClient.functions.invoke(
+      "send-merchant-code-email",
+      { body: { applicationId } }
+    );
+
+    if (error || !data?.success) {
+      alert(
+        "L'envoi de l'e-mail a échoué : " +
+        (data?.error || error?.message || "Erreur inconnue")
+      );
+      return;
+    }
+
+    alert("E-mail contenant le code marchand envoyé.");
+    return;
+  }
+
+  if (!confirm(
+    `Approuver la demande et créer la boutique "${application.business_name}" ?`
+  )) return;
 
   const { data: storeId, error } = await supabaseClient.rpc(
     "approve_advertiser_application",
@@ -970,46 +995,35 @@ async function approveAdvertiser(applicationId) {
   );
 
   if (error || !storeId) {
-    if (whatsappWindow) whatsappWindow.close();
-    alert("Impossible de créer la boutique : " + (error?.message || "Identifiant absent"));
+    alert(
+      "Impossible d'approuver la demande : " +
+      (error?.message || "Identifiant de boutique absent")
+    );
     return;
   }
-
-  const { data: store, error: storeError } = await supabaseClient
-    .from("stores")
-    .select("merchant_code")
-    .eq("id", storeId)
-    .single();
 
   await loadAdvertiserApplications();
   await loadStores();
 
-  if (storeError || !store?.merchant_code) {
-    if (whatsappWindow) whatsappWindow.close();
-    alert("Boutique créée, mais impossible de récupérer le code marchand.");
+  const { data, error: emailError } = await supabaseClient.functions.invoke(
+    "send-merchant-code-email",
+    { body: { applicationId } }
+  );
+
+  if (emailError || !data?.success) {
+    alert(
+      "La boutique a été créée, mais l'e-mail n'a pas pu être envoyé. " +
+      "Vérifie la configuration de l'envoi e-mail dans Supabase/Resend. " +
+      (data?.error || emailError?.message || "")
+    );
     return;
   }
 
-  let phone = String(application.whatsapp || application.phone || "").replace(/\D/g, "");
-  if (phone && !phone.startsWith("229")) phone = "229" + phone;
-
-  const message =
-    `Bonjour ${application.business_name} ! 👋\n\n` +
-    `Votre boutique a été approuvée et publiée sur PK ChapShop.\n\n` +
-    `Code marchand : ${store.merchant_code}\n\n` +
-    `Merci de votre confiance !\nL'équipe PK ChapShop`;
-
-  if (phone) {
-    const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
-    if (whatsappWindow) whatsappWindow.location.href = url;
-    else window.open(url, "_blank");
-
-    alert("Boutique créée. Vérifie le message WhatsApp puis appuie sur Envoyer.");
-  } else {
-    if (whatsappWindow) whatsappWindow.close();
-    alert("Boutique créée. Aucun numéro WhatsApp disponible.");
-  }
+  alert(
+    "Demande approuvée, boutique créée et code marchand envoyé par e-mail."
+  );
 }
+
 
 async function resendMerchantCode(storeId) {
   const { data: store, error } = await supabaseClient

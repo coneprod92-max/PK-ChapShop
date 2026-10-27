@@ -86,9 +86,13 @@ $("signupForm").addEventListener("submit", async e => {
 
   try {
     const { data, error } = await sb.auth.signUp({
-      email,
-      password
-    });
+  email,
+  password,
+  options: {
+    emailRedirectTo:
+      "https://coneprod92-max.github.io/PK-ChapShop/merchant.html"
+  }
+});
 
     if (error) throw error;
 

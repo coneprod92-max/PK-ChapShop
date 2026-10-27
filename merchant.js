@@ -65,16 +65,96 @@ function addShareControls(){
     copyBtn.addEventListener("click", copyStoreLink);
   }
 }
-$("signupForm").addEventListener("submit",async e=>{
-  e.preventDefault();const {data,error}=await sb.auth.signUp({email:$("signupEmail").value.trim(),password:$("signupPassword").value});
-  if(error)return message("signupMsg",error.message);
-  if(data.session){message("signupMsg","Compte créé avec succès.",true);await init();}
-  else message("signupMsg","Compte créé. Vérifiez votre email si une confirmation est demandée, puis connectez-vous.",true);
+
+$("signupForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const form = e.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+
+  if (!email || !password) {
+    message("signupMsg", "Renseignez votre adresse e-mail et votre mot de passe.");
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Création du compte...";
+  }
+
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    if (data.session) {
+      message("signupMsg", "Compte créé avec succès. Chargement de votre espace...", true);
+      await init();
+    } else {
+      message(
+        "signupMsg",
+        "Inscription enregistrée. Consultez votre boîte e-mail pour confirmer votre adresse si cela est demandé, puis connectez-vous.",
+        true
+      );
+    }
+  } catch (err) {
+    message(
+      "signupMsg",
+      err.message || "Impossible de créer le compte. Réessayez."
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Créer mon compte";
+    }
+  }
 });
-$("loginForm").addEventListener("submit",async e=>{
-  e.preventDefault();const {error}=await sb.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
-  if(error)return message("loginMsg","Email ou mot de passe incorrect.");await init();
+
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const form = e.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  if (!email || !password) {
+    message("loginMsg", "Renseignez votre adresse e-mail et votre mot de passe.");
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Connexion...";
+  }
+
+  try {
+    const { error } = await sb.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    await init();
+  } catch (err) {
+    message(
+      "loginMsg",
+      err.message || "Connexion impossible. Vérifiez vos identifiants et réessayez."
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Se connecter →";
+    }
+  }
 });
+
 $("logoutBtn").addEventListener("click",async()=>{await sb.auth.signOut();location.reload();});
 async function init(){
   const {data:{session}}=await sb.auth.getSession();if(!session)return;

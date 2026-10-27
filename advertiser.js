@@ -67,6 +67,8 @@ form.addEventListener(
           .value
           .trim(),
 
+email: document.getElementById("email").value.trim().toLowerCase(),
+
       business_name:
         document
           .getElementById("businessName")

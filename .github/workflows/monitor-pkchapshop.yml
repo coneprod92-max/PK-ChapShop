@@ -15,22 +15,51 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Verifier la page d'accueil
+      - name: Verifier les pages et ressources
+        shell: bash
         run: |
-          set -eu
-          curl --fail --silent --show-error \
-            --location --max-time 20 \
-            https://coneprod92-max.github.io/PK-ChapShop/index.html \
-            --output /dev/null
+          set -euo pipefail
 
-      - name: Verifier les pages importantes
-        run: |
-          set -eu
           BASE="https://coneprod92-max.github.io/PK-ChapShop"
-          for PAGE in annonceur.html store.html merchant.html; do
-            echo "Verification : $PAGE"
-            curl --fail --silent --show-error \
+
+          FILES=(
+            "index.html"
+            "annonceur.html"
+            "store.html"
+            "merchant.html"
+            "cart.html"
+            "tracking.html"
+            "admin.html"
+            "style.css"
+            "app.js"
+            "advertiser.js"
+            "store.js"
+            "merchant.js"
+            "cart.js"
+            "tracking.js"
+            "robots.txt"
+            "sitemap.xml"
+          )
+
+          ERRORS=0
+
+          for FILE in "${FILES[@]}"; do
+            echo "Verification : $FILE"
+
+            if curl --fail --silent --show-error \
               --location --max-time 20 \
-              "$BASE/$PAGE" --output /dev/null
+              --output /dev/null \
+              "$BASE/$FILE"; then
+              echo "OK : $FILE"
+            else
+              echo "ERREUR : $FILE"
+              ERRORS=$((ERRORS + 1))
+            fi
           done
-          echo "Tous les contrôles HTTP ont réussi."
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "$ERRORS ressource(s) en erreur."
+            exit 1
+          fi
+
+          echo "Toutes les ressources testees repondent correctement."

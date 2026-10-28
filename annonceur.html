@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -363,6 +363,7 @@
 <body>
   <header class="header">
     <a href="index.html" class="logo">PK <span>ChapShop</span></a>
+
     <a href="cart.html" class="cart-link" aria-label="Voir le panier">
       🛒 Panier <span id="cartCount">0</span>
     </a>
@@ -373,32 +374,46 @@
 
     <section class="advertiser-hero">
       <small>REJOIGNEZ NOTRE MARKETPLACE</small>
-      <h1>Votre activité mérite plus de visibilité avec <span>PK-ChapShop.</span></h1>
+
+      <h1>
+        Votre activité mérite plus de visibilité avec
+        <span>PK-ChapShop.</span>
+      </h1>
+
       <p>
         Vous êtes commerçant, restaurateur, artisan ou prestataire de services ?
         Présentez votre activité sur notre plateforme et rapprochez-vous de nouveaux clients.
         Envoyez votre demande : notre équipe pourra vous recontacter.
       </p>
-      <div class="hero-note">✨ Une présence en ligne pour développer votre activité</div>
+
+      <div class="hero-note">
+        ✨ Une présence en ligne pour développer votre activité
+      </div>
     </section>
 
     <section class="benefits" aria-label="Les avantages de PK-ChapShop">
       <article class="benefit">
         <div class="benefit-icon" aria-hidden="true">📣</div>
         <strong>Plus de visibilité</strong>
-        <p>Présentez votre activité et vos produits à une clientèle qui recherche des commerces.</p>
+        <p>
+          Présentez votre activité et vos produits à une clientèle qui recherche des commerces.
+        </p>
       </article>
 
       <article class="benefit">
         <div class="benefit-icon" aria-hidden="true">🛍️</div>
         <strong>Vos produits en ligne</strong>
-        <p>Mettez en valeur votre catalogue et facilitez la découverte de vos articles.</p>
+        <p>
+          Mettez en valeur votre catalogue et facilitez la découverte de vos articles.
+        </p>
       </article>
 
       <article class="benefit">
         <div class="benefit-icon" aria-hidden="true">🤝</div>
         <strong>Un accompagnement</strong>
-        <p>Envoyez votre demande et échangez avec notre équipe sur les prochaines étapes.</p>
+        <p>
+          Envoyez votre demande et échangez avec notre équipe sur les prochaines étapes.
+        </p>
       </article>
     </section>
 
@@ -414,27 +429,39 @@
 
       <form id="advertiserForm">
         <div class="form-grid">
+
+          <!-- Première ligne : nom complet et adresse e-mail -->
           <div class="form-group">
             <label for="fullName">Votre nom complet *</label>
-            
-<div class="form-group">
-  <label for="email">Votre adresse e-mail *</label>
-  <input
-    id="email"
-    name="email"
-    type="email"
-    autocomplete="email"
-    required
-    placeholder="vous@exemple.com"
-  >
-</div>
+            <input
+              id="fullName"
+              name="fullName"
+              autocomplete="name"
+              required
+              placeholder="Nom et prénom"
+            >
+          </div>
 
-            <input id="fullName" name="fullName" autocomplete="name" required placeholder="Nom et prénom">
+          <div class="form-group">
+            <label for="email">Votre adresse e-mail *</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="vous@exemple.com"
+            >
           </div>
 
           <div class="form-group">
             <label for="businessName">Nom de votre activité *</label>
-            <input id="businessName" name="businessName" required placeholder="Nom du commerce ou de l'entreprise">
+            <input
+              id="businessName"
+              name="businessName"
+              required
+              placeholder="Nom du commerce ou de l'entreprise"
+            >
           </div>
 
           <div class="form-group">
@@ -453,37 +480,77 @@
 
           <div class="form-group">
             <label for="phone">Téléphone *</label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel" required placeholder="+229...">
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              required
+              placeholder="+229..."
+            >
           </div>
 
           <div class="form-group">
             <label for="whatsapp">Numéro WhatsApp</label>
-            <input id="whatsapp" name="whatsapp" type="tel" placeholder="+229...">
+            <input
+              id="whatsapp"
+              name="whatsapp"
+              type="tel"
+              placeholder="+229..."
+            >
           </div>
 
           <div class="form-group">
             <label for="city">Ville *</label>
-            <input id="city" name="city" value="Parakou" autocomplete="address-level2" required>
+            <input
+              id="city"
+              name="city"
+              value="Parakou"
+              autocomplete="address-level2"
+              required
+            >
           </div>
 
-          <div class="form-group full">
+          <div class="form-group">
             <label for="address">Adresse ou localisation</label>
-            <input id="address" name="address" autocomplete="street-address" placeholder="Quartier, rue, repère...">
+            <input
+              id="address"
+              name="address"
+              autocomplete="street-address"
+              placeholder="Quartier, rue, repère..."
+            >
           </div>
 
           <div class="form-group full">
             <label for="description">Présentez votre activité</label>
-            <textarea id="description" name="description" placeholder="Vos produits, vos services et ce qui vous distingue..."></textarea>
+            <textarea
+              id="description"
+              name="description"
+              placeholder="Vos produits, vos services et ce qui vous distingue..."
+            ></textarea>
           </div>
 
           <div class="form-group full">
             <label for="goal">Vos objectifs sur PK-ChapShop</label>
-            <textarea id="goal" name="goal" placeholder="Par exemple : gagner en visibilité, recevoir plus de commandes..."></textarea>
+            <textarea
+              id="goal"
+              name="goal"
+              placeholder="Par exemple : gagner en visibilité, recevoir plus de commandes..."
+            ></textarea>
           </div>
+
         </div>
 
-        <button class="advertiser-submit" type="submit">🚀 Envoyer ma demande</button>
-        <div id="formMessage" class="form-message" role="status" aria-live="polite"></div>
+        <button class="advertiser-submit" type="submit">
+          🚀 Envoyer ma demande
+        </button>
+
+        <div
+          id="formMessage"
+          class="form-message"
+          role="status"
+          aria-live="polite"
+        ></div>
       </form>
 
       <div class="already">
@@ -496,3 +563,4 @@
   <script src="advertiser.js"></script>
 </body>
 </html>
+```

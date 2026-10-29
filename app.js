@@ -661,6 +661,193 @@ function renderStores() {
         min-width: 0;
       }
 
+/* ==========================================
+   PK-ChapShop — Cartes premium produits
+   et commerces
+   ========================================== */
+
+/* Cartes : bordures fines, relief et animation */
+.pk-featured-grid .pk-product-card,
+.pk-store-grid .store-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e9e5d9;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(18, 59, 45, 0.07);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.pk-featured-grid .pk-product-card:hover,
+.pk-store-grid .store-card:hover {
+  transform: translateY(-5px);
+  border-color: #d5ad58;
+  box-shadow: 0 13px 30px rgba(18, 59, 45, 0.13);
+}
+
+/* Photos des commerces */
+.pk-store-grid .pk-store-cover {
+  height: 190px;
+  min-height: 190px;
+  overflow: hidden;
+  background-color: #f4f1e8;
+  background-size: cover;
+  background-position: center;
+  border-radius: 0;
+}
+
+/* Photos des produits */
+.pk-featured-grid .pk-product-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 190px;
+  min-height: 190px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #f8f6ef, #eeeadf);
+  color: #b78b34;
+  font-size: 48px;
+}
+
+/* Image : remplir proprement la zone */
+.pk-featured-grid .pk-product-symbol.has-image {
+  padding: 0;
+}
+
+.pk-featured-grid .pk-product-symbol.has-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 190px;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.pk-featured-grid .pk-product-card:hover .pk-product-symbol img {
+  transform: scale(1.04);
+}
+
+/* Espacement intérieur */
+.pk-featured-grid .pk-product-card .store-content,
+.pk-store-grid .store-card .store-content {
+  padding: 18px;
+  gap: 10px;
+}
+
+/* Titres plus nets */
+.pk-featured-grid .store-content h3,
+.pk-store-grid .store-content h3 {
+  margin: 0;
+  color: #123b2d;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* Descriptions plus lisibles */
+.pk-featured-grid .store-content > p,
+.pk-store-grid .store-content > p {
+  margin: 0;
+  color: #666b66;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+/* Informations sur le commerce */
+.pk-featured-grid .store-meta,
+.pk-store-grid .store-meta {
+  margin-top: 2px;
+  color: #52665a;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* Prix des produits : conserver le vert et le doré */
+.pk-featured-grid .pk-product-price {
+  margin: 2px 0 5px;
+  color: #a77b24;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+/* Bouton pour consulter le commerce */
+.pk-featured-grid .store-content .view-button,
+.pk-store-grid .store-content .view-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-top: 5px;
+  padding: 12px 14px;
+  border: 1px solid #123b2d;
+  border-radius: 10px;
+  background: #123b2d;
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.pk-featured-grid .store-content .view-button:hover,
+.pk-store-grid .store-content .view-button:hover {
+  border-color: #b78b34;
+  background: #1c503d;
+  color: #ffffff;
+}
+
+/* Bouton WhatsApp : harmonisé avec les cartes */
+.pk-featured-grid .pk-whatsapp-button,
+.pk-store-grid .pk-whatsapp-button {
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-top: 0;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+/* Badge doré plus élégant */
+.pk-featured-grid .pk-featured-badge,
+.pk-store-grid .pk-featured-badge {
+  border-radius: 5px;
+  letter-spacing: 0.6px;
+}
+
+/* Adaptation aux petits écrans */
+@media (max-width: 600px) {
+  .pk-featured-grid .pk-product-card,
+  .pk-store-grid .store-card {
+    border-radius: 15px;
+  }
+
+  .pk-featured-grid .pk-product-symbol,
+  .pk-store-grid .pk-store-cover {
+    height: 200px;
+    min-height: 200px;
+  }
+
+  .pk-featured-grid .pk-product-symbol.has-image img {
+    min-height: 200px;
+  }
+
+  .pk-featured-grid .pk-product-card .store-content,
+  .pk-store-grid .store-card .store-content {
+    padding: 15px;
+  }
+
+  .pk-featured-grid .pk-product-price {
+    font-size: 23px;
+  }
+}
+
       .pk-whatsapp-button {
         display: flex;
         align-items: center;

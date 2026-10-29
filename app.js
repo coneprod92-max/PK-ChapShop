@@ -496,17 +496,7 @@ const storeCategory = categories.find(
     ? `background-image:url('${escapeHTML(image)}')`
     : ""}">
 
-                  ${image
-                    ? `style="background-image:url('${escapeHTML(image)}')"`
-                    : ""}>
-                  ${!image
-                    ? '<span aria-hidden="true">🏪</span>'
-                    : ""}
-
-                  ${featured
-                    ? '<span class="pk-featured-badge pk-cover-badge">⭐ À LA UNE</span>'
-                    : ""}
-                </div>
+                  
 
                 <div class="store-content">
                   ${featured

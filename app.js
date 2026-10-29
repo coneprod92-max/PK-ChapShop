@@ -31,20 +31,25 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 
-function getWhatsAppLink(number, message) {
-  let digits = String(number || "").replace(/\D/g, "");
+/* ---------- WhatsApp ---------- */
 
+function getWhatsAppLink(number, message) {
+  let digits = String(number || "").trim().replace(/\D/g, "");
+
+  // Convertir le préfixe international 00 en indicatif classique.
   if (digits.startsWith("00")) {
     digits = digits.slice(2);
   }
 
-  // Numéro béninois local au format 01XXXXXXXX
+  // Numéro béninois local à 10 chiffres : 01XXXXXXXX.
   if (digits.length === 10 && digits.startsWith("01")) {
     digits = "229" + digits;
   }
 
-  // Évite de créer un lien sans numéro valide.
-  if (digits.length < 8) return "";
+  // Éviter les liens incomplets ou les numéros trop longs.
+  if (digits.length < 8 || digits.length > 15) {
+    return "";
+  }
 
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
@@ -103,7 +108,7 @@ async function loadCategories() {
         "store_categories?select=id,name,slug,icon&order=name.asc"
       );
     } catch (firstError) {
-      // Compatibilité si la table ne possède pas de colonne icon.
+      // Compatibilité si la colonne icon n'existe pas.
       result = await supabaseGet(
         "store_categories?select=id,name,slug&order=name.asc"
       );
@@ -179,8 +184,7 @@ async function loadStores() {
 
   try {
     /*
-     * On tente d'abord de charger les colonnes de mise en avant.
-     * En cas d'erreur, on réessaie sans ces colonnes.
+     * Première tentative : colonnes complètes, y compris la mise à la une.
      */
     try {
       stores = await supabaseGet(
@@ -188,12 +192,16 @@ async function loadStores() {
       );
     } catch (firstError) {
       console.warn(
-        "Chargement des commerces avec les champs de mise en avant impossible :",
+        "Chargement avec les champs de mise en avant impossible :",
         firstError
       );
 
+      /*
+       * CORRECTION IMPORTANTE :
+       * whatsapp est également récupéré dans la requête de secours.
+       */
       stores = await supabaseGet(
-        "stores?select=id,name,slug,description,phone,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published&is_published=eq.true&order=created_at.desc"
+        "stores?select=id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published&is_published=eq.true&order=created_at.desc"
       );
 
       stores = stores.map(store => ({
@@ -235,7 +243,6 @@ async function loadStores() {
 
 /* ---------- Produits ---------- */
 
-
 async function loadProducts() {
   productsError = null;
   products = [];
@@ -272,7 +279,6 @@ async function loadProducts() {
   }
 }
 
-
 /* ---------- Recherche et filtrage ---------- */
 
 function getVisibleStores() {
@@ -299,7 +305,9 @@ function getVisibleStores() {
     );
 
     return categoryMatches && (storeMatches || productMatches);
-  }).sort((a, b) => Number(isFeaturedActive(b)) - Number(isFeaturedActive(a)));
+  }).sort((a, b) =>
+    Number(isFeaturedActive(b)) - Number(isFeaturedActive(a))
+  );
 }
 
 function getVisibleFeaturedProducts() {
@@ -338,7 +346,6 @@ function getVisibleFeaturedProducts() {
 function renderStores() {
   if (!storesEl) return;
 
-  // #stores contient les sections et leurs grilles de cartes.
   storesEl.style.display = "block";
 
   const visibleStores = getVisibleStores();
@@ -349,6 +356,8 @@ function renderStores() {
       ? "1 commerce affiché"
       : `${visibleStores.length} commerces affichés`;
   }
+
+  /* Produits à la une */
 
   const featuredProductsHTML = featuredProducts.length
     ? `
@@ -367,56 +376,61 @@ function renderStores() {
               item => String(item.id) === String(product.store_id)
             );
 
-            // CORRECTION : store.js attend l'identifiant id, pas le slug.
             const storeLink =
               `store.html?id=${encodeURIComponent(product.store_id)}`;
-             
-const productWhatsApp = getWhatsAppLink(
-  store?.whatsapp || store?.phone,
-  `Bonjour ${store?.name || ""} ! Je souhaite commander le produit "${product.name}" vu sur PK-ChapShop. Pouvez-vous me donner les informations pour la commande ?`
-);
+
+            const productWhatsApp = getWhatsAppLink(
+              store?.whatsapp || store?.phone,
+              `Bonjour ${store?.name || ""} ! Je souhaite commander le produit "${product.name}" vu sur PK-ChapShop. Pouvez-vous me donner les informations pour la commande ?`
+            );
 
             return `
               <article class="store-card pk-product-card">
-                
-<div class="pk-product-symbol ${product.image_url ? "has-image" : ""}">
-  ${product.image_url
-    ? `<img
-        src="${escapeHTML(product.image_url)}"
-        alt="${escapeHTML(product.name)}"
-        loading="lazy"
-        onerror="this.remove(); this.parentElement.classList.remove('has-image'); this.textContent='🛍️';"
-      >`
-    : "🛍️"}
-</div>
 
+                <div class="pk-product-symbol ${
+                  product.image_url ? "has-image" : ""
+                }">
+                  ${product.image_url
+                    ? `<img
+                        src="${escapeHTML(product.image_url)}"
+                        alt="${escapeHTML(product.name)}"
+                        loading="lazy"
+                        onerror="this.remove(); this.parentElement.classList.remove('has-image'); this.parentElement.textContent='🛍️';"
+                      >`
+                    : "🛍️"}
+                </div>
 
                 <div class="store-content">
                   <span class="pk-featured-badge">PRODUIT À LA UNE</span>
+
                   <h3>${escapeHTML(product.name)}</h3>
-                  <p>${escapeHTML(product.description || "Découvrez ce produit.")}</p>
+
+                  <p>${escapeHTML(
+                    product.description || "Découvrez ce produit."
+                  )}</p>
 
                   <div class="store-meta">
                     🏪 ${escapeHTML(store?.name || "Commerce partenaire")}
-                    ${store?.city ? ` · 📍 ${escapeHTML(store.city)}` : ""}
+                    ${store?.city
+                      ? ` · 📍 ${escapeHTML(store.city)}`
+                      : ""}
                   </div>
 
-                  
-<a class="view-button" href="${storeLink}">
-  Voir le commerce →
-</a>
+                  <a class="view-button" href="${storeLink}">
+                    Voir le commerce →
+                  </a>
 
-${productWhatsApp ? `
-  <a
-    class="pk-whatsapp-button"
-    href="${escapeHTML(productWhatsApp)}"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <span aria-hidden="true">◉</span> Commander sur WhatsApp
-  </a>
-` : ""}
-
+                  ${productWhatsApp ? `
+                    <a
+                      class="pk-whatsapp-button"
+                      href="${escapeHTML(productWhatsApp)}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span aria-hidden="true">◉</span>
+                      Commander sur WhatsApp
+                    </a>
+                  ` : ""}
                 </div>
               </article>
             `;
@@ -426,14 +440,19 @@ ${productWhatsApp ? `
     `
     : "";
 
+  /* Cartes des commerces */
+
   const storesHTML = visibleStores.length
     ? `
       <section class="pk-stores-section">
         <div class="section-heading">
           <div>
             <span class="eyebrow">LE MARCHÉ LOCAL</span>
-            <h2>${searchInput?.value ? "Résultats de" : "Nos commerces à"}
-              <span>${searchInput?.value ? "recherche." : "découvrir."}</span>
+            <h2>
+              ${searchInput?.value ? "Résultats de" : "Nos commerces à"}
+              <span>${
+                searchInput?.value ? "recherche." : "découvrir."
+              }</span>
             </h2>
           </div>
         </div>
@@ -443,20 +462,25 @@ ${productWhatsApp ? `
             const image = store.cover_url || store.logo_url;
             const featured = isFeaturedActive(store);
 
-            // CORRECTION : toujours transmettre l'identifiant du commerce.
             const storeLink =
               `store.html?id=${encodeURIComponent(store.id)}`;
 
-const storeWhatsApp = getWhatsAppLink(
-  store.whatsapp || store.phone,
-  `Bonjour ${store.name} ! Je vous contacte depuis PK-ChapShop. Pouvez-vous me renseigner sur vos produits et services ?`
-);
+            const storeWhatsApp = getWhatsAppLink(
+              store.whatsapp || store.phone,
+              `Bonjour ${store.name} ! Je vous contacte depuis PK-ChapShop. Pouvez-vous me renseigner sur vos produits et services ?`
+            );
 
             return `
-              <article class="store-card ${featured ? "pk-store-featured" : ""}">
+              <article class="store-card ${
+                featured ? "pk-store-featured" : ""
+              }">
                 <div class="store-cover pk-store-cover"
-                  ${image ? `style="background-image:url('${escapeHTML(image)}')"` : ""}>
-                  ${!image ? '<span aria-hidden="true">🏪</span>' : ""}
+                  ${image
+                    ? `style="background-image:url('${escapeHTML(image)}')"`
+                    : ""}>
+                  ${!image
+                    ? '<span aria-hidden="true">🏪</span>'
+                    : ""}
 
                   ${featured
                     ? '<span class="pk-featured-badge pk-cover-badge">⭐ À LA UNE</span>'
@@ -469,7 +493,10 @@ const storeWhatsApp = getWhatsAppLink(
                     : ""}
 
                   <h3>${escapeHTML(store.name)}</h3>
-                  <p>${escapeHTML(store.description || "Découvrez ce commerce local.")}</p>
+
+                  <p>${escapeHTML(
+                    store.description || "Découvrez ce commerce local."
+                  )}</p>
 
                   <div class="store-meta">
                     📍 ${escapeHTML(store.city || "Bénin")}
@@ -477,21 +504,21 @@ const storeWhatsApp = getWhatsAppLink(
                     ${store.delivery_available ? " · 🚚 Livraison" : ""}
                   </div>
 
-<a class="view-button" href="${storeLink}">
-  Voir le commerce →
-</a>
+                  <a class="view-button" href="${storeLink}">
+                    Voir le commerce →
+                  </a>
 
-${storeWhatsApp ? `
-  <a
-    class="pk-whatsapp-button"
-    href="${escapeHTML(storeWhatsApp)}"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <span aria-hidden="true">◉</span> Contacter sur WhatsApp
-  </a>
-` : ""}
-
+                  ${storeWhatsApp ? `
+                    <a
+                      class="pk-whatsapp-button"
+                      href="${escapeHTML(storeWhatsApp)}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span aria-hidden="true">◉</span>
+                      Contacter sur WhatsApp
+                    </a>
+                  ` : ""}
                 </div>
               </article>
             `;
@@ -539,7 +566,10 @@ ${storeWhatsApp ? `
       .pk-featured-grid,
       .pk-store-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(min(100%, 240px), 1fr)
+        );
         gap: 20px;
         width: 100%;
       }
@@ -594,20 +624,18 @@ ${storeWhatsApp ? `
         border: 2px solid #d5ad58;
       }
 
-    
-.pk-product-symbol.has-image {
-  padding: 0;
-  overflow: hidden;
-  background: #f7f5ef;
-}
+      .pk-product-symbol.has-image {
+        padding: 0;
+        overflow: hidden;
+        background: #f7f5ef;
+      }
 
-.pk-product-symbol.has-image img {
-  display: block;
-  width: 100%;
-  height: 190px;
-  object-fit: cover;
-}
-
+      .pk-product-symbol.has-image img {
+        display: block;
+        width: 100%;
+        height: 190px;
+        object-fit: cover;
+      }
 
       .pk-load-warning {
         margin: 0 0 18px;
@@ -623,52 +651,55 @@ ${storeWhatsApp ? `
         min-width: 0;
       }
 
+      .pk-whatsapp-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 10px;
+        padding: 13px 15px;
+        border: 1px solid #1f9d58;
+        border-radius: 11px;
+        background: #168849;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 800;
+        transition: background .2s, transform .2s;
+      }
+
+      .pk-whatsapp-button:hover {
+        background: #116d39;
+        color: #fff;
+        transform: translateY(-2px);
+      }
+
+      .pk-whatsapp-button span {
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .pk-product-card .store-content,
+      .pk-store-grid .store-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .pk-product-card .store-content > a,
+      .pk-store-grid .store-content > a {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
       @media (max-width: 600px) {
         .pk-featured-grid,
         .pk-store-grid {
           grid-template-columns: minmax(0, 1fr);
         }
       }
-      
-.pk-whatsapp-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  width: 100%;
-  margin-top: 10px;
-  padding: 13px 15px;
-  border: 1px solid #1f9d58;
-  border-radius: 11px;
-  background: #168849;
-  color: #fff;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 800;
-  transition: background .2s, transform .2s;
-}
-
-.pk-whatsapp-button:hover {
-  background: #116d39;
-  transform: translateY(-2px);
-}
-
-.pk-whatsapp-button span {
-  font-size: 17px;
-  line-height: 1;
-}
-
-.pk-product-card .store-content,
-.pk-store-grid .store-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.pk-product-card .store-content > a,
-.pk-store-grid .store-content > a {
-  width: 100%;
-}
-
     </style>
 
     ${productWarning}
@@ -705,7 +736,9 @@ function updateCartCount() {
     const count = Array.isArray(cart)
       ? cart.reduce((total, item) => {
           const quantity = Number(item.quantity ?? 1);
-          return total + (Number.isFinite(quantity) ? quantity : 0);
+          return total + (
+            Number.isFinite(quantity) ? quantity : 0
+          );
         }, 0)
       : 0;
 

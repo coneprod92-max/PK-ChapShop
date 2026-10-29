@@ -440,6 +440,8 @@ function filterCategory(categoryId) {
   selectedCategory = categoryId;
   renderCategories();
   renderStores();
+  #stores.stores-grid {
+  display: block !important;
 }
 
 function clearSearch() {

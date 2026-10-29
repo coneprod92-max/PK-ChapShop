@@ -31,6 +31,24 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 
+function getWhatsAppLink(number, message) {
+  let digits = String(number || "").replace(/\D/g, "");
+
+  if (digits.startsWith("00")) {
+    digits = digits.slice(2);
+  }
+
+  // Numéro béninois local au format 01XXXXXXXX
+  if (digits.length === 10 && digits.startsWith("01")) {
+    digits = "229" + digits;
+  }
+
+  // Évite de créer un lien sans numéro valide.
+  if (digits.length < 8) return "";
+
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
 function normalizeText(value) {
   return String(value ?? "")
     .normalize("NFD")
@@ -166,7 +184,7 @@ async function loadStores() {
      */
     try {
       stores = await supabaseGet(
-        "stores?select=id,name,slug,description,phone,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published,is_featured,featured_until&is_published=eq.true&order=created_at.desc"
+        "stores?select=id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published,is_featured,featured_until&is_published=eq.true&order=created_at.desc"
       );
     } catch (firstError) {
       console.warn(

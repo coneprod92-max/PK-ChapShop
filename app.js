@@ -370,6 +370,11 @@ function renderStores() {
             // CORRECTION : store.js attend l'identifiant id, pas le slug.
             const storeLink =
               `store.html?id=${encodeURIComponent(product.store_id)}`;
+             
+const productWhatsApp = getWhatsAppLink(
+  store?.whatsapp || store?.phone,
+  `Bonjour ${store?.name || ""} ! Je souhaite commander le produit "${product.name}" vu sur PK-ChapShop. Pouvez-vous me donner les informations pour la commande ?`
+);
 
             return `
               <article class="store-card pk-product-card">
@@ -396,9 +401,22 @@ function renderStores() {
                     ${store?.city ? ` · 📍 ${escapeHTML(store.city)}` : ""}
                   </div>
 
-                  <a class="view-button" href="${storeLink}">
-                    Voir le commerce →
-                  </a>
+                  
+<a class="view-button" href="${storeLink}">
+  Voir le commerce →
+</a>
+
+${productWhatsApp ? `
+  <a
+    class="pk-whatsapp-button"
+    href="${escapeHTML(productWhatsApp)}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <span aria-hidden="true">◉</span> Commander sur WhatsApp
+  </a>
+` : ""}
+
                 </div>
               </article>
             `;
@@ -429,6 +447,11 @@ function renderStores() {
             const storeLink =
               `store.html?id=${encodeURIComponent(store.id)}`;
 
+const storeWhatsApp = getWhatsAppLink(
+  store.whatsapp || store.phone,
+  `Bonjour ${store.name} ! Je vous contacte depuis PK-ChapShop. Pouvez-vous me renseigner sur vos produits et services ?`
+);
+
             return `
               <article class="store-card ${featured ? "pk-store-featured" : ""}">
                 <div class="store-cover pk-store-cover"
@@ -454,9 +477,21 @@ function renderStores() {
                     ${store.delivery_available ? " · 🚚 Livraison" : ""}
                   </div>
 
-                  <a class="view-button" href="${storeLink}">
-                    Voir le commerce →
-                  </a>
+<a class="view-button" href="${storeLink}">
+  Voir le commerce →
+</a>
+
+${storeWhatsApp ? `
+  <a
+    class="pk-whatsapp-button"
+    href="${escapeHTML(storeWhatsApp)}"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <span aria-hidden="true">◉</span> Contacter sur WhatsApp
+  </a>
+` : ""}
+
                 </div>
               </article>
             `;
@@ -594,6 +629,46 @@ function renderStores() {
           grid-template-columns: minmax(0, 1fr);
         }
       }
+      
+.pk-whatsapp-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px 15px;
+  border: 1px solid #1f9d58;
+  border-radius: 11px;
+  background: #168849;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  transition: background .2s, transform .2s;
+}
+
+.pk-whatsapp-button:hover {
+  background: #116d39;
+  transform: translateY(-2px);
+}
+
+.pk-whatsapp-button span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.pk-product-card .store-content,
+.pk-store-grid .store-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.pk-product-card .store-content > a,
+.pk-store-grid .store-content > a {
+  width: 100%;
+}
+
     </style>
 
     ${productWarning}

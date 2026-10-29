@@ -517,7 +517,6 @@ const storeCategory = categories.find(
 
 </div>
 
-<div class="store-content">
                 <div class="store-content">
                   ${featured
                     ? '<span class="pk-featured-badge">COMMERCE À LA UNE</span>'

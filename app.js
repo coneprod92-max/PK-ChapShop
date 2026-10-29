@@ -496,8 +496,28 @@ const storeCategory = categories.find(
     ? `background-image:url('${escapeHTML(image)}')`
     : ""}">
 
-                  
+  ${!image
+    ? '<span class="pk-cover-placeholder" aria-hidden="true">🏪</span>'
+    : ""}
 
+  ${featured
+    ? '<span class="pk-featured-badge pk-cover-badge">⭐ À LA UNE</span>'
+    : ""}
+
+  ${storeLogo ? `
+    <div class="pk-store-logo">
+      <img
+        src="${escapeHTML(storeLogo)}"
+        alt="Logo de ${escapeHTML(store.name)}"
+        loading="lazy"
+        onerror="this.parentElement.style.display='none';"
+      >
+    </div>
+  ` : ""}
+
+</div>
+
+<div class="store-content">
                 <div class="store-content">
                   ${featured
                     ? '<span class="pk-featured-badge">COMMERCE À LA UNE</span>'

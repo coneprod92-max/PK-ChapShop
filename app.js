@@ -217,6 +217,7 @@ async function loadStores() {
 
 /* ---------- Produits ---------- */
 
+
 async function loadProducts() {
   productsError = null;
   products = [];
@@ -224,7 +225,7 @@ async function loadProducts() {
   try {
     try {
       products = await supabaseGet(
-        "products?select=id,store_id,name,description,is_available,is_featured,featured_until&is_available=eq.true"
+        "products?select=id,store_id,name,description,price,image_url,is_available,is_featured,featured_until&is_available=eq.true"
       );
     } catch (firstError) {
       console.warn(
@@ -233,7 +234,7 @@ async function loadProducts() {
       );
 
       products = await supabaseGet(
-        "products?select=id,store_id,name,description,is_available&is_available=eq.true"
+        "products?select=id,store_id,name,description,price,image_url,is_available&is_available=eq.true"
       );
 
       products = products.map(product => ({
@@ -252,6 +253,7 @@ async function loadProducts() {
     console.error("Erreur de chargement des produits :", error);
   }
 }
+
 
 /* ---------- Recherche et filtrage ---------- */
 

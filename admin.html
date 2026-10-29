@@ -1,17 +1,872 @@
+
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Administration — PK ChapShop</title><link rel="stylesheet" href="style.css">
-<style>
-:root{--g:#103b2b;--gd:#09271d;--gold:#d5b45b;--paper:#f5f7f1;--ink:#19271f;--muted:#6c7b72;--line:#e0e8df}*{box-sizing:border-box}body{background:var(--paper);color:var(--ink)}.header{background:var(--gd);color:#fff;border-bottom:2px solid var(--gold)}.header .logo{color:#fff}.header .logo span{color:var(--gold)}.admin-page{max-width:1380px;padding:0 16px 60px}.back-link{display:inline-block;margin:15px 0;color:var(--g);font-weight:800}.admin-login,.admin-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(16px,2.5vw,28px);margin:18px 0;box-shadow:0 12px 32px #103b2b10}.admin-login{max-width:480px;margin:40px auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:28px;border-radius:20px;background:linear-gradient(120deg,var(--gd),var(--g));color:#fff;margin:22px 0}.admin-top h1{color:#fff;margin:8px 0}.admin-top small,.eyebrow{color:var(--gold);font-size:10px;font-weight:900;letter-spacing:2px}.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0 22px}.admin-stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px;color:var(--muted);font-size:12px;font-weight:800}.admin-stat strong{display:block;font-size:29px;color:var(--g);margin-top:8px}.admin-nav{display:flex;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:4;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--line)}button{border:0;border-radius:10px;padding:11px 14px;background:var(--g);color:white;font-weight:800;font-size:12px;cursor:pointer}.admin-nav button{background:white;color:var(--g);border:1px solid var(--line)}.admin-nav button[aria-selected=true],button.gold{background:var(--gold);color:var(--gd)}button.danger{background:#b42318;color:white}button:disabled{opacity:.6;cursor:wait}.admin-panel{display:none}.admin-panel.active{display:block}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.panel-head h2{color:var(--g);margin:5px 0}.panel-head p,.admin-card p,.admin-login p{color:var(--muted);line-height:1.6}label{display:block;font-size:12px;font-weight:800;margin-top:12px;color:#34483a}input,select,textarea{width:100%;padding:11px;border:1px solid #dbe4da;border-radius:10px;background:#fbfcfa;margin:6px 0 12px;font:inherit;font-size:14px}input[type=checkbox]{width:auto;margin-right:8px}.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}.item-row{background:#fbfcfa;border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0;overflow-wrap:anywhere}.item-row strong{color:var(--g)}.item-head,.status-line{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.item-meta{font-size:12px;color:var(--muted);line-height:1.85;margin:10px 0}.status-line select{width:auto;min-width:180px}.admin-hidden{display:none!important}.admin-error,.admin-success{padding:12px;border-radius:10px;margin-top:12px}.admin-error{background:#fff0ef;color:#a12720}.admin-success{background:#e9f8ed;color:#17683b}.media-item{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:10px 0}.media-item img,.media-item video{width:100%;max-height:240px;object-fit:cover}.media-info{padding:10px}.admin-form{margin-top:15px}hr{border:0;border-top:1px solid var(--line);margin:16px 0}@media(max-width:780px){.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-nav{position:static}}@media(max-width:480px){.admin-page{padding:0 10px 45px}.admin-nav button{flex:1 1 40%}.admin-stats{gap:7px}.admin-stat{padding:12px}.admin-stat strong{font-size:24px}.status-line select{width:100%}}
-</style></head><body>
-<header class="header"><a href="index.html" class="logo">PK <span>ChapShop</span></a><a href="cart.html" class="cart-link">🛒 <span id="cartCount">0</span></a></header>
-<main class="container admin-page"><a href="index.html" class="back-link">← Retour au site</a>
-<section id="loginSection" class="admin-login"><div class="eyebrow">ESPACE PRIVÉ SÉCURISÉ</div><h1>Administration</h1><p>Connectez-vous avec un compte administrateur autorisé.</p><form id="loginForm"><label for="adminEmail">Adresse e-mail</label><input id="adminEmail" type="email" autocomplete="username" required><label for="adminPassword">Mot de passe</label><input id="adminPassword" type="password" autocomplete="current-password" required><button class="gold" type="submit">🔐 Se connecter</button></form><div id="loginMessage" aria-live="polite"></div></section>
-<section id="dashboard" class="admin-hidden"><div class="admin-top"><div><small>ESPACE DE PILOTAGE</small><h1>Administration PK ChapShop</h1><p style="color:#e6eee8">Gérez les ventes, les partenaires et le catalogue depuis des rubriques séparées.</p></div><button id="logoutButton">Déconnexion</button></div>
-<div class="admin-stats"><div class="admin-stat">Commandes<strong id="statOrders">0</strong></div><div class="admin-stat">En attente<strong id="statPending">0</strong></div><div class="admin-stat">Livrées<strong id="statDelivered">0</strong></div><div class="admin-stat">Boutiques<strong id="statStores">0</strong></div></div>
-<nav class="admin-nav" aria-label="Navigation administrative"><button type="button" data-panel="ordersPanel" aria-selected="true">📦 Commandes</button><button type="button" data-panel="advertisersPanel" aria-selected="false">📣 Annonceurs</button><button type="button" data-panel="storesPanel" aria-selected="false">🏪 Boutiques</button><button type="button" data-panel="productsPanel" aria-selected="false">🛍️ Produits</button><button type="button" data-panel="mediaPanel" aria-selected="false">🎨 Galerie médias</button></nav>
-<section id="ordersPanel" class="admin-panel active"><div class="admin-card"><div class="panel-head"><div><div class="eyebrow">VENTES & LIVRAISONS</div><h2>Gestion des commandes</h2><p>Filtrez les commandes, modifiez les statuts et suivez les livreurs.</p></div><button id="refreshOrders" class="gold">↻ Actualiser</button></div><label for="orderFilter">Filtrer les commandes</label><select id="orderFilter"><option value="active">Commandes non archivées</option><option value="archived">Commandes archivées</option><option value="all">Toutes les commandes</option><option value="pending">En attente</option><option value="confirmed">Confirmées</option><option value="preparing">En préparation</option><option value="ready">Prêtes</option><option value="out_for_delivery">En cours de livraison</option><option value="delivered">Livrées</option><option value="cancelled">Annulées</option></select><div id="ordersMessage"></div><div id="ordersList">Les commandes apparaîtront ici.</div></div></section>
-<section id="advertisersPanel" class="admin-panel"><div class="admin-card"><div class="panel-head"><div><div class="eyebrow">PARTENAIRES</div><h2>Demandes des annonceurs</h2><p>Examinez les demandes, approuvez les boutiques et renvoyez les codes marchands.</p></div><button id="refreshAdvertisers" class="gold">↻ Actualiser</button></div><div id="advertisersMessage"></div><div id="advertisersList">Les demandes apparaîtront ici.</div></div></section>
-<section id="storesPanel" class="admin-panel"><div class="admin-card"><div class="panel-head"><div><div class="eyebrow">MARKETPLACE</div><h2>Gestion des boutiques</h2></div><button type="button" id="refreshStores" class="gold">↻ Actualiser</button></div><div class="admin-grid"><div><h3>Ajouter / modifier une boutique</h3><form id="storeForm" class="admin-form"><label for="storeName">Nom de la boutique</label><input id="storeName" required><label for="storeCategory">Catégorie</label><select id="storeCategory" required><option value="">Choisir une catégorie</option></select><label for="storeDescription">Description</label><textarea id="storeDescription"></textarea><label for="storePhone">Téléphone</label><input id="storePhone" placeholder="+229..."><label for="storeWhatsapp">WhatsApp</label><input id="storeWhatsapp" placeholder="+229..."><label for="storeAddress">Adresse</label><input id="storeAddress"><label for="storeLogo">URL du logo</label><input id="storeLogo" type="url" placeholder="https://..."><label for="storeCover">URL de couverture</label><input id="storeCover" type="url" placeholder="https://..."><label><input id="storeDelivery" type="checkbox" checked> Livraison disponible</label><div class="status-line"><button class="gold" type="submit">💾 Enregistrer la boutique</button><button type="button" id="cancelStoreEdit">Annuler la modification</button></div></form><div id="storeMessage"></div></div><div><h3>Boutiques existantes</h3><div id="storesList">Chargement...</div></div></div></div></section>
-<section id="productsPanel" class="admin-panel"><div class="admin-card"><div class="panel-head"><div><div class="eyebrow">CATALOGUE</div><h2>Gestion des produits</h2><p>Choisissez une boutique pour afficher ses produits.</p></div></div><div class="admin-grid"><div><h3>Ajouter / modifier un produit</h3><form id="productForm" class="admin-form"><label for="productStore">Boutique</label><select id="productStore" required><option value="">Choisir une boutique</option></select><label for="productName">Nom du produit</label><input id="productName" required><label for="productDescription">Description</label><textarea id="productDescription"></textarea><label for="productPrice">Prix en FCFA</label><input id="productPrice" type="number" min="1" step="1" required><label for="productImage">URL de l'image</label><input id="productImage" type="url" placeholder="https://..."><label><input id="productAvailable" type="checkbox" checked> Produit disponible</label><div class="status-line"><button class="gold" type="submit">📦 Enregistrer le produit</button><button type="button" id="cancelProductEdit">Annuler la modification</button></div></form><div id="productMessage"></div></div><div><h3>Produits existants</h3><div id="productsList">Sélectionnez une boutique.</div></div></div></div></section>
-<section id="mediaPanel" class="admin-panel"><div class="admin-card"><div class="panel-head"><div><div class="eyebrow">IDENTITÉ VISUELLE</div><h2>Galerie des boutiques</h2><p>Ajoutez des photos ou vidéos à une boutique.</p></div></div><div class="admin-grid"><div><h3>Ajouter un média</h3><form id="mediaForm" class="admin-form"><label for="mediaStore">Boutique</label><select id="mediaStore" required><option value="">Choisir une boutique</option></select><label for="mediaType">Type de média</label><select id="mediaType"><option value="image">Photo</option><option value="video">Vidéo</option></select><label for="mediaTitle">Titre</label><input id="mediaTitle"><label for="mediaFile">Fichier</label><input id="mediaFile" type="file" accept="image/*,video/*" required><label><input id="mediaCover" type="checkbox"> Utiliser comme couverture</label><button type="submit" class="gold" id="uploadMediaButton">📤 Envoyer le média</button></form><div id="mediaMessage"></div></div><div><h3>Médias existants</h3><div id="mediaList">Choisissez une boutique.</div></div></div></div></section>
-</section></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="admin.js"></script><script>document.querySelectorAll('.admin-nav [data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.admin-nav [data-panel]').forEach(x=>x.setAttribute('aria-selected',String(x===b)));document.querySelectorAll('.admin-panel').forEach(p=>p.classList.toggle('active',p.id===b.dataset.panel));}));</script></body></html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09271d">
+  <title>Administration — PK-ChapShop</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root {
+      --g: #103b2b;
+      --gd: #09271d;
+      --gold: #d5b45b;
+      --paper: #f5f7f1;
+      --ink: #19271f;
+      --muted: #6c7b72;
+      --line: #e0e8df;
+      --red: #b42318;
+      --green: #17683b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .header {
+      background: var(--gd);
+      color: #fff;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .header .logo { color: #fff; }
+    .header .logo span { color: var(--gold); }
+
+    .admin-page {
+      max-width: 1450px;
+      padding: 0 16px 60px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 15px 0;
+      color: var(--g);
+      font-weight: 800;
+    }
+
+    .admin-login,
+    .admin-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: clamp(16px, 2.5vw, 28px);
+      margin: 18px 0;
+      box-shadow: 0 12px 32px #103b2b10;
+    }
+
+    .admin-login {
+      max-width: 480px;
+      margin: 40px auto;
+    }
+
+    .admin-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      padding: 28px;
+      border-radius: 20px;
+      background: linear-gradient(120deg, var(--gd), var(--g));
+      color: #fff;
+      margin: 22px 0;
+    }
+
+    .admin-top h1 {
+      color: #fff;
+      margin: 8px 0;
+    }
+
+    .admin-top p {
+      color: #e6eee8;
+      line-height: 1.6;
+    }
+
+    .admin-top small,
+    .eyebrow {
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0 22px;
+    }
+
+    .admin-stat {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 17px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      min-width: 0;
+    }
+
+    .admin-stat strong {
+      display: block;
+      font-size: 27px;
+      color: var(--g);
+      margin-top: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      background: var(--paper);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      background: var(--g);
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .admin-nav button {
+      background: #fff;
+      color: var(--g);
+      border: 1px solid var(--line);
+    }
+
+    .admin-nav button[aria-selected="true"],
+    button.gold {
+      background: var(--gold);
+      color: var(--gd);
+    }
+
+    button.danger {
+      background: var(--red);
+      color: white;
+    }
+
+    button.secondary {
+      background: #eef3ed;
+      color: var(--g);
+      border: 1px solid var(--line);
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h2 {
+      color: var(--g);
+      margin: 5px 0;
+    }
+
+    .panel-head p,
+    .admin-card p,
+    .admin-login p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    h3 { color: var(--g); }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 12px;
+      color: #34483a;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #dbe4da;
+      border-radius: 10px;
+      background: #fbfcfa;
+      margin: 6px 0 12px;
+      font: inherit;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 8px;
+      accent-color: var(--g);
+    }
+
+    input[type="number"] { max-width: 100%; }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .item-row {
+      background: #fbfcfa;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 15px;
+      margin: 12px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .item-row strong { color: var(--g); }
+
+    .item-head,
+    .status-line {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .item-meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.85;
+      margin: 10px 0;
+    }
+
+    .status-line select {
+      width: auto;
+      min-width: 180px;
+    }
+
+    .admin-hidden { display: none !important; }
+
+    .admin-error,
+    .admin-success,
+    .admin-notice {
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .admin-error {
+      background: #fff0ef;
+      color: #a12720;
+    }
+
+    .admin-success {
+      background: #e9f8ed;
+      color: #17683b;
+    }
+
+    .admin-notice {
+      background: #fff8e5;
+      color: #765b12;
+      border: 1px solid #f0dfaa;
+    }
+
+    .media-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .media-item img,
+    .media-item video {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+    }
+
+    .media-info { padding: 10px; }
+    .admin-form { margin-top: 15px; }
+
+    .finance-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .finance-card {
+      border: 1px solid var(--line);
+      background: #fbfcfa;
+      border-radius: 14px;
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .finance-card span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .finance-card strong {
+      display: block;
+      margin-top: 9px;
+      color: var(--g);
+      font-size: clamp(18px, 2.4vw, 27px);
+      overflow-wrap: anywhere;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+      background: white;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    .admin-table th {
+      background: #f0f4ed;
+      color: var(--g);
+      font-weight: 900;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 900;
+      background: #eef3ed;
+      color: var(--g);
+    }
+
+    .status-pill.paid {
+      background: #e9f8ed;
+      color: var(--green);
+    }
+
+    .status-pill.pending {
+      background: #fff5d8;
+      color: #765b12;
+    }
+
+    .feature-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .feature-option {
+      background: #fbfcfa;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .feature-option label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .feature-option input[type="checkbox"] {
+      flex: 0 0 auto;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 16px 0;
+    }
+
+    @media (max-width: 900px) {
+      .admin-nav { position: static; }
+      .finance-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 780px) {
+      .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .admin-grid { grid-template-columns: 1fr; }
+      .admin-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .feature-options { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .admin-page { padding: 0 10px 45px; }
+      .admin-nav button { flex: 1 1 40%; }
+      .admin-stats { gap: 7px; }
+      .admin-stat { padding: 12px; }
+      .admin-stat strong { font-size: 22px; }
+      .finance-cards { grid-template-columns: 1fr; }
+      .status-line select { width: 100%; }
+      .admin-top { padding: 20px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <a href="index.html" class="logo">PK <span>ChapShop</span></a>
+    <a href="cart.html" class="cart-link">🛒 <span id="cartCount">0</span></a>
+  </header>
+
+  <main class="container admin-page">
+    <a href="index.html" class="back-link">← Retour au site</a>
+
+    <!-- CONNEXION -->
+    <section id="loginSection" class="admin-login">
+      <div class="eyebrow">ESPACE PRIVÉ SÉCURISÉ</div>
+      <h1>Administration</h1>
+      <p>Connectez-vous avec un compte administrateur autorisé.</p>
+
+      <form id="loginForm">
+        <label for="adminEmail">Adresse e-mail</label>
+        <input id="adminEmail" type="email" autocomplete="username" required>
+
+        <label for="adminPassword">Mot de passe</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" required>
+
+        <button class="gold" type="submit">🔐 Se connecter</button>
+      </form>
+
+      <div id="loginMessage" aria-live="polite"></div>
+    </section>
+
+    <!-- TABLEAU DE BORD -->
+    <section id="dashboard" class="admin-hidden">
+      <div class="admin-top">
+        <div>
+          <small>ESPACE DE PILOTAGE</small>
+          <h1>Administration PK-ChapShop</h1>
+          <p>Gérez les commandes, les boutiques, les annonceurs, la visibilité et les commissions.</p>
+        </div>
+        <button id="logoutButton">Déconnexion</button>
+      </div>
+
+      <!-- INDICATEURS GÉNÉRAUX -->
+      <div class="admin-stats">
+        <div class="admin-stat">
+          Commandes
+          <strong id="statOrders">0</strong>
+        </div>
+        <div class="admin-stat">
+          En attente
+          <strong id="statPending">0</strong>
+        </div>
+        <div class="admin-stat">
+          Livrées
+          <strong id="statDelivered">0</strong>
+        </div>
+        <div class="admin-stat">
+          Boutiques
+          <strong id="statStores">0</strong>
+        </div>
+      </div>
+
+      <!-- NAVIGATION -->
+      <nav class="admin-nav" aria-label="Navigation administrative">
+        <button type="button" data-panel="ordersPanel" aria-selected="true">📦 Commandes</button>
+        <button type="button" data-panel="financePanel" aria-selected="false">💰 Revenus & commissions</button>
+        <button type="button" data-panel="featuredPanel" aria-selected="false">⭐ Mise en avant</button>
+        <button type="button" data-panel="advertisersPanel" aria-selected="false">📣 Annonceurs</button>
+        <button type="button" data-panel="storesPanel" aria-selected="false">🏪 Boutiques</button>
+        <button type="button" data-panel="productsPanel" aria-selected="false">🛍️ Produits</button>
+        <button type="button" data-panel="mediaPanel" aria-selected="false">🎨 Galerie médias</button>
+      </nav>
+
+      <!-- COMMANDES -->
+      <section id="ordersPanel" class="admin-panel active">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">VENTES & LIVRAISONS</div>
+              <h2>Gestion des commandes</h2>
+              <p>Filtrez les commandes, modifiez les statuts et suivez les livreurs.</p>
+            </div>
+            <button id="refreshOrders" class="gold" type="button">↻ Actualiser</button>
+          </div>
+
+          <label for="orderFilter">Filtrer les commandes</label>
+          <select id="orderFilter">
+            <option value="active">Commandes non archivées</option>
+            <option value="archived">Commandes archivées</option>
+            <option value="all">Toutes les commandes</option>
+            <option value="pending">En attente</option>
+            <option value="confirmed">Confirmées</option>
+            <option value="preparing">En préparation</option>
+            <option value="ready">Prêtes</option>
+            <option value="out_for_delivery">En cours de livraison</option>
+            <option value="delivered">Livrées</option>
+            <option value="cancelled">Annulées</option>
+          </select>
+
+          <div id="ordersMessage" aria-live="polite"></div>
+          <div id="ordersList">Les commandes apparaîtront ici.</div>
+        </div>
+      </section>
+
+      <!-- REVENUS ET COMMISSIONS -->
+      <section id="financePanel" class="admin-panel">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">SUIVI FINANCIER</div>
+              <h2>Revenus et commissions</h2>
+              <p>Suivez les ventes, les commissions calculées et les paiements réellement confirmés.</p>
+            </div>
+            <button id="refreshFinance" class="gold" type="button">↻ Actualiser</button>
+          </div>
+
+          <div class="admin-notice">
+            La commission est calculée sur le sous-total des produits, hors frais de livraison.
+            Une commission calculée n'est pas automatiquement considérée comme encaissée.
+            Les commandes annulées sont exclues des ventes.
+          </div>
+
+          <div class="admin-card">
+            <h3>Paramètres de commission</h3>
+            <p>Le taux initial prévu est de 10 %. Tu pourras le modifier depuis cette rubrique.</p>
+
+            <form id="commissionSettingsForm">
+              <label for="commissionRate">Taux de commission (%)</label>
+              <input
+                id="commissionRate"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value="10"
+                required
+              >
+
+              <button type="submit" class="gold">💾 Enregistrer le taux</button>
+            </form>
+
+            <div id="commissionSettingsMessage" aria-live="polite"></div>
+          </div>
+
+          <div class="finance-cards">
+            <div class="finance-card">
+              <span>Montant des ventes de produits</span>
+              <strong id="financeSalesTotal">—</strong>
+            </div>
+            <div class="finance-card">
+              <span>Commissions calculées</span>
+              <strong id="financeCommissionTotal">—</strong>
+            </div>
+            <div class="finance-card">
+              <span>Commissions dont le paiement est confirmé</span>
+              <strong id="financeCommissionPaid">—</strong>
+            </div>
+            <div class="finance-card">
+              <span>Commissions en attente de confirmation</span>
+              <strong id="financeCommissionPending">—</strong>
+            </div>
+            <div class="finance-card">
+              <span>Commandes prises en compte</span>
+              <strong id="financeSalesCount">—</strong>
+            </div>
+            <div class="finance-card">
+              <span>Frais de livraison exclus du calcul</span>
+              <strong id="financeDeliveryExcluded">—</strong>
+            </div>
+          </div>
+
+          <h3>Détail des ventes et des commissions</h3>
+          <p>Les données seront affichées ici après connexion à la base de données.</p>
+          <div id="financeMessage" aria-live="polite"></div>
+          <div id="financeTableWrap" class="table-wrap">
+            <div id="financeList">Chargement des données financières…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MISE EN AVANT -->
+      <section id="featuredPanel" class="admin-panel">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">VISIBILITÉ COMMERCIALE</div>
+              <h2>Mise en avant des boutiques et produits</h2>
+              <p>Choisis les boutiques et produits qui doivent être mis en évidence sur le site public.</p>
+            </div>
+            <button id="refreshFeatured" class="gold" type="button">↻ Actualiser</button>
+          </div>
+
+          <div class="admin-notice">
+            La mise en avant concerne uniquement la visibilité sur le site. Elle ne modifie ni les prix,
+            ni les commandes, ni les données des clients.
+          </div>
+
+          <div class="feature-options">
+            <div class="feature-option">
+              <h3>⭐ Boutiques à la une</h3>
+              <p>Consulte les boutiques et active ou désactive leur mise en avant.</p>
+              <div id="featuredStoresList">Les boutiques apparaîtront ici.</div>
+            </div>
+
+            <div class="feature-option">
+              <h3>🛍️ Produits à la une</h3>
+              <p>Choisis les produits à présenter en priorité sur le site public.</p>
+              <label for="featuredProductStore">Filtrer par boutique</label>
+              <select id="featuredProductStore">
+                <option value="">Toutes les boutiques</option>
+              </select>
+              <div id="featuredProductsList">Les produits apparaîtront ici.</div>
+            </div>
+          </div>
+
+          <div id="featuredMessage" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- ANNONCEURS -->
+      <section id="advertisersPanel" class="admin-panel">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">PARTENAIRES</div>
+              <h2>Demandes des annonceurs</h2>
+              <p>Examine les demandes, approuve les boutiques et renvoie les codes marchands.</p>
+            </div>
+            <button id="refreshAdvertisers" class="gold" type="button">↻ Actualiser</button>
+          </div>
+
+          <div id="advertisersMessage" aria-live="polite"></div>
+          <div id="advertisersList">Les demandes apparaîtront ici.</div>
+        </div>
+      </section>
+
+      <!-- BOUTIQUES -->
+      <section id="storesPanel" class="admin-panel">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">MARKETPLACE</div>
+              <h2>Gestion des boutiques</h2>
+            </div>
+            <button type="button" id="refreshStores" class="gold">↻ Actualiser</button>
+          </div>
+
+          <div class="admin-grid">
+            <div>
+              <h3>Ajouter / modifier une boutique</h3>
+
+              <form id="storeForm" class="admin-form">
+                <label for="storeName">Nom de la boutique</label>
+                <input id="storeName" required>
+
+                <label for="storeCategory">Catégorie</label>
+                <select id="storeCategory" required>
+                  <option value="">Choisir une catégorie</option>
+                </select>
+
+                <label for="storeDescription">Description</label>
+                <textarea id="storeDescription"></textarea>
+
+                <label for="storePhone">Téléphone</label>
+                <input id="storePhone" placeholder="+229...">
+
+                <label for="storeWhatsapp">WhatsApp</label>
+                <input id="storeWhatsapp" placeholder="+229...">
+
+                <label for="storeAddress">Adresse</label>
+                <input id="storeAddress">
+
+                <label for="storeLogo">URL du logo</label>
+                <input id="storeLogo" type="url" placeholder="https://...">
+
+                <label for="storeCover">URL de couverture</label>
+                <input id="storeCover" type="url" placeholder="https://...">
+
+                <label>
+                  <input id="storeDelivery" type="checkbox" checked>
+                  Livraison disponible
+                </label>
+
+                <div class="status-line">
+                  <button class="gold" type="submit">💾 Enregistrer la boutique</button>
+                  <button type="button" id="cancelStoreEdit" class="secondary">Annuler la modification</button>
+                </div>
+              </form>
+
+              <div id="storeMessage" aria-live="polite"></div>
+            </div>
+
+            <div>
+              <h3>Boutiques existantes</h3>
+              <div id="storesList">Chargement…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUITS -->
+      <section id="productsPanel" class="admin-panel">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">CATALOGUE</div>
+              <h2>Gestion des produits</h2>
+              <p>Choisis une boutique pour afficher ses produits.</p>
+            </div>
+          </div>
+
+          <div class="admin-grid">
+            <div>
+              <h3>Ajouter / modifier un produit</h3>
+
+              <form id="productForm" class="admin-form">
+                <label for="productStore">Boutique</label>
+                <select id="productStore" required>
+                  <option value="">Choisir une boutique</option>
+                </select>
+
+                <label for="productName">Nom du produit</label>
+                <input id="productName" required>
+
+                <label for="productDescription">Description</label>
+                <textarea id="productDescription"></textarea>
+
+                <label for="productPrice">Prix en FCFA</label>
+                <input id="productPrice" type="number" min="1" step="1" required>
+
+                <label for="productImage">URL de l'image</label>
+                <input id="productImage" type="url" placeholder="https://...">
+
+                <label>
+                  <input id="productAvailable" type="checkbox" checked>
+                  Produit disponible
+                </label>
+
+                <div class="status-line">
+                  <button class="gold" type="submit">📦 Enregistrer le produit</button>
+                  <button type="button" id="cancelProductEdit" class="secondary">Annuler la modification</button>
+                </div>
+              </form>
+
+              <div id="productMessage" aria-live="polite"></div>
+            </div>
+
+            <div>
+              <h3>Produits existants</h3>
+              <div id="productsList">Sélectionne une boutique.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GALERIE MÉDIAS -->
+      <section id="mediaPanel" class="admin-panel">
+        <div class="admin-card">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">IDENTITÉ VISUELLE</div>
+              <h2>Galerie des boutiques</h2>
+              <p>Ajoute des photos ou vidéos à une boutique.</p>
+            </div>
+          </div>
+
+          <div class="admin-grid">
+            <div>
+              <h3>Ajouter un média</h3>
+
+              <form id="mediaForm" class="admin-form">
+                <label for="mediaStore">Boutique</label>
+                <select id="mediaStore" required>
+                  <option value="">Choisir une boutique</option>
+                </select>
+
+                <label for="mediaType">Type de média</label>
+                <select id="mediaType">
+                  <option value="image">Photo</option>
+                  <option value="video">Vidéo</option>
+                </select>
+
+                <label for="mediaTitle">Titre</label>
+                <input id="mediaTitle">
+
+                <label for="mediaFile">Fichier</label>
+                <input id="mediaFile" type="file" accept="image/*,video/*" required>
+
+                <label>
+                  <input id="mediaCover" type="checkbox">
+                  Utiliser comme couverture
+                </label>
+
+                <button type="submit" class="gold" id="uploadMediaButton">📤 Envoyer le média</button>
+              </form>
+
+              <div id="mediaMessage" aria-live="polite"></div>
+            </div>
+
+            <div>
+              <h3>Médias existants</h3>
+              <div id="mediaList">Choisis une boutique.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+
+  <script>
+    document.querySelectorAll(".admin-nav [data-panel]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".admin-nav [data-panel]").forEach(item => {
+          item.setAttribute("aria-selected", String(item === button));
+        });
+
+        document.querySelectorAll(".admin-panel").forEach(panel => {
+          panel.classList.toggle("active", panel.id === button.dataset.panel);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

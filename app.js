@@ -151,6 +151,7 @@ async function loadStores() {
   if (!storesEl) return;
 
   storesError = null;
+
   storesEl.innerHTML = `
     <div class="loading">
       <span class="loading-spinner"></span>
@@ -160,8 +161,8 @@ async function loadStores() {
 
   try {
     /*
-     * Les colonnes de mise en avant sont demandées avec les commerces.
-     * En cas d'erreur, on tente une requête de compatibilité sans elles.
+     * On tente d'abord de charger les colonnes de mise en avant.
+     * En cas d'erreur, on réessaie sans ces colonnes.
      */
     try {
       stores = await supabaseGet(
@@ -207,6 +208,7 @@ async function loadStores() {
     `;
 
     const retryButton = document.getElementById("retryStores");
+
     if (retryButton) {
       retryButton.addEventListener("click", loadStores);
     }
@@ -290,7 +292,7 @@ function getVisibleFeaturedProducts() {
       store => String(store.id) === String(product.store_id)
     );
 
-    // Un produit ne doit pas être présenté si son commerce n'est pas publié.
+    // Ne pas afficher un produit si son commerce n'est pas publié.
     if (!parentStore || !storeIsPublished(parentStore)) return false;
 
     if (
@@ -316,8 +318,7 @@ function getVisibleFeaturedProducts() {
 function renderStores() {
   if (!storesEl) return;
 
-  // Important : #stores est une grille CSS. Les sections doivent occuper
-  // toute sa largeur, et leurs propres grilles contiennent les cartes.
+  // #stores contient les sections et leurs grilles de cartes.
   storesEl.style.display = "block";
 
   const visibleStores = getVisibleStores();
@@ -346,21 +347,24 @@ function renderStores() {
               item => String(item.id) === String(product.store_id)
             );
 
-            const storeLink = store?.slug
-              ? `store.html?slug=${encodeURIComponent(store.slug)}`
-              : `store.html?id=${encodeURIComponent(product.store_id)}`;
+            // CORRECTION : store.js attend l'identifiant id, pas le slug.
+            const storeLink =
+              `store.html?id=${encodeURIComponent(product.store_id)}`;
 
             return `
               <article class="store-card pk-product-card">
                 <div class="pk-product-symbol" aria-hidden="true">⭐</div>
+
                 <div class="store-content">
                   <span class="pk-featured-badge">PRODUIT À LA UNE</span>
                   <h3>${escapeHTML(product.name)}</h3>
                   <p>${escapeHTML(product.description || "Découvrez ce produit.")}</p>
+
                   <div class="store-meta">
                     🏪 ${escapeHTML(store?.name || "Commerce partenaire")}
                     ${store?.city ? ` · 📍 ${escapeHTML(store.city)}` : ""}
                   </div>
+
                   <a class="view-button" href="${storeLink}">
                     Voir le commerce →
                   </a>
@@ -379,7 +383,9 @@ function renderStores() {
         <div class="section-heading">
           <div>
             <span class="eyebrow">LE MARCHÉ LOCAL</span>
-            <h2>${searchInput?.value ? "Résultats de" : "Nos commerces à"} <span>${searchInput?.value ? "recherche." : "découvrir."}</span></h2>
+            <h2>${searchInput?.value ? "Résultats de" : "Nos commerces à"}
+              <span>${searchInput?.value ? "recherche." : "découvrir."}</span>
+            </h2>
           </div>
         </div>
 
@@ -388,15 +394,16 @@ function renderStores() {
             const image = store.cover_url || store.logo_url;
             const featured = isFeaturedActive(store);
 
-            const storeLink = store.slug
-              ? `store.html?slug=${encodeURIComponent(store.slug)}`
-              : `store.html?id=${encodeURIComponent(store.id)}`;
+            // CORRECTION : toujours transmettre l'identifiant du commerce.
+            const storeLink =
+              `store.html?id=${encodeURIComponent(store.id)}`;
 
             return `
               <article class="store-card ${featured ? "pk-store-featured" : ""}">
                 <div class="store-cover pk-store-cover"
                   ${image ? `style="background-image:url('${escapeHTML(image)}')"` : ""}>
                   ${!image ? '<span aria-hidden="true">🏪</span>' : ""}
+
                   ${featured
                     ? '<span class="pk-featured-badge pk-cover-badge">⭐ À LA UNE</span>'
                     : ""}
@@ -406,13 +413,16 @@ function renderStores() {
                   ${featured
                     ? '<span class="pk-featured-badge">COMMERCE À LA UNE</span>'
                     : ""}
+
                   <h3>${escapeHTML(store.name)}</h3>
                   <p>${escapeHTML(store.description || "Découvrez ce commerce local.")}</p>
+
                   <div class="store-meta">
                     📍 ${escapeHTML(store.city || "Bénin")}
                     ${store.is_open === true ? " · 🟢 Ouvert" : ""}
                     ${store.delivery_available ? " · 🚚 Livraison" : ""}
                   </div>
+
                   <a class="view-button" href="${storeLink}">
                     Voir le commerce →
                   </a>
@@ -604,7 +614,7 @@ if (searchInput) {
 async function initializePKChapShop() {
   updateCartCount();
 
-  // Chargements indépendants : une erreur de produits ne bloque pas les boutiques.
+  // Une erreur de produits ne bloque pas le chargement des commerces.
   await Promise.allSettled([
     loadCategories(),
     loadStores()

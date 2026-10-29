@@ -405,9 +405,19 @@ function renderStores() {
 
                   <h3>${escapeHTML(product.name)}</h3>
 
-                  <p>${escapeHTML(
-                    product.description || "Découvrez ce produit."
-                  )}</p>
+<div class="pk-product-price">
+  ${product.price !== null && product.price !== undefined &&
+    String(product.price).trim() !== "" &&
+    Number.isFinite(Number(product.price))
+      ? `${Number(product.price).toLocaleString("fr-FR", {
+          maximumFractionDigits: 2
+        })} FCFA`
+      : "Prix à confirmer"}
+</div>
+
+<p>${escapeHTML(
+  product.description || "Découvrez ce produit."
+)}</p>
 
                   <div class="store-meta">
                     🏪 ${escapeHTML(store?.name || "Commerce partenaire")}
@@ -693,7 +703,25 @@ function renderStores() {
         width: 100%;
         box-sizing: border-box;
       }
+.pk-product-price {
+  display: block;
+  margin: 8px 0 12px;
+  color: #b78b34;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.3;
+  letter-spacing: -0.4px;
+}
 
+.pk-product-card .store-content h3 {
+  margin-bottom: 2px;
+}
+
+@media (max-width: 600px) {
+  .pk-product-price {
+    font-size: 23px;
+  }
+}
       @media (max-width: 600px) {
         .pk-featured-grid,
         .pk-store-grid {

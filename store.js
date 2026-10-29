@@ -8,7 +8,7 @@ const SUPABASE_URL =
   "https://ljzonxmlpygfryfmohhd.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_3iMx68x3yO8Z_-xxiakMA_aDsIoZuR";
+  "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 
 const headers = {
   apikey: SUPABASE_KEY,

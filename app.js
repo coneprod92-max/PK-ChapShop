@@ -469,8 +469,14 @@ function renderStores() {
 
         <div class="pk-store-grid">
           ${visibleStores.map(store => {
-            const image = store.cover_url || store.logo_url;
-            const featured = isFeaturedActive(store);
+            const image = store.cover_url || "";
+const featured = isFeaturedActive(store);
+
+const storeLogo = store.logo_url || "";
+
+const storeCategory = categories.find(
+  category => String(category.id) === String(store.category_id)
+);
 
             const storeLink =
               `store.html?id=${encodeURIComponent(store.id)}`;
@@ -484,7 +490,31 @@ function renderStores() {
               <article class="store-card ${
                 featured ? "pk-store-featured" : ""
               }">
-                <div class="store-cover pk-store-cover"
+                
+<div class="store-cover pk-store-cover"
+  style="${image
+    ? `background-image:url('${escapeHTML(image)}')`
+    : ""}">
+
+  ${!image ? '<span class="pk-cover-placeholder" aria-hidden="true">🏪</span>' : ""}
+
+  ${featured
+    ? '<span class="pk-featured-badge pk-cover-badge">⭐ À LA UNE</span>'
+    : ""}
+
+  ${storeLogo ? `
+    <div class="pk-store-logo">
+      <img
+        src="${escapeHTML(storeLogo)}"
+        alt="Logo de ${escapeHTML(store.name)}"
+        loading="lazy"
+        onerror="this.parentElement.style.display='none';"
+      >
+    </div>
+  ` : ""}
+
+</div>
+
                   ${image
                     ? `style="background-image:url('${escapeHTML(image)}')"`
                     : ""}>
@@ -503,7 +533,12 @@ function renderStores() {
                     : ""}
 
                   <h3>${escapeHTML(store.name)}</h3>
-
+${storeCategory ? `
+  <span class="pk-store-category">
+    ${escapeHTML(storeCategory.icon || "🏪")}
+    ${escapeHTML(storeCategory.name)}
+  </span>
+` : ""}
                   <p>${escapeHTML(
                     store.description || "Découvrez ce commerce local."
                   )}</p>
@@ -915,6 +950,120 @@ function renderStores() {
           grid-template-columns: minmax(0, 1fr);
         }
       }
+      
+/* Vitrines des commerces */
+.pk-store-grid .pk-store-cover {
+  position: relative;
+  width: 100%;
+  height: 185px;
+  min-height: 185px;
+  overflow: hidden;
+  background-color: #f2efe5;
+  background-position: center;
+  background-size: cover;
+  border-radius: 0;
+}
+
+/* Logo indépendant de la photo de couverture */
+.pk-store-logo {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 66px;
+  overflow: hidden;
+  border: 3px solid #fff;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+}
+
+.pk-store-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Catégorie lisible */
+.pk-store-category {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e9dfc4;
+  border-radius: 20px;
+  background: #faf6e9;
+  color: #72551d;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* Prévenir les débordements de texte */
+.pk-store-grid .store-content,
+.pk-store-grid .store-content h3,
+.pk-store-grid .store-content p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Images et cartes sur mobile */
+@media (max-width: 600px) {
+  #stores {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .pk-store-grid,
+  .pk-featured-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .pk-store-grid .pk-store-cover {
+    height: 175px;
+    min-height: 175px;
+  }
+
+  .pk-store-logo {
+    width: 58px;
+    height: 58px;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .pk-store-grid .store-content h3 {
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .pk-store-grid .store-content > p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .pk-store-grid .store-content .view-button,
+  .pk-store-grid .store-content .pk-whatsapp-button {
+    min-height: 46px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-store-grid .store-card,
+  .pk-featured-grid .pk-product-card,
+  .pk-whatsapp-button {
+    transition: none;
+    transform: none;
+  }
+}
+
     </style>
 
     ${productWarning}

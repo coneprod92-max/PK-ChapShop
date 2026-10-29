@@ -355,7 +355,18 @@ function renderStores() {
 
             return `
               <article class="store-card pk-product-card">
-                <div class="pk-product-symbol" aria-hidden="true">⭐</div>
+                
+<div class="pk-product-symbol ${product.image_url ? "has-image" : ""}">
+  ${product.image_url
+    ? `<img
+        src="${escapeHTML(product.image_url)}"
+        alt="${escapeHTML(product.name)}"
+        loading="lazy"
+        onerror="this.remove(); this.parentElement.classList.remove('has-image'); this.textContent='🛍️';"
+      >`
+    : "🛍️"}
+</div>
+
 
                 <div class="store-content">
                   <span class="pk-featured-badge">PRODUIT À LA UNE</span>
@@ -530,13 +541,20 @@ function renderStores() {
         border: 2px solid #d5ad58;
       }
 
-      .pk-product-symbol {
-        display: grid;
-        place-items: center;
-        min-height: 130px;
-        background: linear-gradient(135deg, #fbf4e4, #f0d99c);
-        font-size: 48px;
-      }
+    
+.pk-product-symbol.has-image {
+  padding: 0;
+  overflow: hidden;
+  background: #f7f5ef;
+}
+
+.pk-product-symbol.has-image img {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
 
       .pk-load-warning {
         margin: 0 0 18px;

@@ -1,7 +1,7 @@
 
 /* =========================================================
    PK-ChapShop — Fiche commerce
-   Compatible avec ?id=... et ?slug=...
+   Présentation premium + catégories + galerie + panier
    ========================================================= */
 
 const SUPABASE_URL =
@@ -25,7 +25,6 @@ const params = new URLSearchParams(window.location.search);
 const storeId = params.get("id");
 const storeSlug = params.get("slug");
 
-// L'identifiant réel sera récupéré après le chargement du commerce.
 let activeStoreId = null;
 
 /* ---------- Utilitaires ---------- */
@@ -54,9 +53,7 @@ async function fetchRows(url) {
 
 function updateCartCount() {
   try {
-    const cart = JSON.parse(
-      localStorage.getItem("pk_cart") || "[]"
-    );
+    const cart = JSON.parse(localStorage.getItem("pk_cart") || "[]");
 
     const count = Array.isArray(cart)
       ? cart.reduce(
@@ -65,9 +62,7 @@ function updateCartCount() {
         )
       : 0;
 
-    if (cartCountEl) {
-      cartCountEl.textContent = String(count);
-    }
+    if (cartCountEl) cartCountEl.textContent = String(count);
   } catch {
     if (cartCountEl) cartCountEl.textContent = "0";
   }
@@ -85,7 +80,13 @@ function showToast(message) {
 }
 
 function imageFallback(image, type = "product") {
+  if (!image || !image.parentElement) return;
+
   image.style.display = "none";
+
+  if (image.parentElement.querySelector(".product-placeholder, .gallery-empty")) {
+    return;
+  }
 
   const placeholder = document.createElement("div");
   placeholder.className =
@@ -101,21 +102,23 @@ function imageFallback(image, type = "product") {
 
 window.imageFallback = imageFallback;
 
+function formatPhone(phone) {
+  return String(phone || "").replace(/[^\d+]/g, "");
+}
+
+function formatWhatsApp(phone) {
+  return String(phone || "").replace(/\D/g, "");
+}
+
 /* ---------- Chargement du commerce ---------- */
 
 async function loadStore() {
   if (!storeId && !storeSlug) {
-    showStoreError(
-      "Aucun identifiant ni slug fourni pour ce commerce."
-    );
+    showStoreError("Aucun identifiant ni slug fourni pour ce commerce.");
     return;
   }
 
   try {
-    /*
-     * Si l'adresse contient id, on recherche par identifiant.
-     * Sinon, on recherche par slug.
-     */
     const filter = storeId
       ? `id=eq.${encodeURIComponent(storeId)}`
       : `slug=eq.${encodeURIComponent(storeSlug)}`;
@@ -123,7 +126,8 @@ async function loadStore() {
     const query =
       `${SUPABASE_URL}/rest/v1/stores?` +
       `select=id,slug,name,description,phone,whatsapp,address,city,` +
-      `logo_url,cover_url,is_open,delivery_available,is_published` +
+      `logo_url,cover_url,is_open,delivery_available,is_published,` +
+      `category_id,store_categories(name)` +
       `&${filter}` +
       `&is_published=eq.true`;
 
@@ -137,16 +141,12 @@ async function loadStore() {
     }
 
     const store = results[0];
-
-    // Conserver l'identifiant Supabase pour charger la galerie et les produits.
     activeStoreId = store.id;
 
-    // Normaliser l'adresse avec l'identifiant pour les prochains accès.
     if (!storeId && store.id) {
       const canonicalUrl = new URL(window.location.href);
       canonicalUrl.searchParams.set("id", store.id);
       canonicalUrl.searchParams.delete("slug");
-
       window.history.replaceState({}, "", canonicalUrl.toString());
     }
 
@@ -156,6 +156,7 @@ async function loadStore() {
       loadGallery(),
       loadProducts()
     ]);
+
   } catch (error) {
     console.error("Erreur de chargement du commerce :", error);
 
@@ -168,9 +169,7 @@ async function loadStore() {
 function showStoreError(message) {
   if (storeInfoEl) {
     storeInfoEl.innerHTML = `
-      <div class="empty error">
-        ${esc(message)}
-      </div>
+      <div class="empty error">${esc(message)}</div>
     `;
   }
 
@@ -178,61 +177,87 @@ function showStoreError(message) {
   if (productsEl) productsEl.innerHTML = "";
 }
 
+/* ---------- Présentation du commerce ---------- */
+
 function renderStore(store) {
-  const cover = store.cover_url || store.logo_url || "";
+  const cover = store.cover_url || "";
+  const logo = store.logo_url || "";
+  const category =
+    store.store_categories?.name || "Commerce local";
+
+  const address = [store.address, store.city]
+    .filter(Boolean)
+    .join(" — ") || "Bénin";
+
+  const phone = formatPhone(store.phone);
+  const whatsapp = formatWhatsApp(store.whatsapp || store.phone);
+
+  const logoContent = logo
+    ? `<img src="${esc(logo)}" alt="Logo de ${esc(store.name)}"
+         loading="eager" onerror="imageFallback(this, 'product')">`
+    : `<span>${esc((store.name || "P").trim().charAt(0).toUpperCase())}</span>`;
 
   storeInfoEl.innerHTML = `
     <div
       class="store-cover-large"
       ${cover ? `style="background-image:url('${esc(cover)}')"` : ""}
-    ></div>
+    >
+      <span class="cover-label">Bienvenue chez notre commerçant</span>
+    </div>
 
     <div class="store-details">
-      <h1>${esc(store.name)}</h1>
+      <div class="store-brand-row">
+        <div class="store-logo">
+          ${logoContent}
+        </div>
 
-      <p>
-        ${esc(store.description || "Bienvenue dans notre commerce.")}
+        <div class="store-brand-text">
+          <h1>${esc(store.name || "Notre commerce")}</h1>
+          <span class="store-category">
+            ${esc(category)}
+          </span>
+        </div>
+      </div>
+
+      <p class="store-description">
+        ${esc(store.description || "Bienvenue dans notre commerce. Découvrez nos produits et contactez-nous pour toute information.")}
       </p>
 
-      <div class="store-location">
-        📍 ${esc(store.address || store.city || "Bénin")}
+      <div class="store-status-row">
+        <span class="store-badge ${store.is_open ? "open" : "closed"}">
+          ${store.is_open ? "🟢 Commerce ouvert" : "🔴 Commerce fermé"}
+        </span>
+
+        ${store.delivery_available ? `
+          <span class="store-badge">🚚 Livraison disponible</span>
+        ` : ""}
+
+        <span class="store-badge">📍 ${esc(address)}</span>
       </div>
 
-      <div class="store-location">
-        ${store.is_open
-          ? "🟢 Commerce ouvert"
-          : "🔴 Commerce fermé"}
-      </div>
-
-      ${store.delivery_available ? `
-        <div class="store-location">
-          🚚 Livraison disponible
-        </div>
-      ` : ""}
-
-      ${store.phone ? `
-        <div class="store-location">
-          📞 <a href="tel:${esc(
-            String(store.phone).replace(/[^\d+]/g, "")
-          )}">
-            Contacter le commerce
-          </a>
-        </div>
-      ` : ""}
-
-      ${store.whatsapp ? `
-        <div class="store-location">
+      <div class="store-contact">
+        ${whatsapp ? `
           <a
-            href="https://wa.me/${esc(
-              String(store.whatsapp).replace(/\D/g, "")
-            )}"
+            class="contact-button contact-whatsapp"
+            href="https://wa.me/${esc(whatsapp)}"
             target="_blank"
             rel="noopener noreferrer"
           >
-            💬 Écrire sur WhatsApp
+            💬 Contacter sur WhatsApp
           </a>
-        </div>
-      ` : ""}
+        ` : ""}
+
+        ${phone ? `
+          <a class="contact-button contact-phone"
+             href="tel:${esc(phone)}">
+            📞 Appeler le commerce
+          </a>
+        ` : ""}
+
+        <a href="index.html" class="contact-button contact-address">
+          ← Voir les autres commerces
+        </a>
+      </div>
     </div>
   `;
 }
@@ -294,6 +319,7 @@ async function loadGallery() {
         </div>
       `;
     }).join("");
+
   } catch (error) {
     console.error("Erreur galerie :", error);
 
@@ -383,6 +409,7 @@ async function loadProducts() {
         </article>
       `;
     }).join("");
+
   } catch (error) {
     console.error("Erreur produits :", error);
 
@@ -402,7 +429,6 @@ function addToCart(product) {
 
   try {
     cart = JSON.parse(localStorage.getItem("pk_cart") || "[]");
-
     if (!Array.isArray(cart)) cart = [];
   } catch {
     cart = [];
@@ -418,7 +444,6 @@ function addToCart(product) {
     );
 
     if (!replace) return;
-
     cart = [];
   }
 
@@ -443,7 +468,6 @@ function addToCart(product) {
 if (productsEl) {
   productsEl.addEventListener("click", event => {
     const button = event.target.closest("[data-product]");
-
     if (!button) return;
 
     try {

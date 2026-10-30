@@ -1,8 +1,7 @@
 
 /* =========================================================
-   PK-ChapShop — Carrousels premium
-   Produits à la une + Commerces à la une
-   Compatible avec app.js existant
+   PK-ChapShop — Carrousels produits et commerces
+   Version corrigée : priorité sur les styles de app.js
    ========================================================= */
 
 (function () {
@@ -15,8 +14,6 @@
   const activeTracks = new WeakMap();
   let carouselNumber = 0;
 
-  /* ---------- Styles ---------- */
-
   function installStyles() {
     if (document.getElementById(STYLE_ID)) return;
 
@@ -24,49 +21,58 @@
     style.id = STYLE_ID;
 
     style.textContent = `
-      .pk-carousel-wrap {
-        position: relative;
-        width: 100%;
-        margin: 0 0 30px;
-      }
-
-      .pk-carousel-track {
+      /* Priorité renforcée face aux styles intégrés dans app.js */
+      #stores .pk-carousel-track {
         display: flex !important;
+        flex-direction: row !important;
         flex-wrap: nowrap !important;
-        align-items: stretch;
+        grid-template-columns: none !important;
+        grid-auto-columns: auto !important;
+        align-items: stretch !important;
         gap: 18px !important;
-        width: 100%;
+        width: 100% !important;
         overflow-x: auto !important;
         overflow-y: hidden !important;
-        padding: 5px 3px 19px;
+        padding: 6px 3px 18px !important;
         scroll-snap-type: x mandatory;
         scroll-behavior: smooth;
         scrollbar-width: thin;
         scrollbar-color: #d5ad58 #edf1e9;
         overscroll-behavior-x: contain;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
       }
 
-      .pk-carousel-track::-webkit-scrollbar {
+      #stores .pk-carousel-track::-webkit-scrollbar {
         height: 6px;
       }
 
-      .pk-carousel-track::-webkit-scrollbar-track {
+      #stores .pk-carousel-track::-webkit-scrollbar-track {
         background: #edf1e9;
         border-radius: 20px;
       }
 
-      .pk-carousel-track::-webkit-scrollbar-thumb {
+      #stores .pk-carousel-track::-webkit-scrollbar-thumb {
         background: #d5ad58;
         border-radius: 20px;
       }
 
-      .pk-carousel-track > .store-card {
+      #stores .pk-carousel-track > .store-card {
+        display: flex;
+        flex-direction: column;
         flex: 0 0 clamp(250px, 30%, 330px) !important;
         width: clamp(250px, 30%, 330px) !important;
-        min-width: 0 !important;
+        min-width: 250px !important;
+        max-width: 330px !important;
+        box-sizing: border-box;
         scroll-snap-align: start;
         height: auto;
+      }
+
+      .pk-carousel-wrap {
+        position: relative;
+        width: 100%;
+        margin: 0 0 30px;
       }
 
       .pk-carousel-controls {
@@ -90,23 +96,17 @@
         padding: 0;
         border: 1px solid #d8dfd5;
         border-radius: 50%;
-        background: #fff;
+        background: white;
         color: #123b2d;
         font-size: 25px;
         line-height: 1;
         cursor: pointer;
-        transition:
-          background .2s,
-          color .2s,
-          border-color .2s,
-          transform .2s;
       }
 
       .pk-carousel-controls button:hover {
         background: #123b2d;
         border-color: #123b2d;
-        color: #fff;
-        transform: translateY(-2px);
+        color: white;
       }
 
       .pk-carousel-controls button:focus-visible {
@@ -114,23 +114,21 @@
         outline-offset: 3px;
       }
 
-      .pk-carousel-track > .store-card {
-        box-sizing: border-box;
-      }
-
       @media (max-width: 650px) {
         .pk-carousel-wrap {
           margin-bottom: 24px;
         }
 
-        .pk-carousel-track {
+        #stores .pk-carousel-track {
           gap: 14px !important;
-          padding-bottom: 15px;
+          padding-bottom: 15px !important;
         }
 
-        .pk-carousel-track > .store-card {
-          flex-basis: min(84vw, 330px) !important;
-          width: min(84vw, 330px) !important;
+        #stores .pk-carousel-track > .store-card {
+          flex-basis: 84vw !important;
+          width: 84vw !important;
+          min-width: 250px !important;
+          max-width: 330px !important;
         }
 
         .pk-carousel-controls button {
@@ -141,20 +139,14 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .pk-carousel-track {
+        #stores .pk-carousel-track {
           scroll-behavior: auto;
-        }
-
-        .pk-carousel-controls button {
-          transition: none;
         }
       }
     `;
 
     document.head.appendChild(style);
   }
-
-  /* ---------- Initialisation ---------- */
 
   function activateCarousel(track) {
     if (!track || activeTracks.has(track)) return;
@@ -199,30 +191,24 @@
     parent.insertBefore(wrapper, track);
     wrapper.append(controls, track);
 
-    /* ---------- Navigation ---------- */
-
     function move(direction) {
       const cards = track.querySelectorAll(":scope > .store-card");
       const card = cards[0];
 
       if (!card) return;
 
-      const styles = window.getComputedStyle(track);
-      const gap = parseFloat(styles.columnGap) || 18;
-      const distance = card.getBoundingClientRect().width + gap;
+      const gap =
+        parseFloat(getComputedStyle(track).columnGap) || 18;
 
-      const maxScroll =
-        track.scrollWidth - track.clientWidth;
+      const distance = card.getBoundingClientRect().width + gap;
+      const maxScroll = track.scrollWidth - track.clientWidth;
 
       if (maxScroll <= 5) return;
 
       const target = track.scrollLeft + direction * distance;
 
       if (target > maxScroll - 8) {
-        track.scrollTo({
-          left: 0,
-          behavior: "smooth"
-        });
+        track.scrollTo({ left: 0, behavior: "smooth" });
       } else if (target < 8) {
         track.scrollTo({
           left: maxScroll,
@@ -246,8 +232,6 @@
       move(1);
     });
 
-    /* ---------- État du carrousel ---------- */
-
     function updateControls() {
       if (!track.isConnected) return;
 
@@ -255,13 +239,11 @@
         track.scrollWidth > track.clientWidth + 8;
 
       controls.hidden = !canScroll;
-
       previous.disabled = !canScroll;
       next.disabled = !canScroll;
     }
 
-    /* ---------- Défilement automatique ---------- */
-
+    /* Défilement automatique sur ordinateur uniquement */
     let timer = null;
     let resumeTimer = null;
 
@@ -275,7 +257,7 @@
 
     function stopAutomatic() {
       if (timer !== null) {
-        window.clearInterval(timer);
+        clearInterval(timer);
         timer = null;
       }
     }
@@ -284,12 +266,13 @@
       stopAutomatic();
 
       if (resumeTimer !== null) {
-        window.clearTimeout(resumeTimer);
+        clearTimeout(resumeTimer);
+        resumeTimer = null;
       }
 
       if (touchDevice.matches) return;
 
-      resumeTimer = window.setTimeout(function () {
+      resumeTimer = setTimeout(function () {
         resumeTimer = null;
         startAutomatic();
       }, 7000);
@@ -308,7 +291,7 @@
         return;
       }
 
-      timer = window.setInterval(function () {
+      timer = setInterval(function () {
         if (!track.isConnected || document.hidden) {
           stopAutomatic();
           return;
@@ -327,28 +310,15 @@
 
     track.addEventListener("mouseenter", stopAutomatic);
 
-    track.addEventListener("mouseleave", function () {
-      startAutomatic();
-    });
+    track.addEventListener("mouseleave", startAutomatic);
 
     track.addEventListener("focusin", stopAutomatic);
 
-    track.addEventListener("focusout", function () {
-      startAutomatic();
+    track.addEventListener("focusout", startAutomatic);
+
+    track.addEventListener("pointerdown", pauseAutomatic, {
+      passive: true
     });
-
-    track.addEventListener("touchstart", function () {
-      stopAutomatic();
-    }, { passive: true });
-
-    track.addEventListener("touchend", function () {
-      // Pas de redémarrage automatique sur téléphone.
-      stopAutomatic();
-    }, { passive: true });
-
-    track.addEventListener("pointerdown", function () {
-      pauseAutomatic();
-    }, { passive: true });
 
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) {
@@ -363,12 +333,8 @@
       touchDevice.addEventListener("change", startAutomatic);
     }
 
-    /* ---------- Redimensionnement ---------- */
-
-    let resizeObserver = null;
-
     if ("ResizeObserver" in window) {
-      resizeObserver = new ResizeObserver(function () {
+      const resizeObserver = new ResizeObserver(function () {
         updateControls();
         startAutomatic();
       });
@@ -389,26 +355,17 @@
     startAutomatic();
   }
 
-  /* ---------- Recherche des deux carrousels ---------- */
-
   function scan() {
-    document.querySelectorAll(SELECTOR).forEach(function (track) {
-      activateCarousel(track);
-    });
+    document.querySelectorAll(SELECTOR).forEach(activateCarousel);
   }
-
-  /* ---------- Démarrage ---------- */
 
   function initialize() {
     installStyles();
 
     const stores = document.getElementById("stores");
-
     if (!stores) return;
 
-    const observer = new MutationObserver(function () {
-      scan();
-    });
+    const observer = new MutationObserver(scan);
 
     observer.observe(stores, {
       childList: true,
@@ -423,5 +380,4 @@
   } else {
     initialize();
   }
-
 })();

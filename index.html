@@ -1,22 +1,149 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PK-ChapShop — Le commerce local, autrement</title>
-  <meta name="description" content="Découvrez les boutiques, restaurants, garages et services de Parakou et environs sur PK-ChapShop.">
+  <title>PK-ChapShop — Le marché local de Parakou</title>
+  <meta name="description" content="Découvrez les boutiques, produits, restaurants et services de Parakou. Vous êtes commerçant ? Rejoignez gratuitement PK-ChapShop.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://coneprod92-max.github.io/PK-ChapShop/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="PK-ChapShop — Le commerce local, autrement">
-  <meta property="og:description" content="Les commerces et services de Parakou réunis au même endroit.">
+  <meta property="og:title" content="PK-ChapShop — Le marché local de Parakou">
+  <meta property="og:description" content="Découvrez les commerces de Parakou et rejoignez gratuitement notre communauté de commerçants.">
   <meta property="og:url" content="https://coneprod92-max.github.io/PK-ChapShop/">
   <meta name="theme-color" content="#123b2d">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* Nouveaux éléments commerciaux de la page d'accueil */
+    .launch-strip {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px 13px;
+      padding:12px 5%;
+      background:#f6f0df;
+      border-bottom:1px solid #e8d9b2;
+      color:#244431;
+      text-align:center;
+      font-size:12px;
+      font-weight:800;
+    }
+    .launch-strip strong { color:#987126; }
+    .launch-strip a {
+      color:#244431;
+      text-decoration:underline;
+      text-underline-offset:3px;
+    }
+
+    .hero-actions-new {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:12px;
+      margin-top:20px;
+    }
+    .hero-actions-new a {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      min-height:48px;
+      padding:13px 17px;
+      border-radius:11px;
+      font-size:12px;
+      font-weight:800;
+      transition:transform .2s,background .2s;
+    }
+    .hero-actions-new a:hover { transform:translateY(-2px); }
+    .hero-shop-button {
+      background:#d5b36a;
+      color:#173326;
+    }
+    .hero-merchant-button {
+      border:1px solid rgba(255,255,255,.55);
+      background:rgba(255,255,255,.08);
+      color:white;
+    }
+
+    .launch-benefit {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-top:19px;
+      padding:13px 15px;
+      border:1px solid rgba(213,179,106,.5);
+      border-radius:12px;
+      background:rgba(255,255,255,.07);
+      color:#f5ead0;
+      font-size:11px;
+      line-height:1.6;
+    }
+    .launch-benefit strong { color:#f0d99c; }
+
+    .audience-section {
+      width:90%;
+      max-width:1240px;
+      margin:38px auto 0;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:17px;
+    }
+    .audience-card {
+      display:flex;
+      align-items:center;
+      gap:17px;
+      min-width:0;
+      padding:23px;
+      border:1px solid #e4e8df;
+      border-radius:18px;
+      background:white;
+      box-shadow:0 5px 18px rgba(20,47,34,.04);
+    }
+    .audience-icon {
+      width:53px;
+      height:53px;
+      flex-shrink:0;
+      display:grid;
+      place-items:center;
+      border-radius:15px;
+      background:#f1f3e9;
+      font-size:27px;
+    }
+    .audience-card h3 {
+      margin-bottom:6px;
+      color:#173b2b;
+      font:800 16px/1.3 "Manrope",sans-serif;
+    }
+    .audience-card p {
+      margin-bottom:11px;
+      color:#718076;
+      font-size:11px;
+      line-height:1.6;
+    }
+    .audience-card a {
+      color:#9a742b;
+      font-size:11px;
+      font-weight:900;
+    }
+
+    @media(max-width:650px) {
+      .launch-strip { font-size:10px; }
+      .hero-actions-new { display:grid; grid-template-columns:1fr; }
+      .hero-actions-new a { width:100%; }
+      .audience-section { grid-template-columns:1fr; margin-top:24px; }
+      .audience-card { padding:18px; }
+      .launch-benefit { align-items:flex-start; }
+    }
+  </style>
 </head>
+
 <body>
   <a class="skip-link" href="#contenu">Aller au contenu</a>
 
@@ -27,23 +154,35 @@
     </div>
   </div>
 
+  <div class="launch-strip">
+    🎉 <strong>PK-ChapShop se lance à Parakou !</strong>
+    <span>Commerçants : inscription gratuite au lancement.</span>
+    <a href="annonceur.html">Rejoindre la communauté →</a>
+  </div>
+
   <header class="header">
     <a href="index.html" class="logo" aria-label="PK-ChapShop, accueil">
       <span class="logo-mark">PK</span>
       <span class="logo-word">Chap<span>Shop</span><small>LE MARCHÉ LOCAL</small></span>
     </a>
+
     <nav class="main-nav" aria-label="Navigation principale">
       <a class="nav-active" href="index.html">Accueil</a>
       <a href="#categories-section">Catégories</a>
       <a href="#commerces-section">Commerces</a>
       <a href="annonceur.html">Devenir annonceur</a>
     </nav>
+
     <div class="header-actions">
       <a class="track-header" href="tracking.html">Suivre une commande</a>
       <a href="cart.html" class="cart-link" aria-label="Ouvrir le panier">
-        <span aria-hidden="true">🛒</span><span>Panier</span><span id="cartCount" class="cart-count">0</span>
+        <span aria-hidden="true">🛒</span>
+        <span>Panier</span>
+        <span id="cartCount" class="cart-count">0</span>
       </a>
-      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileNav">☰</button>
+      <button class="menu-toggle" id="menuToggle" type="button"
+        aria-label="Ouvrir le menu" aria-expanded="false"
+        aria-controls="mobileNav">☰</button>
     </div>
   </header>
 
@@ -57,119 +196,326 @@
   </nav>
 
   <main id="contenu">
+
     <section class="hero">
       <div class="hero-inner">
+
         <div class="hero-copy">
-          <span class="eyebrow"><i class="eyebrow-line"></i> PARAKOU • BÉNIN</span>
-          <h1>Le bon commerce,<br>juste <span>à côté de vous.</span></h1>
-          <p class="hero-description">Découvrez les boutiques, restaurants, artisans et services qui font vivre notre ville. Tout le commerce local, réuni au même endroit.</p>
+          <span class="eyebrow">
+            <i class="eyebrow-line"></i> PARAKOU • BÉNIN
+          </span>
+
+          <h1>
+            Le bon commerce,<br>
+            juste <span>à côté de vous.</span>
+          </h1>
+
+          <p class="hero-description">
+            Découvrez les boutiques, restaurants, artisans et services
+            qui font vivre Parakou. Trouvez ce que vous cherchez,
+            découvrez de nouvelles adresses et contactez directement
+            les commerçants.
+          </p>
+
           <form class="search-box" id="searchForm" role="search">
             <span class="search-icon" aria-hidden="true">⌕</span>
-            <label class="visually-hidden" for="searchInput">Rechercher un commerce ou un produit</label>
-            <input type="search" id="searchInput" placeholder="Un commerce, un produit, un service…" autocomplete="off">
-            <button type="submit">Rechercher <span aria-hidden="true">→</span></button>
+            <label class="visually-hidden" for="searchInput">
+              Rechercher un commerce ou un produit
+            </label>
+            <input type="search" id="searchInput"
+              placeholder="Un commerce, un produit, un service…"
+              autocomplete="off">
+            <button type="submit">
+              Rechercher <span aria-hidden="true">→</span>
+            </button>
           </form>
-          <div class="hero-links">
-            <a href="#commerces-section" class="hero-primary">Explorer les commerces <span aria-hidden="true">↗</span></a>
-            <a href="tracking.html" class="hero-secondary">📦 Suivre ma commande</a>
+
+          <div class="hero-actions-new">
+            <a href="#commerces-section" class="hero-shop-button">
+              🛍️ Je cherche un commerce <span>→</span>
+            </a>
+            <a href="annonceur.html" class="hero-merchant-button">
+              🏪 Je suis commerçant <span>↗</span>
+            </a>
           </div>
-          <div class="hero-trust"><span class="trust-icon">✦</span><span>Fait pour les commerces et les clients d'ici.</span></div>
+
+          <div class="launch-benefit">
+            🎁
+            <span>
+              <strong>Vous êtes commerçant ?</strong>
+              Inscription gratuite et 30 jours de visibilité offerte
+              pour les 50 premiers annonceurs.
+            </span>
+          </div>
+
+          <div class="hero-trust">
+            <span class="trust-icon">✦</span>
+            <span>Fait pour les commerces et les clients d'ici.</span>
+          </div>
         </div>
+
         <div class="hero-visual" aria-label="Ambiance du commerce local">
           <div class="visual-glow"></div>
+
           <div class="visual-image">
-            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=85" alt="Intérieur accueillant d'un commerce" onerror="this.style.display='none'">
-            <div class="visual-fallback" aria-hidden="true"><span class="fallback-sun"></span><span class="fallback-shop">🏬</span><span class="fallback-basket">🧺</span><span class="fallback-leaf">✦</span></div>
+            <img
+              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=85"
+              alt="Intérieur accueillant d'un commerce"
+              onerror="this.style.display='none'">
+            <div class="visual-fallback" aria-hidden="true">
+              <span class="fallback-sun"></span>
+              <span class="fallback-shop">🏬</span>
+              <span class="fallback-basket">🧺</span>
+              <span class="fallback-leaf">✦</span>
+            </div>
           </div>
-          <div class="visual-card visual-card-top"><span class="visual-card-icon">⌂</span><span><strong>Les commerces d'ici</strong><small>À portée de recherche</small></span></div>
-          <div class="visual-card visual-card-bottom"><span class="online-pulse"></span><span><strong>Découvrez. Contactez.</strong><small>Soutenez le commerce local.</small></span></div>
-          <div class="visual-stamp"><span>LOCAL</span><strong>♡</strong><span>BENIN</span></div>
+
+          <div class="visual-card visual-card-top">
+            <span class="visual-card-icon">⌂</span>
+            <span>
+              <strong>Les commerces d'ici</strong>
+              <small>À portée de recherche</small>
+            </span>
+          </div>
+
+          <div class="visual-card visual-card-bottom">
+            <span class="online-pulse"></span>
+            <span>
+              <strong>Découvrez. Contactez.</strong>
+              <small>Soutenez le commerce local.</small>
+            </span>
+          </div>
+
+          <div class="visual-stamp">
+            <span>LOCAL</span>
+            <strong>♡</strong>
+            <span>BENIN</span>
+          </div>
+
           <div class="adinkra-motif" aria-hidden="true">✳</div>
         </div>
       </div>
-      <div class="hero-bottom-rule" aria-hidden="true"><span></span><span></span><span></span></div>
+
+      <div class="hero-bottom-rule" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
     </section>
 
     <section class="quick-benefits" aria-label="Les avantages de PK-ChapShop">
-      <div class="benefit"><span class="benefit-icon">⌕</span><span><strong>Trouvez facilement</strong><small>Commerces et services réunis</small></span></div>
-      <div class="benefit"><span class="benefit-icon">⌂</span><span><strong>Découvrez près de vous</strong><small>La richesse du commerce local</small></span></div>
-      <div class="benefit"><span class="benefit-icon">↗</span><span><strong>Contactez directement</strong><small>Échangez avec les commerçants</small></span></div>
+      <div class="benefit">
+        <span class="benefit-icon">⌕</span>
+        <span>
+          <strong>Trouvez facilement</strong>
+          <small>Commerces et services réunis</small>
+        </span>
+      </div>
+
+      <div class="benefit">
+        <span class="benefit-icon">⌂</span>
+        <span>
+          <strong>Découvrez les commerces</strong>
+          <small>La richesse de notre ville</small>
+        </span>
+      </div>
+
+      <div class="benefit">
+        <span class="benefit-icon">↗</span>
+        <span>
+          <strong>Contactez directement</strong>
+          <small>Échangez avec les commerçants</small>
+        </span>
+      </div>
+    </section>
+
+    <section class="audience-section" aria-label="Choisir son parcours">
+      <article class="audience-card">
+        <div class="audience-icon">🛍️</div>
+        <div>
+          <h3>Je veux faire mes achats</h3>
+          <p>Parcourez les boutiques, découvrez les produits et contactez les vendeurs.</p>
+          <a href="#commerces-section">Découvrir les commerces →</a>
+        </div>
+      </article>
+
+      <article class="audience-card">
+        <div class="audience-icon">🏪</div>
+        <div>
+          <h3>Je veux développer mon activité</h3>
+          <p>Présentez votre commerce en ligne et profitez de notre offre de lancement.</p>
+          <a href="annonceur.html">Créer ma demande gratuitement →</a>
+        </div>
+      </article>
     </section>
 
     <section class="advertiser-section page-container">
       <div class="advertiser-banner">
         <div class="advertiser-mark" aria-hidden="true">PK<span>+</span></div>
+
         <div class="advertiser-copy">
           <span class="eyebrow eyebrow-gold">VOUS ÊTES COMMERÇANT ?</span>
           <h2>Votre activité mérite d'être vue.</h2>
-          <p>Présentez votre boutique, vos produits ou vos services à la communauté de PK-ChapShop.</p>
+          <p>
+            Présentez votre boutique, vos produits ou vos services
+            à la communauté de PK-ChapShop.
+          </p>
         </div>
-        <a href="annonceur.html" class="advertiser-button">Rejoindre la plateforme <span aria-hidden="true">→</span></a>
+
+        <a href="annonceur.html" class="advertiser-button">
+          Rejoindre la plateforme <span aria-hidden="true">→</span>
+        </a>
+
         <span class="banner-decoration" aria-hidden="true">✳</span>
       </div>
     </section>
 
     <section class="page-container section-block" id="categories-section">
       <div class="section-heading">
-        <div><span class="eyebrow"><i class="eyebrow-line"></i> PARCOURIR</span>
+        <div>
+          <span class="eyebrow">
+            <i class="eyebrow-line"></i> PARCOURIR
+          </span>
           <h2>Qu'est-ce qu'on <span>cherche ?</span></h2>
           <p>Explorez les univers qui font bouger notre ville.</p>
         </div>
         <span class="heading-index">01 <i>/ CATÉGORIES</i></span>
       </div>
-      <div id="categories" class="categories" aria-label="Catégories de commerces">
-        <div class="category category-loading"><span class="category-icon">✦</span><span class="category-name">Chargement des catégories…</span></div>
+
+      <div id="categories" class="categories"
+        aria-label="Catégories de commerces">
+        <div class="category category-loading">
+          <span class="category-icon">✦</span>
+          <span class="category-name">Chargement des catégories…</span>
+        </div>
       </div>
     </section>
 
-    <section class="page-container section-block stores-section" id="commerces-section">
+    <section class="page-container section-block stores-section"
+      id="commerces-section">
+
       <div class="section-heading stores-heading">
-        <div><span class="eyebrow"><i class="eyebrow-line"></i> LE MARCHÉ LOCAL</span>
+        <div>
+          <span class="eyebrow">
+            <i class="eyebrow-line"></i> LE MARCHÉ LOCAL
+          </span>
           <h2>Des commerces à <span>découvrir.</span></h2>
-          <p>Faites connaissance avec les enseignes et services de notre communauté.</p>
+          <p>
+            Faites connaissance avec les enseignes et services
+            de notre communauté.
+          </p>
         </div>
         <span class="heading-index">02 <i>/ COMMERÇANTS</i></span>
       </div>
-      <div class="results-toolbar"><span id="resultsLabel">Commerces disponibles</span><span class="results-note"><i class="results-dot"></i> Explorez les adresses locales</span></div>
-      <div id="stores" class="stores-grid"><div class="loading"><span class="loading-spinner"></span> Chargement des commerces…</div></div>
+
+      <div class="results-toolbar">
+        <span id="resultsLabel">Commerces disponibles</span>
+        <span class="results-note">
+          <i class="results-dot"></i>
+          Explorez les adresses locales
+        </span>
+      </div>
+
+      <div id="stores" class="stores-grid">
+        <div class="loading">
+          <span class="loading-spinner"></span>
+          Chargement des commerces…
+        </div>
+      </div>
     </section>
 
     <section class="local-callout">
       <div class="local-callout-inner">
-        <div class="local-emblem" aria-hidden="true"><span>✳</span><strong>PK</strong><span>CHAPSHOP</span></div>
-        <div class="local-callout-copy"><span class="eyebrow eyebrow-gold">NOTRE VILLE, NOS TALENTS</span><h2>Le commerce local a de l'avenir.</h2><p>Découvrons les entreprises, les artisans et les idées qui font grandir notre communauté.</p></div>
-        <a href="annonceur.html" class="local-callout-button">Mettre mon activité en avant <span aria-hidden="true">→</span></a>
+        <div class="local-emblem" aria-hidden="true">
+          <span>✳</span>
+          <strong>PK</strong>
+          <span>CHAPSHOP</span>
+        </div>
+
+        <div class="local-callout-copy">
+          <span class="eyebrow eyebrow-gold">NOTRE VILLE, NOS TALENTS</span>
+          <h2>Le commerce local a de l'avenir.</h2>
+          <p>
+            Découvrons les entreprises, les artisans et les idées
+            qui font grandir notre communauté.
+          </p>
+        </div>
+
+        <a href="annonceur.html" class="local-callout-button">
+          Mettre mon activité en avant <span aria-hidden="true">→</span>
+        </a>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="footer-main">
+
       <div class="footer-brand">
-        <a href="index.html" class="logo footer-logo" aria-label="PK-ChapShop, accueil"><span class="logo-mark">PK</span><span class="logo-word">Chap<span>Shop</span><small>LE MARCHÉ LOCAL</small></span></a>
-        <p>Le commerce local, simplement.<br>Les boutiques et services de Parakou réunis au même endroit.</p><span class="footer-location">📍 Parakou, Bénin</span>
+        <a href="index.html" class="logo footer-logo"
+          aria-label="PK-ChapShop, accueil">
+          <span class="logo-mark">PK</span>
+          <span class="logo-word">
+            Chap<span>Shop</span>
+            <small>LE MARCHÉ LOCAL</small>
+          </span>
+        </a>
+
+        <p>
+          Le commerce local, simplement.<br>
+          Les boutiques et services de Parakou réunis au même endroit.
+        </p>
+        <span class="footer-location">📍 Parakou, Bénin</span>
       </div>
-      <div class="footer-column"><h3>Découvrir</h3><a href="#categories-section">Catégories</a><a href="#commerces-section">Nos commerces</a><a href="tracking.html">Suivre une commande</a></div>
-      <div class="footer-column"><h3>Pour les professionnels</h3><a href="annonceur.html">Devenir annonceur</a><a href="merchant.html">Espace commerçant</a></div>
-      <div class="footer-column"><h3>Accès</h3><a href="cart.html">Mon panier</a><a href="admin.html" class="footer-admin">Administration</a></div>
+
+      <div class="footer-column">
+        <h3>Découvrir</h3>
+        <a href="#categories-section">Catégories</a>
+        <a href="#commerces-section">Nos commerces</a>
+        <a href="tracking.html">Suivre une commande</a>
+      </div>
+
+      <div class="footer-column">
+        <h3>Pour les professionnels</h3>
+        <a href="annonceur.html">Devenir annonceur</a>
+        <a href="merchant.html">Espace commerçant</a>
+      </div>
+
+      <div class="footer-column">
+        <h3>Accès</h3>
+        <a href="cart.html">Mon panier</a>
+        <a href="admin.html" class="footer-admin">Administration</a>
+      </div>
     </div>
-    <div class="footer-bottom"><span>© <span id="currentYear"></span> PK-ChapShop. Tous droits réservés.</span><span>Imaginé pour le commerce local au Bénin <b>♥</b></span></div>
+
+    <div class="footer-bottom">
+      <span>
+        © <span id="currentYear"></span> PK-ChapShop. Tous droits réservés.
+      </span>
+      <span>
+        Imaginé pour le commerce local au Bénin <b>♥</b>
+      </span>
+    </div>
   </footer>
 
   <script src="app.js"></script>
   <script src="featured-carousel.js?v=20261029"></script>
+
   <script>
     (function () {
       const toggle = document.getElementById('menuToggle');
       const nav = document.getElementById('mobileNav');
+
       if (toggle && nav) {
         toggle.addEventListener('click', function () {
           const open = nav.hidden;
           nav.hidden = !open;
           toggle.setAttribute('aria-expanded', String(open));
-          toggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+          toggle.setAttribute(
+            'aria-label',
+            open ? 'Fermer le menu' : 'Ouvrir le menu'
+          );
           toggle.textContent = open ? '×' : '☰';
         });
+
         nav.querySelectorAll('a').forEach(function (link) {
           link.addEventListener('click', function () {
             nav.hidden = true;
@@ -179,22 +525,40 @@
           });
         });
       }
+
       const form = document.getElementById('searchForm');
       const input = document.getElementById('searchInput');
-      if (form && input) form.addEventListener('submit', function (event) {
-        event.preventDefault();
-        document.getElementById('commerces-section').scrollIntoView({ behavior: 'smooth' });
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      });
+
+      if (form && input) {
+        form.addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          document.getElementById('commerces-section')
+            .scrollIntoView({ behavior: 'smooth' });
+
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      }
+
       const year = document.getElementById('currentYear');
       if (year) year.textContent = new Date().getFullYear();
+
       const stores = document.getElementById('stores');
+
       if (stores && 'MutationObserver' in window) {
         new MutationObserver(function () {
           const count = stores.querySelectorAll('.store-card').length;
           const label = document.getElementById('resultsLabel');
-          if (label) label.textContent = count === 1 ? '1 commerce affiché' : count + ' commerces affichés';
-        }).observe(stores, { childList: true, subtree: true });
+
+          if (label) {
+            label.textContent = count === 1
+              ? '1 commerce affiché'
+              : count + ' commerces affichés';
+          }
+        }).observe(stores, {
+          childList: true,
+          subtree: true
+        });
       }
     })();
   </script>

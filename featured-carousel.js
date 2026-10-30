@@ -270,8 +270,6 @@
         resumeTimer = null;
       }
 
-      if (touchDevice.matches) return;
-
       resumeTimer = setTimeout(function () {
         resumeTimer = null;
         startAutomatic();
@@ -282,14 +280,13 @@
       stopAutomatic();
 
       if (
-        !track.isConnected ||
-        reducedMotion.matches ||
-        touchDevice.matches ||
-        document.hidden ||
-        track.scrollWidth <= track.clientWidth + 8
-      ) {
-        return;
-      }
+  !track.isConnected ||
+  reducedMotion.matches ||
+  document.hidden ||
+  track.scrollWidth <= track.clientWidth + 8
+) {
+  return;
+}
 
       timer = setInterval(function () {
         if (!track.isConnected || document.hidden) {

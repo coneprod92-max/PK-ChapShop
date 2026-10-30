@@ -5,44 +5,73 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'www');
 
-const files = [
+const excluded = new Set([
+  '.git',
+  '.github',
+  'node_modules',
+  'www',
+  'android',
+  'ios'
+]);
+
+const allowedExtensions = new Set([
+  '.html',
+  '.css',
+  '.js',
+  '.json',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.webp',
+  '.svg',
+  '.gif',
+  '.ico',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
+  '.mp4',
+  '.webm'
+]);
+
+function copyDirectory(source, destination) {
+  fs.mkdirSync(destination, { recursive: true });
+
+  for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
+    if (excluded.has(entry.name)) continue;
+
+    const sourcePath = path.join(source, entry.name);
+    const destinationPath = path.join(destination, entry.name);
+
+    if (sourcePath === output || sourcePath.startsWith(output + path.sep)) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, destinationPath);
+      continue;
+    }
+
+    if (allowedExtensions.has(path.extname(entry.name).toLowerCase())) {
+      fs.copyFileSync(sourcePath, destinationPath);
+    }
+  }
+}
+
+const requiredFiles = [
   'index.html',
-  'admin.html',
-  'admin.js',
-  'advertiser.js',
-  'annonceur.html',
-  'app.js',
-  'cart.html',
-  'cart.js',
-  'featured-carousel.js',
-  'merchant.html',
-  'merchant.js',
-  'store.html',
-  'store.js',
   'style.css',
-  'tracking.html',
-  'tracking.js'
+  'app.js'
 ];
 
-if (!fs.existsSync(path.join(root, 'index.html'))) {
-  throw new Error('La page index.html est introuvable.');
-}
-
-fs.rmSync(output, { recursive: true, force: true });
-fs.mkdirSync(output, { recursive: true });
-
-for (const relativePath of files) {
-  const source = path.join(root, relativePath);
-
-  if (!fs.existsSync(source)) {
-    throw new Error('Fichier source introuvable : ' + relativePath);
+for (const file of requiredFiles) {
+  if (!fs.existsSync(path.join(root, file))) {
+    throw new Error('Fichier indispensable introuvable : ' + file);
   }
-
-  fs.copyFileSync(source, path.join(output, relativePath));
 }
 
-console.log(
-  'Préparation mobile terminée : ' +
-  files.length +
-  ' fichiers copiés dans www/.'
-);
+fs.mkdirSync(output, { recursive: true });
+copyDirectory(root, output);
+
+console.log('Préparation mobile terminée.');
+console.log('Les fichiers web ont été copiés dans www/.');

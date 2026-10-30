@@ -1,369 +1,726 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#103b2b">
-<meta name="description" content="Gérez votre boutique, vos produits et vos commandes sur PK-ChapShop.">
-<title>PK-ChapShop — Espace commerçant</title>
+<meta name="description" content="Votre espace professionnel PK-ChapShop : boutique, produits, commandes et visibilité.">
+<title>PK-ChapShop — Espace professionnel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root {
+:root{
   --green:#103b2b;
   --deep:#09271d;
-  --green2:#1b6347;
-  --pale:#eaf4ed;
+  --green2:#1d6045;
   --gold:#d5b45b;
-  --goldpale:#f8edc9;
-  --ink:#19271f;
-  --muted:#6c7b72;
-  --paper:#f5f7f1;
+  --gold-light:#f2dfaa;
+  --paper:#f3f6f1;
   --white:#fff;
-  --line:#e0e8df;
+  --ink:#1b2b21;
+  --muted:#77847b;
+  --line:#e2e9e1;
   --red:#b42318;
-  --shadow:0 18px 45px rgba(16,59,43,.08);
+  --shadow:0 12px 35px rgba(9,39,29,.06);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:90px}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 Inter,Arial,sans-serif}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:14px/1.6 Inter,Arial,sans-serif;
+}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer;transition:.2s}
 button:hover{transform:translateY(-1px)}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #d5b45b88;outline-offset:3px}
-a{color:inherit;text-decoration:none}
+a{text-decoration:none;color:inherit}
 img,video{max-width:100%}
 .hidden{display:none!important}
-.topbar{position:sticky;top:0;z-index:20;background:var(--deep);color:#fff;border-bottom:1px solid #ffffff1a}
-.topbar-inner{max-width:1280px;margin:auto;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:15px}
-.brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:900;letter-spacing:-.5px}
-.brand-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:15px;background:var(--gold);color:var(--deep);font-size:20px;box-shadow:0 5px 20px #0003}
+:focus-visible{outline:3px solid #d5b45b88;outline-offset:3px}
+
+/* BARRE SUPERIEURE */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:var(--deep);color:white;
+  border-bottom:1px solid #ffffff18;
+}
+.topbar-inner{
+  max-width:1500px;margin:auto;padding:12px 25px;
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:19px}
+.brand-mark{
+  width:43px;height:43px;display:grid;place-items:center;
+  border-radius:14px;background:var(--gold);color:var(--deep);
+  font-weight:1000;font-size:19px;
+}
 .brand-name span{color:var(--gold)}
-.brand-sub{display:block;color:#c6d7cc;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
-.top-actions{display:flex;align-items:center;gap:9px}
-.top-note{font-size:12px;color:#d3e0d6}
-.btn,.gold,.danger{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:11px;padding:11px 15px;font-weight:800;font-size:13px;border:1px solid transparent}
-.btn{background:#fff;color:var(--green);border-color:var(--line)}
-.gold{background:var(--gold);color:var(--deep);box-shadow:0 5px 14px #d5b45b2b}
-.danger{background:#fff0ef;color:var(--red);border-color:#f3d3d0}
-.btn-dark{background:var(--green);color:#fff;border-color:var(--green)}
+.brand-sub{
+  display:block;color:#b9cfc1;font-size:9px;
+  letter-spacing:2px;text-transform:uppercase;
+}
+.top-actions{display:flex;align-items:center;gap:12px}
+.top-note{color:#c7d7cc;font-size:12px}
+.btn,.gold,.danger{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 16px;border:1px solid transparent;border-radius:11px;
+  font-size:12px;font-weight:800;
+}
+.btn{background:white;color:var(--green);border-color:var(--line)}
+.gold{background:var(--gold);color:var(--deep);box-shadow:0 5px 15px #d5b45b25}
+.danger{background:#fff0ef;color:var(--red);border-color:#f4d4d1}
+.btn-dark{background:var(--green);color:white;border-color:var(--green)}
 button:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.container{max-width:1280px;margin:auto;padding:28px 22px 65px}
-.hero{position:relative;overflow:hidden;isolation:isolate;display:grid;grid-template-columns:1.5fr .8fr;gap:25px;align-items:center;padding:clamp(25px,5vw,52px);border-radius:28px;background:radial-gradient(ellipse at 92% 12%,#d5b45b38,transparent 35%),linear-gradient(120deg,var(--deep),var(--green) 68%,#205c42);color:white;box-shadow:0 24px 55px #09271d24}
-.hero:after{content:"";position:absolute;z-index:-1;width:290px;height:290px;right:-100px;bottom:-180px;border:1px solid #d5b45b55;border-radius:50%;box-shadow:0 0 0 28px #d5b45b0c,0 0 0 58px #d5b45b0a}
-.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:900;color:#947322}
-.hero .eyebrow{color:var(--gold)}
-.eyebrow:before{content:"";width:22px;height:2px;background:var(--gold)}
-.hero h1{font-size:clamp(31px,4.5vw,54px);letter-spacing:-2px;line-height:1.06;margin:15px 0}
+
+/* CONTENEUR */
+.container{max-width:1500px;margin:auto;padding:25px 25px 65px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  color:#a27a29;font-size:10px;font-weight:900;
+  letter-spacing:2px;text-transform:uppercase;
+}
+.eyebrow:before{content:"";width:20px;height:2px;background:var(--gold)}
+.hero{
+  position:relative;overflow:hidden;isolation:isolate;
+  display:grid;grid-template-columns:1.4fr .7fr;gap:25px;
+  align-items:center;padding:35px 40px;
+  border-radius:23px;color:white;
+  background:
+    radial-gradient(circle at 85% 20%,#d5b45b35,transparent 30%),
+    linear-gradient(120deg,var(--deep),var(--green) 70%,#276044);
+  box-shadow:0 18px 45px #09271d20;
+}
+.hero:after{
+  content:"";position:absolute;z-index:-1;
+  width:270px;height:270px;right:-100px;bottom:-190px;
+  border:1px solid #d5b45b55;border-radius:50%;
+  box-shadow:0 0 0 30px #d5b45b0b,0 0 0 60px #d5b45b09;
+}
+.hero .eyebrow{color:var(--gold-light)}
+.hero h1{
+  margin:13px 0 10px;font-size:clamp(29px,4vw,45px);
+  line-height:1.12;letter-spacing:-1.6px;
+}
 .hero h1 span{color:var(--gold)}
-.hero p{max-width:620px;color:#d7e4db;margin:0;line-height:1.8}
-.hero-side{justify-self:end;max-width:260px;width:100%;padding:22px;border:1px solid #ffffff25;border-radius:20px;background:#ffffff0c;backdrop-filter:blur(8px)}
-.hero-icon{font-size:30px;margin-bottom:10px}
-.hero-side strong{display:block;font-size:17px;margin-bottom:5px}
-.hero-side p{font-size:12px}
-.hero .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-.hero .btn{background:#ffffff12;color:#fff;border-color:#ffffff38}
-.hero .gold{background:var(--gold);color:var(--deep)}
-.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:28px 0 20px}
-.intro h2{font-size:25px;letter-spacing:-.8px;margin:7px 0}
-.intro p{color:var(--muted);margin:0;max-width:680px}
-.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--green);font-size:12px;font-weight:800;white-space:nowrap}
+.hero p{max-width:650px;color:#d3e2d7;font-size:13px;line-height:1.8}
+.hero-side{
+  justify-self:end;max-width:245px;width:100%;
+  padding:21px;border:1px solid #ffffff28;border-radius:18px;
+  background:#ffffff0d;backdrop-filter:blur(8px);
+}
+.hero-icon{font-size:30px;margin-bottom:8px}
+.hero-side strong{display:block;font-size:16px}
+.hero-side p{font-size:11px;margin:5px 0 13px}
+.hero-side .pill{background:#ffffff13;border-color:#ffffff2b;color:white}
+
+/* AUTHENTIFICATION */
+.auth-layout{
+  max-width:1000px;margin:35px auto 0;
+  display:grid;grid-template-columns:.85fr 1.15fr;gap:20px;
+}
+.auth-aside{
+  padding:30px;border-radius:21px;
+  background:linear-gradient(145deg,var(--deep),var(--green));
+  color:white;
+}
+.auth-aside h2{font-size:27px;line-height:1.2;margin:15px 0}
+.auth-aside p{color:#d0dfd5;font-size:13px}
+.auth-feature{display:flex;gap:10px;margin-top:17px;font-size:12px;color:#e4eee7}
+.auth-feature span{color:var(--gold);font-weight:900}
+.auth-forms{display:grid;gap:15px}
+.auth-forms h2{font-size:19px;margin:0 0 5px}
+
+/* TABLEAU DE BORD */
+#dashboard:not(.hidden){display:block}
+.workspace{
+  display:grid;grid-template-columns:225px minmax(0,1fr);
+  gap:22px;margin-top:25px;align-items:start;
+}
+.sidebar{
+  position:sticky;top:82px;padding:16px;
+  border:1px solid var(--line);border-radius:19px;
+  background:white;box-shadow:var(--shadow);
+}
+.sidebar-label{
+  margin:4px 9px 12px;color:#9aa69c;
+  font-size:9px;font-weight:900;letter-spacing:1.7px;
+  text-transform:uppercase;
+}
+.quicknav{display:grid;gap:6px}
+.quicknav a{
+  display:flex;align-items:center;gap:11px;
+  padding:12px 11px;border-radius:11px;
+  color:#526157;font-size:12px;font-weight:800;
+  transition:.2s;
+}
+.quicknav a:hover,.quicknav a.active{
+  background:#edf5ed;color:var(--green);
+}
+.quicknav a.active{border-left:3px solid var(--gold)}
+.nav-icon{width:23px;text-align:center;font-size:17px}
+.sidebar-bottom{
+  margin-top:18px;padding:14px 10px 5px;
+  border-top:1px solid var(--line);
+  color:var(--muted);font-size:10px;line-height:1.7;
+}
+.workspace-main{min-width:0}
+.dashboard-heading{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:15px;margin-bottom:17px;
+}
+.dashboard-heading h2{margin:5px 0 2px;font-size:25px;letter-spacing:-.7px}
+.dashboard-heading p{margin:0;color:var(--muted);font-size:12px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;border:1px solid var(--line);
+  border-radius:999px;background:white;
+  color:var(--green);font-size:11px;font-weight:800;
+  white-space:nowrap;
+}
 .pill-dot{width:7px;height:7px;border-radius:50%;background:#35a66a}
-.quicknav{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 32px}
-.quicknav a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:800;color:var(--green);transition:.2s}
-.quicknav a:hover{background:var(--green);color:white;border-color:var(--green)}
-.section{margin-top:32px;scroll-margin-top:90px}
-.section-heading{display:flex;align-items:flex-start;gap:14px;margin-bottom:17px}
-.section-number{width:39px;height:39px;flex:0 0 39px;border-radius:13px;display:grid;place-items:center;background:var(--goldpale);color:#82631b;font-weight:900}
-.section-heading h2{font-size:21px;letter-spacing:-.5px;margin:0 0 4px}
-.section-heading p{color:var(--muted);font-size:13px;margin:0}
-.panel{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:clamp(18px,3vw,28px);box-shadow:var(--shadow)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.card-label{display:block;font-size:12px;font-weight:800;color:#34483a;margin-bottom:7px}
-input,textarea,select{width:100%;min-width:0;border:1px solid #dbe4da;border-radius:11px;background:#fbfcfa;padding:12px 13px;color:var(--ink);outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--green2);background:white;box-shadow:0 0 0 3px #1b634714}
-textarea{min-height:110px;resize:vertical}
-input[type="checkbox"]{width:17px;height:17px;accent-color:var(--green)}
-input[type="file"]{padding:10px;background:#fff;font-size:12px}
-.field{margin-bottom:16px}
+
+/* CARTES D'ACCUEIL */
+.welcome-card{
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+  margin-bottom:18px;padding:20px 22px;
+  border:1px solid #e5dfc9;border-radius:17px;
+  background:linear-gradient(110deg,#fffdf5,#fff);
+}
+.welcome-card h3{margin:0 0 4px;font-size:16px;color:var(--green)}
+.welcome-card p{margin:0;color:var(--muted);font-size:11px}
+.welcome-symbol{
+  width:48px;height:48px;flex-shrink:0;
+  display:grid;place-items:center;border-radius:15px;
+  background:#f8edce;color:#87651e;font-size:23px;
+}
+.quick-cards{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;margin-bottom:24px;
+}
+.quick-card{
+  min-width:0;padding:15px;border:1px solid var(--line);
+  border-radius:15px;background:white;box-shadow:var(--shadow);
+}
+.quick-card-icon{
+  width:35px;height:35px;display:grid;place-items:center;
+  border-radius:11px;background:#eff5ed;font-size:17px;
+}
+.quick-card strong{display:block;margin-top:9px;font-size:12px}
+.quick-card span{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+
+/* SECTIONS ET PANNEAUX */
+.section{margin-top:27px;scroll-margin-top:95px}
+.section-heading{
+  display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;
+}
+.section-number{
+  width:36px;height:36px;flex:0 0 36px;
+  display:grid;place-items:center;border-radius:12px;
+  background:#f8edce;color:#87651e;font-size:12px;font-weight:900;
+}
+.section-heading h2{margin:0 0 3px;font-size:19px;letter-spacing:-.4px}
+.section-heading p{margin:0;color:var(--muted);font-size:11px}
+.panel{
+  min-width:0;padding:22px;border:1px solid var(--line);
+  border-radius:17px;background:white;box-shadow:var(--shadow);
+}
+.panel h3{margin:0 0 6px;font-size:16px}
+.panel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.field{margin-bottom:14px;min-width:0}
 .field:last-child{margin-bottom:0}
-.field-help{display:block;color:var(--muted);font-size:11px;margin-top:6px}
-.checks{display:flex;flex-wrap:wrap;gap:12px;margin:5px 0 18px}
-.checkline{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#fbfcfa;font-size:12px;font-weight:700}
-.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-.msg{padding:13px 15px;border-radius:12px;margin:14px 0;font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.card-label{display:block;margin-bottom:6px;color:#35483b;font-size:11px;font-weight:800}
+input,textarea,select{
+  width:100%;min-width:0;padding:12px 13px;
+  border:1px solid #dce5dc;border-radius:10px;
+  background:#fbfcfa;color:var(--ink);outline:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--green2);background:white;
+  box-shadow:0 0 0 3px #1d604515;
+}
+textarea{min-height:100px;resize:vertical}
+input[type="checkbox"]{width:17px;height:17px;accent-color:var(--green)}
+input[type="file"]{padding:9px;background:white;font-size:11px}
+.field-help{display:block;margin-top:5px;color:var(--muted);font-size:10px}
+.checks{display:flex;flex-wrap:wrap;gap:10px;margin:7px 0 16px}
+.checkline{
+  display:flex;align-items:center;gap:9px;padding:10px 12px;
+  border:1px solid var(--line);border-radius:10px;
+  background:#fbfcfa;font-size:11px;font-weight:700;
+}
+.form-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.msg{
+  padding:12px 14px;margin:13px 0;border-radius:11px;
+  font-size:12px;font-weight:700;overflow-wrap:anywhere;
+}
 .msg.ok{background:#e9f8ed;color:#17683b;border:1px solid #c8ebd2}
 .msg.err{background:#fff0ef;color:#a12720;border:1px solid #f4d1ce}
-.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-.product,.order{min-width:0;padding:17px;border:1px solid var(--line);border-radius:15px;background:#fff}
-.product img,.product video{display:block;width:100%;max-height:250px;object-fit:cover;border-radius:11px;margin:12px 0}
-.product .small{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
-.product .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.row strong{overflow-wrap:anywhere}
-.price{font-size:14px;font-weight:900;color:var(--green);white-space:nowrap}
-.order{margin-bottom:13px}
-.order p{font-size:13px;margin:8px 0;overflow-wrap:anywhere}
-.order label{display:block;font-size:12px;font-weight:800;margin:13px 0 6px}
-.order .gold{margin-top:10px}
-.order select{max-width:100%}
-.empty-note{padding:18px;border-radius:12px;background:#f7faf6;color:var(--muted);font-size:13px}
-.auth-layout{max-width:920px;margin:28px auto 0;display:grid;grid-template-columns:.85fr 1.15fr;gap:20px}
-.auth-aside{padding:28px;border-radius:20px;background:linear-gradient(145deg,var(--deep),var(--green));color:#fff}
-.auth-aside h2{font-size:25px;line-height:1.2;margin:13px 0}
-.auth-aside p{color:#d0dfd5;font-size:13px}
-.auth-feature{display:flex;gap:10px;margin-top:18px;font-size:12px;color:#e5eee8}
-.auth-feature span{color:var(--gold);font-weight:900}
-.auth-forms{display:grid;gap:16px}
-.auth-forms .panel h2{font-size:19px}
-.divider{height:1px;background:var(--line);margin:3px 0}
-footer{padding:24px 22px;background:var(--deep);color:#cbd9cf;text-align:center;font-size:12px}
-footer strong{color:var(--gold)}
-@media(max-width:850px){
- .hero{grid-template-columns:1fr}
- .hero-side{justify-self:start;max-width:none}
- .grid-3{grid-template-columns:1fr}
- .auth-layout{grid-template-columns:1fr}
+
+/* PRODUITS, GALERIE ET COMMANDES */
+.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.product,.order{
+  min-width:0;padding:15px;border:1px solid var(--line);
+  border-radius:14px;background:white;
 }
-@media(max-width:600px){
- .topbar-inner{padding:11px 14px}
- .brand{font-size:16px;gap:9px}
- .brand-mark{width:39px;height:39px;border-radius:12px}
- .brand-sub{font-size:8px;letter-spacing:1.4px}
- .top-note{display:none}
- .top-actions .btn{padding:9px 10px;font-size:11px}
- .container{padding:17px 13px 42px}
- .hero{padding:24px 20px;border-radius:20px}
- .hero h1{letter-spacing:-1.3px}
- .hero .actions{display:grid;grid-template-columns:1fr}
- .hero .actions button{width:100%}
- .intro{align-items:flex-start;flex-direction:column}
- .quicknav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
- .quicknav a{justify-content:center;text-align:center;padding:11px 8px;font-size:11px}
- .grid,.list{grid-template-columns:1fr}
- .panel{padding:17px;border-radius:16px}
- .section-heading h2{font-size:19px}
- .row{align-items:flex-start}
- .product .actions .btn,.product .actions .gold,.product .actions .danger{flex:1 1 auto}
- .form-actions>*{flex:1 1 auto}
+.product img,.product video{
+  display:block;width:100%;max-height:230px;object-fit:cover;
+  border-radius:10px;margin:11px 0;
+}
+.product .small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.product .actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row strong{overflow-wrap:anywhere}
+.price{font-size:13px;font-weight:900;color:var(--green);white-space:nowrap}
+.order{margin-bottom:12px}
+.order p{margin:7px 0;font-size:12px;overflow-wrap:anywhere}
+.order label{display:block;margin:12px 0 5px;font-size:11px;font-weight:800}
+.order .gold{margin-top:9px}
+.order select{max-width:100%}
+.empty-note{
+  padding:17px;border-radius:11px;background:#f7faf6;
+  color:var(--muted);font-size:12px;
+}
+
+/* AUTH ET RATTACHEMENT */
+.claim-card{max-width:900px;margin:30px auto}
+.divider{height:1px;background:var(--line);margin:3px 0}
+footer{
+  padding:22px;background:var(--deep);color:#cbd9cf;
+  text-align:center;font-size:11px;
+}
+footer strong{color:var(--gold)}
+
+/* RESPONSIVE */
+@media(max-width:1050px){
+  .workspace{grid-template-columns:190px minmax(0,1fr);gap:15px}
+  .quick-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .container{padding:17px 13px 45px}
+  .topbar-inner{padding:10px 14px}
+  .top-note{display:none}
+  .hero{grid-template-columns:1fr;padding:25px 21px;border-radius:19px}
+  .hero-side{justify-self:start;max-width:none}
+  .hero h1{font-size:31px}
+  .auth-layout{grid-template-columns:1fr;margin-top:20px}
+  .auth-aside{padding:23px}
+  .workspace{grid-template-columns:1fr;gap:13px}
+  .sidebar{position:static;padding:10px;overflow:hidden}
+  .sidebar-label,.sidebar-bottom{display:none}
+  .quicknav{
+    display:flex;gap:7px;overflow-x:auto;
+    scrollbar-width:thin;padding-bottom:3px;
+  }
+  .quicknav a{flex:0 0 auto;padding:10px;border:1px solid var(--line);font-size:10px}
+  .quicknav a.active{border:1px solid var(--gold);border-left:3px solid var(--gold)}
+  .nav-icon{font-size:15px;width:auto}
+  .dashboard-heading h2{font-size:21px}
+  .dashboard-heading .pill{font-size:9px;padding:7px}
+  .welcome-card{padding:16px}
+  .panel{padding:17px}
+  .grid,.panel-grid,.list{grid-template-columns:1fr}
+  .section-heading h2{font-size:17px}
+}
+@media(max-width:430px){
+  .brand{font-size:16px;gap:8px}
+  .brand-mark{width:38px;height:38px}
+  .brand-sub{font-size:8px}
+  .top-actions .btn{padding:9px 10px;font-size:10px}
+  .quick-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .quick-card{padding:12px}
+  .dashboard-heading{align-items:flex-start;flex-direction:column}
+  .dashboard-heading .pill{align-self:flex-start}
+  .hero h1{font-size:28px}
+  .form-actions>*{flex:1 1 auto}
+  .product .actions>*{flex:1 1 auto}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
 </style>
 </head>
+
 <body>
+
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="index.html" aria-label="PK-ChapShop, accueil">
       <span class="brand-mark">PK</span>
-      <span class="brand-name">PK-Chap<span>Shop</span><span class="brand-sub">Espace commerçant</span></span>
+      <span class="brand-name">PK-Chap<span>Shop</span><span class="brand-sub">Espace professionnel</span></span>
     </a>
     <div class="top-actions">
-      <span class="top-note">Votre boutique, votre activité.</span>
-      <button id="logoutBtn" class="btn hidden" type="button">Déconnexion</button>
+      <span class="top-note">Votre activité, sous contrôle.</span>
+      <button id="logoutBtn" class="btn hidden" type="button">↪ Déconnexion</button>
     </div>
   </div>
 </header>
 
 <main class="container">
+
+  <!-- PRESENTATION -->
   <section class="hero">
     <div>
       <span class="eyebrow">Votre espace professionnel</span>
-      <h1>Votre commerce.<br><span>Vos règles. Votre réussite.</span></h1>
-      <p>Gérez vos produits, présentez votre boutique, partagez votre lien et suivez vos commandes depuis un seul espace.</p>
+      <h1>Développez votre commerce.<br><span>Construisez votre réussite.</span></h1>
+      <p>Gérez votre boutique, vos produits, vos photos et vos commandes depuis un espace unique, simple et professionnel.</p>
     </div>
     <aside class="hero-side">
-      <div class="hero-icon">🏪</div>
-      <strong>Votre vitrine en ligne</strong>
-      <p>Une boutique claire, accessible et facile à partager avec vos clients.</p>
-      <div class="pill"><span class="pill-dot"></span> Espace commerçant</div>
+      <div class="hero-icon">✦</div>
+      <strong>Votre commerce connecté</strong>
+      <p>Une vitrine en ligne accessible à vos clients, depuis leur téléphone ou leur ordinateur.</p>
+      <div class="pill"><span class="pill-dot"></span> PK-ChapShop professionnel</div>
     </aside>
   </section>
 
+  <!-- CONNEXION -->
   <section id="authSection" class="auth-layout">
     <aside class="auth-aside">
-      <span class="eyebrow">Bienvenue sur PK-ChapShop</span>
-      <h2>Faites grandir votre commerce en ligne.</h2>
-      <p>Connectez-vous à votre espace ou créez votre compte commerçant.</p>
-      <div class="auth-feature"><span>✦</span> Gérez votre catalogue de produits</div>
-      <div class="auth-feature"><span>✦</span> Ajoutez des photos et vidéos</div>
+      <span class="eyebrow">Bienvenue</span>
+      <h2>Votre activité mérite un espace à sa hauteur.</h2>
+      <p>Connectez-vous pour retrouver votre boutique ou créez votre compte commerçant.</p>
+      <div class="auth-feature"><span>✦</span> Gérez vos produits et vos prix</div>
+      <div class="auth-feature"><span>✦</span> Présentez votre commerce en images</div>
       <div class="auth-feature"><span>✦</span> Suivez les commandes de vos clients</div>
+      <div class="auth-feature"><span>✦</span> Partagez votre boutique facilement</div>
     </aside>
+
     <div class="auth-forms">
       <section class="panel">
         <h2>🔐 Connexion</h2>
-        <p class="field-help">Vous avez déjà un compte ? Connectez-vous ici.</p>
+        <p class="field-help">Vous avez déjà un compte commerçant ?</p>
         <form id="loginForm">
-          <div class="field"><label class="card-label" for="loginEmail">Adresse e-mail</label><input id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com"></div>
-          <div class="field"><label class="card-label" for="loginPassword">Mot de passe</label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Votre mot de passe"></div>
+          <div class="field">
+            <label class="card-label" for="loginEmail">Adresse e-mail</label>
+            <input id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com">
+          </div>
+          <div class="field">
+            <label class="card-label" for="loginPassword">Mot de passe</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Votre mot de passe">
+          </div>
           <button class="gold" type="submit">Se connecter →</button>
           <div id="loginMsg" aria-live="polite"></div>
         </form>
       </section>
+
       <section class="panel">
         <h2>✨ Créer un compte</h2>
-        <p class="field-help">Créez un compte pour gérer votre boutique.</p>
+        <p class="field-help">Créez votre accès personnel à PK-ChapShop.</p>
         <form id="signupForm">
-          <div class="field"><label class="card-label" for="signupEmail">Adresse e-mail</label><input id="signupEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com"></div>
-          <div class="field"><label class="card-label" for="signupPassword">Créer un mot de passe</label><input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required placeholder="6 caractères minimum"></div>
-          <button class="btn-dark btn" type="submit">Créer mon compte</button>
+          <div class="field">
+            <label class="card-label" for="signupEmail">Adresse e-mail</label>
+            <input id="signupEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com">
+          </div>
+          <div class="field">
+            <label class="card-label" for="signupPassword">Créer un mot de passe</label>
+            <input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required placeholder="6 caractères minimum">
+          </div>
+          <button class="btn btn-dark" type="submit">Créer mon compte</button>
           <div id="signupMsg" aria-live="polite"></div>
         </form>
       </section>
     </div>
   </section>
 
-  <section id="claimSection" class="section panel hidden">
+  <!-- RATTACHEMENT BOUTIQUE -->
+  <section id="claimSection" class="section panel claim-card hidden">
     <div class="section-heading">
       <span class="section-number">01</span>
-      <div><h2>Rattacher votre boutique</h2><p>Saisissez le code commerçant et le numéro de téléphone associé à votre boutique.</p></div>
+      <div>
+        <h2>Rattacher votre boutique</h2>
+        <p>Saisissez le code commerçant et le numéro de téléphone associé à votre boutique.</p>
+      </div>
     </div>
     <form id="claimForm">
       <div class="grid">
-        <div class="field"><label class="card-label" for="merchantCode">Code commerçant</label><input id="merchantCode" required autocomplete="off" placeholder="Votre code commerçant"></div>
-        <div class="field"><label class="card-label" for="merchantPhone">Téléphone associé à la boutique</label><input id="merchantPhone" type="tel" required autocomplete="tel" placeholder="+229…"></div>
+        <div class="field">
+          <label class="card-label" for="merchantCode">Code commerçant</label>
+          <input id="merchantCode" required autocomplete="off" placeholder="Votre code commerçant">
+        </div>
+        <div class="field">
+          <label class="card-label" for="merchantPhone">Téléphone associé à la boutique</label>
+          <input id="merchantPhone" type="tel" required autocomplete="tel" placeholder="+229…">
+        </div>
       </div>
       <button class="gold" type="submit">Rattacher ma boutique →</button>
       <div id="claimMsg" aria-live="polite"></div>
     </form>
   </section>
 
+  <!-- ESPACE CONNECTE -->
   <section id="dashboard" class="hidden">
-    <div class="intro">
-      <div><span class="eyebrow">Tableau de bord</span><h2 id="storeName">Ma boutique</h2><p id="storeInfo">Gérez votre boutique et votre activité.</p></div>
-      <span class="pill"><span class="pill-dot"></span> Espace sécurisé</span>
+
+    <div class="workspace">
+
+      <!-- NAVIGATION -->
+      <aside class="sidebar">
+        <div class="sidebar-label">Espace de travail</div>
+        <nav class="quicknav" aria-label="Navigation commerçant">
+          <a class="active" href="#dashboardHome"><span class="nav-icon">⌂</span> Accueil</a>
+          <a href="#storeSettings"><span class="nav-icon">🏪</span> Ma boutique</a>
+          <a href="#productSection"><span class="nav-icon">📦</span> Produits</a>
+          <a href="#mediaSection"><span class="nav-icon">▧</span> Galerie</a>
+          <a href="#ordersSection"><span class="nav-icon">🧾</span> Commandes</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <strong>PK-ChapShop</strong><br>
+          Votre commerce, mieux connecté.
+        </div>
+      </aside>
+
+      <!-- CONTENU -->
+      <div class="workspace-main">
+
+        <div id="dashboardHome" class="dashboard-heading">
+          <div>
+            <span class="eyebrow">Tableau de bord</span>
+            <h2 id="storeName">Ma boutique</h2>
+            <p id="storeInfo">Gérez votre boutique et votre activité.</p>
+          </div>
+          <span class="pill"><span class="pill-dot"></span> Espace sécurisé</span>
+        </div>
+
+        <div class="welcome-card">
+          <div>
+            <h3>Bienvenue dans votre espace professionnel 👋</h3>
+            <p>Tout ce dont vous avez besoin pour gérer votre commerce est ici.</p>
+          </div>
+          <div class="welcome-symbol">✦</div>
+        </div>
+
+        <div class="quick-cards">
+          <a class="quick-card" href="#storeSettings">
+            <div class="quick-card-icon">🏪</div>
+            <strong>Ma boutique</strong>
+            <span>Informations et présentation</span>
+          </a>
+          <a class="quick-card" href="#productSection">
+            <div class="quick-card-icon">📦</div>
+            <strong>Mes produits</strong>
+            <span>Catalogue et disponibilité</span>
+          </a>
+          <a class="quick-card" href="#mediaSection">
+            <div class="quick-card-icon">🖼️</div>
+            <strong>Ma galerie</strong>
+            <span>Photos et vidéos</span>
+          </a>
+          <a class="quick-card" href="#ordersSection">
+            <div class="quick-card-icon">🧾</div>
+            <strong>Mes commandes</strong>
+            <span>Suivi des commandes reçues</span>
+          </a>
+        </div>
+
+        <div id="dashMsg" aria-live="polite"></div>
+
+        <!-- BOUTIQUE -->
+        <section id="storeSettings" class="section">
+          <div class="section-heading">
+            <span class="section-number">01</span>
+            <div>
+              <h2>Ma boutique</h2>
+              <p>Présentez votre activité et actualisez vos coordonnées.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <form id="storeForm">
+              <div class="grid">
+                <div class="field">
+                  <label class="card-label" for="sName">Nom de la boutique</label>
+                  <input id="sName" required placeholder="Nom de votre commerce">
+                </div>
+                <div class="field">
+                  <label class="card-label" for="sPhone">Téléphone</label>
+                  <input id="sPhone" type="tel" placeholder="+229…">
+                </div>
+                <div class="field">
+                  <label class="card-label" for="sWhatsapp">WhatsApp</label>
+                  <input id="sWhatsapp" type="tel" placeholder="+229…">
+                </div>
+                <div class="field">
+                  <label class="card-label" for="sAddress">Adresse / localisation</label>
+                  <input id="sAddress" placeholder="Quartier, ville…">
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="card-label" for="sDescription">Description de la boutique</label>
+                <textarea id="sDescription" placeholder="Présentez votre commerce, vos services et vos produits…"></textarea>
+              </div>
+
+              <div class="grid">
+                <div class="field">
+                  <label class="card-label" for="sLogo">Lien du logo (facultatif)</label>
+                  <input id="sLogo" type="url" placeholder="https://…">
+                  <span class="field-help">Ou choisissez une photo sur votre appareil :</span>
+                  <input id="sLogoFile" type="file" accept="image/*">
+                  <span class="field-help">Photo de profil — 10 Mo maximum.</span>
+                </div>
+                <div class="field">
+                  <label class="card-label" for="sCover">Lien de la couverture (facultatif)</label>
+                  <input id="sCover" type="url" placeholder="https://…">
+                  <span class="field-help">Ou choisissez une photo de couverture :</span>
+                  <input id="sCoverFile" type="file" accept="image/*">
+                  <span class="field-help">Couverture — 10 Mo maximum.</span>
+                </div>
+              </div>
+
+              <div class="checks">
+                <label class="checkline"><input id="sOpen" type="checkbox"> Boutique ouverte</label>
+                <label class="checkline"><input id="sDelivery" type="checkbox"> Livraison disponible</label>
+              </div>
+
+              <div class="form-actions">
+                <button class="gold" type="submit">💾 Enregistrer les informations</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- PRODUITS -->
+        <section id="productSection" class="section">
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h2>Catalogue de produits</h2>
+              <p>Ajoutez vos articles, modifiez les prix et gérez leur disponibilité.</p>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="panel">
+              <h3 id="productFormHeading">➕ Ajouter un produit</h3>
+              <p class="field-help">Complétez les informations de votre article.</p>
+              <form id="productForm">
+                <input id="pId" type="hidden">
+                <div class="field">
+                  <label class="card-label" for="pName">Nom du produit</label>
+                  <input id="pName" required placeholder="Ex. : Sac de riz">
+                </div>
+                <div class="field">
+                  <label class="card-label" for="pPrice">Prix (FCFA)</label>
+                  <input id="pPrice" type="number" min="0" step="1" required placeholder="Ex. : 5000">
+                </div>
+                <div class="field">
+                  <label class="card-label" for="pDescription">Description</label>
+                  <textarea id="pDescription" placeholder="Description du produit…"></textarea>
+                </div>
+                <div class="field">
+                  <label class="card-label" for="pImage">Lien de l'image (facultatif)</label>
+                  <input id="pImage" type="url" placeholder="https://…">
+                </div>
+                <div class="field">
+                  <label class="card-label" for="pImageFile">Ou choisir une image sur votre appareil</label>
+                  <input id="pImageFile" type="file" accept="image/*">
+                  <span class="field-help">Le stockage « store-media » doit être configuré dans Supabase.</span>
+                </div>
+                <label class="checkline"><input id="pAvailable" type="checkbox" checked> Produit disponible</label>
+                <div class="form-actions">
+                  <button id="productSubmit" class="gold" type="submit">➕ Ajouter le produit</button>
+                  <button id="cancelEditProduct" class="btn hidden" type="button">Annuler la modification</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="panel">
+              <h3>📦 Mes produits</h3>
+              <p class="field-help">Retrouvez et gérez vos articles enregistrés.</p>
+              <div id="productsList" class="list" style="margin-top:15px;grid-template-columns:1fr">
+                <div class="empty-note">Chargement des produits…</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GALERIE -->
+        <section id="mediaSection" class="section">
+          <div class="section-heading">
+            <span class="section-number">03</span>
+            <div>
+              <h2>Photos et vidéos</h2>
+              <p>Enrichissez votre vitrine avec les images de votre commerce.</p>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="panel">
+              <h3>📤 Ajouter un média</h3>
+              <p class="field-help">Choisissez une photo ou une vidéo à publier.</p>
+              <form id="mediaForm">
+                <div class="field">
+                  <label class="card-label" for="mediaType">Type de média</label>
+                  <select id="mediaType" required>
+                    <option value="image">Photo</option>
+                    <option value="video">Vidéo</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="card-label" for="mediaFile">Fichier</label>
+                  <input id="mediaFile" type="file" accept="image/*" required>
+                </div>
+                <div class="field">
+                  <label class="card-label" for="mediaTitle">Titre (facultatif)</label>
+                  <input id="mediaTitle" placeholder="Ex. : Notre boutique">
+                </div>
+                <label class="checkline"><input id="mediaCover" type="checkbox"> Utiliser comme couverture</label>
+                <div class="form-actions">
+                  <button id="mediaBtn" class="gold" type="submit">📤 Envoyer</button>
+                </div>
+              </form>
+            </div>
+            <div class="panel">
+              <h3>🖼️ Ma galerie</h3>
+              <p class="field-help">Vos médias déjà enregistrés apparaîtront ici.</p>
+              <div id="mediaList" class="list" style="margin-top:15px;grid-template-columns:1fr">
+                <div class="empty-note">Chargement de la galerie…</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- COMMANDES -->
+        <section id="ordersSection" class="section">
+          <div class="section-heading">
+            <span class="section-number">04</span>
+            <div>
+              <h2>Commandes reçues</h2>
+              <p>Consultez les commandes de vos clients et actualisez leur statut.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div id="ordersList">
+              <div class="empty-note">Chargement des commandes…</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
     </div>
-
-    <nav class="quicknav" aria-label="Navigation du tableau de bord">
-      <a href="#storeSettings">⚙️ Ma boutique</a>
-      <a href="#productSection">📦 Produits</a>
-      <a href="#mediaSection">🖼️ Galerie</a>
-      <a href="#ordersSection">🧾 Commandes</a>
-    </nav>
-
-    <div id="dashMsg" aria-live="polite"></div>
-
-    <section id="storeSettings" class="section">
-      <div class="section-heading"><span class="section-number">01</span><div><h2>Informations de la boutique</h2><p>Présentez votre activité et mettez à jour vos coordonnées.</p></div></div>
-      <div class="panel">
-        <form id="storeForm">
-          <div class="grid">
-            <div class="field"><label class="card-label" for="sName">Nom de la boutique</label><input id="sName" required placeholder="Nom de votre commerce"></div>
-            <div class="field"><label class="card-label" for="sPhone">Téléphone</label><input id="sPhone" type="tel" placeholder="+229…"></div>
-            <div class="field"><label class="card-label" for="sWhatsapp">WhatsApp</label><input id="sWhatsapp" type="tel" placeholder="+229…"></div>
-            <div class="field"><label class="card-label" for="sAddress">Adresse / localisation</label><input id="sAddress" placeholder="Quartier, ville…"></div>
-          </div>
-          <div class="field">
-  <label class="card-label" for="sDescription">
-    Description de la boutique
-  </label>
-  <textarea
-    id="sDescription"
-    placeholder="Présentez votre commerce, vos services et vos produits…"
-  ></textarea>
-</div>
-
-          <div class="grid">
-            <div class="field">
-              <label class="card-label" for="sLogo">Lien du logo (facultatif)</label>
-              <input id="sLogo" type="url" placeholder="https://…">
-              <span class="field-help">Ou choisis une photo sur ton appareil :</span>
-              <input id="sLogoFile" type="file" accept="image/*">
-              <span class="field-help">Photo de profil — 10 Mo maximum.</span>
-            </div>
-
-            <div class="field">
-              <label class="card-label" for="sCover">Lien de la couverture (facultatif)</label>
-              <input id="sCover" type="url" placeholder="https://…">
-              <span class="field-help">Ou choisis une photo de couverture :</span>
-              <input id="sCoverFile" type="file" accept="image/*">
-              <span class="field-help">Couverture — 10 Mo maximum.</span>
-            </div>
-          </div>
-
-          <div class="checks">
-            <label class="checkline">
-              <input id="sOpen" type="checkbox">
-              Boutique ouverte
-            </label>
-            <label class="checkline">
-              <input id="sDelivery" type="checkbox">
-              Livraison disponible
-            </label>
-          </div>
-
-          <div class="form-actions">
-            <button class="gold" type="submit">💾 Enregistrer les informations</button>
-          </div>
-        </form>
-           </div>
-    </section>
-
-    <section id="productSection" class="section">
-      <div class="section-heading"><span class="section-number">02</span><div><h2>Catalogue de produits</h2><p>Ajoutez vos produits, modifiez les prix et gérez leur disponibilité.</p></div></div>
-      <div class="grid">
-        <div class="panel">
-          <h3 id="productFormHeading">➕ Ajouter un produit</h3>
-          <p class="field-help">Les produits enregistrés apparaîtront dans la liste ci-contre.</p>
-          <form id="productForm">
-            <input id="pId" type="hidden">
-            <div class="field"><label class="card-label" for="pName">Nom du produit</label><input id="pName" required placeholder="Ex. : Sac de riz"></div>
-            <div class="field"><label class="card-label" for="pPrice">Prix (FCFA)</label><input id="pPrice" type="number" min="0" step="1" required placeholder="Ex. : 5000"></div>
-            <div class="field"><label class="card-label" for="pDescription">Description</label><textarea id="pDescription" placeholder="Description du produit…"></textarea></div>
-            <div class="field"><label class="card-label" for="pImage">Lien de l'image (facultatif)</label><input id="pImage" type="url" placeholder="https://…"></div>
-            <div class="field"><label class="card-label" for="pImageFile">Ou choisir une image sur votre appareil</label><input id="pImageFile" type="file" accept="image/*"><span class="field-help">La mise en ligne nécessite que le stockage « store-media » soit configuré dans Supabase.</span></div>
-            <label class="checkline"><input id="pAvailable" type="checkbox" checked> Produit disponible</label>
-            <div class="form-actions"><button id="productSubmit" class="gold" type="submit">➕ Ajouter le produit</button><button id="cancelEditProduct" class="btn hidden" type="button">Annuler la modification</button></div>
-          </form>
-        </div>
-        <div class="panel">
-          <h3>📦 Mes produits</h3>
-          <p class="field-help">Modifiez ou désactivez vos articles à tout moment.</p>
-          <div id="productsList" class="list" style="margin-top:15px;grid-template-columns:1fr"><div class="empty-note">Chargement des produits…</div></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="mediaSection" class="section">
-      <div class="section-heading"><span class="section-number">03</span><div><h2>Photos et vidéos</h2><p>Enrichissez votre vitrine avec des images et des vidéos de votre commerce.</p></div></div>
-      <div class="grid">
-        <div class="panel">
-          <h3>📤 Ajouter un média</h3>
-          <p class="field-help">Choisissez le fichier et indiquez son type.</p>
-          <form id="mediaForm">
-            <div class="field"><label class="card-label" for="mediaType">Type de média</label><select id="mediaType" required><option value="image">Photo</option><option value="video">Vidéo</option></select></div>
-            <div class="field"><label class="card-label" for="mediaFile">Fichier</label><input id="mediaFile" type="file" accept="image/*" required></div>
-            <div class="field"><label class="card-label" for="mediaTitle">Titre (facultatif)</label><input id="mediaTitle" placeholder="Ex. : Notre boutique"></div>
-            <label class="checkline"><input id="mediaCover" type="checkbox"> Utiliser comme couverture</label>
-            <div class="form-actions"><button id="mediaBtn" class="gold" type="submit">📤 Envoyer</button></div>
-          </form>
-        </div>
-        <div class="panel">
-          <h3>🖼️ Ma galerie</h3>
-          <p class="field-help">Les médias déjà enregistrés apparaîtront ici.</p>
-          <div id="mediaList" class="list" style="margin-top:15px;grid-template-columns:1fr"><div class="empty-note">Chargement de la galerie…</div></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="ordersSection" class="section">
-      <div class="section-heading"><span class="section-number">04</span><div><h2>Commandes reçues</h2><p>Consultez les informations de commande et mettez à jour leur statut.</p></div></div>
-      <div class="panel">
-        <div id="ordersList"><div class="empty-note">Chargement des commandes…</div></div>
-      </div>
-    </section>
   </section>
+
 </main>
 
 <footer>© <span id="year"></span> <strong>PK-ChapShop</strong> — Votre commerce, mieux connecté.</footer>
-<script src="merchant.js"></script>
+
+<script src="merchant.js?v=20261030"></script>
 <script>
 document.getElementById("year").textContent = new Date().getFullYear();
+
 const mediaType = document.getElementById("mediaType");
 const mediaFile = document.getElementById("mediaFile");
+
 if(mediaType && mediaFile){
   mediaType.addEventListener("change",()=>{
     mediaFile.accept = mediaType.value === "video" ? "video/*" : "image/*";
   });
 }
+
+/* Navigation active */
+document.querySelectorAll(".quicknav a").forEach(link=>{
+  link.addEventListener("click",()=>{
+    document.querySelectorAll(".quicknav a").forEach(item=>item.classList.remove("active"));
+    link.classList.add("active");
+  });
+});
 </script>
 </body>
 </html>

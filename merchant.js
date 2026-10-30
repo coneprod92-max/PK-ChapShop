@@ -16,7 +16,10 @@ async function uploadFile(file,folder="products"){
   if(error)throw error;
   return sb.storage.from("store-media").getPublicUrl(path).data.publicUrl;
 }
-function storePublicUrl(){return location.origin+location.pathname.replace(/merchant\.html?$/i,"store.html")+"?id="+encodeURIComponent(store.id);}
+function storePublicUrl(){
+  const publicBase = "https://coneprod92-max.github.io/PK-ChapShop/";
+  return publicBase + "store.html?id=" + encodeURIComponent(store.id);
+}
 async function copyStoreLink(){
   if(!store)return;
   const url=storePublicUrl();

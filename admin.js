@@ -841,9 +841,13 @@ function ensureStoreBrandingControls() {
   `;
 
   const submit = form.querySelector('button[type="submit"]');
-  if (submit) form.insertBefore(panel, submit);
-  else form.appendChild(panel);
+const actions = submit?.closest(".status-line");
 
+if (actions && actions.parentElement === form) {
+  form.insertBefore(panel, actions);
+} else {
+  form.appendChild(panel);
+}
   $("storeLogoFile")?.addEventListener("change", () => {
     previewBrandingFile("logo");
   });

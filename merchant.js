@@ -1,4 +1,4 @@
-```javascript
+
 const SUPABASE_URL = "https://ljzonxmlpygfryfmohhd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -23,7 +23,12 @@ const slug = v => String(v || "")
 
 function message(id,text,success=false){
   const el=$(id);
-  if(el)el.innerHTML=`<div class="msg ${success?"ok":"err"}">${esc(text)}</div>`;
+  if(!el)return;
+
+  const box=document.createElement("div");
+  box.className=success ? "msg ok" : "msg err";
+  box.textContent=String(text ?? "");
+  el.replaceChildren(box);
 }
 
 function setMsg(text,ok=false){
@@ -224,7 +229,7 @@ $("signupForm").addEventListener("submit",async e=>{
     }else{
       message(
         "signupMsg",
-        "Inscription enregistrée. Consultez votre boîte e-mail pour confirmer votre adresse si cela est demandé, puis connectez-vous.",
+        "Inscription enregistrée. Consultez votre boîte e-mail pour confirmer votre adresse si cela est demandé.",
         true
       );
     }
@@ -899,4 +904,3 @@ window.updateOrder=async id=>{
    ========================================================= */
 
 init();
-```

@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = "https://ljzonxmlpygfryfmohhd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -9,6 +8,8 @@ let currentStoreCity = null;
 let editingProductId = null;
 let currentCommissionRate = 10;
 let cachedStores = [];
+let logoPreviewUrl = null;
+let coverPreviewUrl = null;
 
 const $ = id => document.getElementById(id);
 
@@ -34,6 +35,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   $("cancelStoreEdit")?.addEventListener("click", resetStoreForm);
   $("cancelProductEdit")?.addEventListener("click", resetProductForm);
+
+  ensureStoreBrandingControls();
 
   $("storesList")?.addEventListener("click", async event => {
     const button = event.target.closest("button[data-store-action]");
@@ -535,9 +538,6 @@ async function loadFinance() {
       const commission = subtotal * rate / 100;
       const paid = order.payment_status === "paid";
       const refunded = order.payment_status === "refunded";
-
-      // Les commandes annulées sont déjà exclues de la requête.
-      // Les commandes encore ouvertes sont visibles, mais séparées des ventes finalisées.
       const completed = ["delivered"].includes(order.status);
 
       if (completed && !refunded) {
@@ -794,6 +794,210 @@ async function toggleFeatured(table, id, currentlyActive) {
 
   await loadFeatured();
   await loadStores();
+}
+
+/* =========================
+   LOGO ET COUVERTURE
+========================= */
+
+function ensureStoreBrandingControls() {
+  const form = $("storeForm");
+  if (!form || $("storeBrandingControls")) return;
+
+  const logoUrlField = $("storeLogo");
+  const coverUrlField = $("storeCover");
+
+  if (logoUrlField) logoUrlField.type = "hidden";
+  if (coverUrlField) coverUrlField.type = "hidden";
+
+  form.querySelector('label[for="storeLogo"]')?.classList.add("admin-hidden");
+  form.querySelector('label[for="storeCover"]')?.classList.add("admin-hidden");
+
+  const panel = document.createElement("section");
+  panel.id = "storeBrandingControls";
+  panel.className = "item-row";
+  panel.style.marginTop = "16px";
+
+  panel.innerHTML = `
+    <h3>Logo et couverture de la boutique</h3>
+    <p>Choisis les images directement depuis la galerie de ton téléphone. Formats image acceptés, 12 Mo maximum par fichier.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+      <div>
+        <label for="storeLogoFile">Logo de la boutique</label>
+        <input id="storeLogoFile" type="file" accept="image/*">
+        <img id="storeLogoPreview" alt="Aperçu du logo" hidden
+          style="display:none;width:140px;height:140px;object-fit:contain;margin-top:10px;border-radius:10px;background:#f3f3f3">
+      </div>
+
+      <div>
+        <label for="storeCoverFile">Photo de couverture</label>
+        <input id="storeCoverFile" type="file" accept="image/*">
+        <img id="storeCoverPreview" alt="Aperçu de la couverture" hidden
+          style="display:none;width:100%;max-width:320px;height:160px;object-fit:cover;margin-top:10px;border-radius:10px;background:#f3f3f3">
+      </div>
+    </div>
+    <p id="storeBrandingStatus" role="status"></p>
+  `;
+
+  const submit = form.querySelector('button[type="submit"]');
+  if (submit) form.insertBefore(panel, submit);
+  else form.appendChild(panel);
+
+  $("storeLogoFile")?.addEventListener("change", () => {
+    previewBrandingFile("logo");
+  });
+
+  $("storeCoverFile")?.addEventListener("change", () => {
+    previewBrandingFile("cover");
+  });
+}
+
+function previewBrandingFile(type) {
+  const input = $(type === "logo" ? "storeLogoFile" : "storeCoverFile");
+  const preview = $(type === "logo" ? "storeLogoPreview" : "storeCoverPreview");
+  const file = input?.files?.[0];
+
+  if (!preview) return;
+
+  if (type === "logo") {
+    revokePreviewUrl(logoPreviewUrl);
+    logoPreviewUrl = null;
+  } else {
+    revokePreviewUrl(coverPreviewUrl);
+    coverPreviewUrl = null;
+  }
+
+  if (!file) {
+    const existingUrl = $(type === "logo" ? "storeLogo" : "storeCover")?.value;
+    setPreviewImage(preview, existingUrl || "");
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    input.value = "";
+    setPreviewImage(preview, "");
+    return alert("Choisis un fichier image.");
+  }
+
+  if (file.size > 12 * 1024 * 1024) {
+    input.value = "";
+    setPreviewImage(preview, "");
+    return alert("L'image dépasse la limite de 12 Mo.");
+  }
+
+  const url = URL.createObjectURL(file);
+
+  if (type === "logo") logoPreviewUrl = url;
+  else coverPreviewUrl = url;
+
+  setPreviewImage(preview, url);
+}
+
+function setPreviewImage(preview, url) {
+  if (!preview) return;
+
+  if (!url) {
+    preview.removeAttribute("src");
+    preview.hidden = true;
+    preview.style.display = "none";
+    return;
+  }
+
+  preview.src = url;
+  preview.hidden = false;
+  preview.style.display = "block";
+}
+
+function revokePreviewUrl(url) {
+  if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
+}
+
+function clearBrandingPreviews() {
+  revokePreviewUrl(logoPreviewUrl);
+  revokePreviewUrl(coverPreviewUrl);
+  logoPreviewUrl = null;
+  coverPreviewUrl = null;
+
+  setPreviewImage($("storeLogoPreview"), "");
+  setPreviewImage($("storeCoverPreview"), "");
+
+  if ($("storeLogoFile")) $("storeLogoFile").value = "";
+  if ($("storeCoverFile")) $("storeCoverFile").value = "";
+  if ($("storeBrandingStatus")) $("storeBrandingStatus").textContent = "";
+}
+
+function validateBrandingFiles() {
+  const files = [
+    { input: $("storeLogoFile"), label: "logo" },
+    { input: $("storeCoverFile"), label: "couverture" }
+  ];
+
+  for (const item of files) {
+    const file = item.input?.files?.[0];
+    if (!file) continue;
+
+    if (!file.type.startsWith("image/")) {
+      alert(`Le fichier choisi pour le ${item.label} n'est pas une image.`);
+      return false;
+    }
+
+    if (file.size > 12 * 1024 * 1024) {
+      alert(`Le fichier du ${item.label} dépasse la limite de 12 Mo.`);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+async function uploadStoreBranding(storeId) {
+  const logoFile = $("storeLogoFile")?.files?.[0] || null;
+  const coverFile = $("storeCoverFile")?.files?.[0] || null;
+
+  const updates = {};
+
+  if (logoFile) {
+    updates.logo_url = await uploadBrandingFile(storeId, logoFile, "logo");
+  }
+
+  if (coverFile) {
+    updates.cover_url = await uploadBrandingFile(storeId, coverFile, "cover");
+  }
+
+  if (Object.keys(updates).length) {
+    const { error } = await supabaseClient.from("stores")
+      .update(updates)
+      .eq("id", storeId);
+
+    if (error) throw error;
+
+    if (updates.logo_url) set("storeLogo", updates.logo_url);
+    if (updates.cover_url) set("storeCover", updates.cover_url);
+  }
+
+  return updates;
+}
+
+async function uploadBrandingFile(storeId, file, type) {
+  const ext = (file.name.split(".").pop() || "jpg")
+    .toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+
+  const path = `${storeId}/branding/${type}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabaseClient.storage.from("store-media")
+    .upload(path, file, {
+      upsert: false,
+      contentType: file.type,
+      cacheControl: "3600"
+    });
+
+  if (error) throw error;
+
+  const { data } = supabaseClient.storage.from("store-media").getPublicUrl(path);
+  if (!data?.publicUrl) throw new Error(`Impossible de récupérer l'URL du ${type}.`);
+
+  return data.publicUrl;
 }
 
 /* =========================
@@ -1111,7 +1315,8 @@ async function loadStoreSelectors(stores) {
 async function handleStoreSubmit(event) {
   event.preventDefault();
 
-  const button = $("storeForm")?.querySelector('button[type="submit"]');
+  const form = $("storeForm");
+  const button = form?.querySelector('button[type="submit"]');
   const name = $("storeName")?.value.trim() || "";
   const category = $("storeCategory")?.value || "";
   const phone = $("storePhone")?.value.trim() || "";
@@ -1119,6 +1324,8 @@ async function handleStoreSubmit(event) {
   if (!name || !category || !phone) {
     return alert("Le nom, la catégorie et le téléphone sont obligatoires.");
   }
+
+  if (!validateBrandingFiles()) return;
 
   const editing = Boolean(currentStoreId);
 
@@ -1143,26 +1350,80 @@ async function handleStoreSubmit(event) {
     button.textContent = editing ? "Enregistrement des modifications..." : "Création de la boutique...";
   }
 
-  try {
-    const result = editing
-      ? await supabaseClient.from("stores").update(payload).eq("id", currentStoreId).select("id").maybeSingle()
-      : await supabaseClient.from("stores").insert(payload).select("id").single();
+  const status = $("storeBrandingStatus");
+  if (status) status.textContent = "";
 
-    if (result.error) throw result.error;
-    if (editing && !result.data) {
-      throw new Error("Aucune boutique modifiée. Vérifie les droits administrateur dans Supabase.");
+  try {
+    let storeId = currentStoreId;
+
+    if (editing) {
+      const result = await supabaseClient.from("stores")
+        .update(payload)
+        .eq("id", currentStoreId)
+        .select("id")
+        .maybeSingle();
+
+      if (result.error) throw result.error;
+      if (!result.data) {
+        throw new Error("Aucune boutique modifiée. Vérifie les droits administrateur dans Supabase.");
+      }
+    } else {
+      const result = await supabaseClient.from("stores")
+        .insert(payload)
+        .select("id")
+        .single();
+
+      if (result.error) throw result.error;
+      storeId = result.data.id;
+      currentStoreId = storeId;
+      currentStoreCity = payload.city;
     }
 
-    alert(editing ? "Boutique modifiée avec succès." : "Boutique créée avec succès.");
-    resetStoreForm();
-    await Promise.all([loadStores(), loadFeatured()]);
+    try {
+      const uploaded = await uploadStoreBranding(storeId);
+
+      if (Object.keys(uploaded).length) {
+        if (status) status.textContent = "Images envoyées avec succès.";
+      }
+
+      alert(editing
+        ? "Boutique et informations enregistrées avec succès."
+        : "Boutique créée avec succès.");
+
+      resetStoreForm();
+      await Promise.all([loadStores(), loadFeatured()]);
+    } catch (uploadError) {
+      console.error(uploadError);
+
+      if (!editing) {
+        if (status) {
+          status.textContent = "La boutique a été créée, mais l'envoi des images a échoué. Tu peux réessayer sans créer une nouvelle boutique.";
+        }
+
+        const submit = form?.querySelector('button[type="submit"]');
+        if (submit) submit.textContent = "💾 Réessayer l'enregistrement";
+      }
+
+      alert(
+        (editing
+          ? "Les informations de la boutique ont été enregistrées, mais l'envoi des images a échoué : "
+          : "La boutique a été créée, mais l'envoi des images a échoué : ") +
+        uploadError.message
+      );
+
+      await Promise.all([loadStores(), loadFeatured()]);
+    }
   } catch (error) {
     console.error(error);
     alert("Enregistrement impossible : " + error.message);
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent = "💾 Enregistrer la boutique";
+      if (currentStoreId) {
+        button.textContent = "💾 Enregistrer les modifications";
+      } else {
+        button.textContent = "💾 Enregistrer la boutique";
+      }
     }
   }
 }
@@ -1187,6 +1448,10 @@ async function editStore(id) {
 
     if ($("storeDelivery")) $("storeDelivery").checked = data.delivery_available !== false;
 
+    clearBrandingPreviews();
+    setPreviewImage($("storeLogoPreview"), data.logo_url || "");
+    setPreviewImage($("storeCoverPreview"), data.cover_url || "");
+
     initStoreMediaEditor();
 
     const panel = $("storeMediaEditor");
@@ -1199,7 +1464,7 @@ async function editStore(id) {
     if (submit) submit.textContent = "💾 Enregistrer les modifications";
 
     $("storeForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    alert("Boutique chargée. Modifie les champs puis clique sur Enregistrer les modifications.");
+    alert("Boutique chargée. Tu peux choisir un nouveau logo ou une nouvelle couverture, puis enregistrer.");
   } catch (error) {
     console.error(error);
     alert("Impossible de charger la boutique : " + error.message);
@@ -1212,6 +1477,8 @@ function resetStoreForm() {
   currentStoreCity = null;
 
   if ($("storeDelivery")) $("storeDelivery").checked = true;
+
+  clearBrandingPreviews();
 
   const submit = $("storeForm")?.querySelector('button[type="submit"]');
   if (submit) {

@@ -64,6 +64,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!button) return;
     await toggleFeatured("products", button.dataset.featureProduct, button.dataset.featureValue === "true");
   });
+  $("featuredProductsList")?.addEventListener("click", async event => {
+  const button = event.target.closest("[data-save-feature-priority]");
+  if (!button) return;
+
+  await saveFeaturedPriority(button.dataset.saveFeaturePriority);
+});
 
   showLogin();
 

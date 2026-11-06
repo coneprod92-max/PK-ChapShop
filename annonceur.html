@@ -5,511 +5,374 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102d22">
-  <meta name="description" content="Commerçant à Parakou ? Rejoignez gratuitement PK-ChapShop et présentez votre boutique et vos produits en ligne.">
-  <title>Devenir annonceur — PK-ChapShop</title>
+  <meta name="description" content="Inscrivez votre commerce sur PK-ChapShop et créez votre espace professionnel.">
+  <title>Inscription commerçant — PK-ChapShop</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --green: #102d22;
-      --green-light: #1d4936;
-      --gold: #d5b36a;
-      --cream: #f7f5ef;
-      --text: #243329;
-      --muted: #718075;
-      --border: #e5e8df;
+      --green:#102d22;
+      --green-light:#1d4936;
+      --gold:#d5b36a;
+      --cream:#f7f5ef;
+      --text:#243329;
+      --muted:#718075;
+      --border:#e5e8df;
     }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--cream);
-      color: var(--text);
-      font-family: "DM Sans", Arial, sans-serif;
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:var(--cream);color:var(--text);
+      font-family:"DM Sans",Arial,sans-serif;
     }
-
-    .header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 5%;
-      background: rgba(16,45,34,.98);
-      border-bottom: 1px solid rgba(213,179,106,.4);
+    .header{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;padding:14px 5%;background:var(--green);
+      border-bottom:1px solid rgba(213,179,106,.4);
     }
-
-    .logo {
-      color: white;
-      font-weight: 900;
-      font-size: 22px;
-      text-decoration: none;
+    .logo{color:white;font-weight:900;font-size:22px;text-decoration:none}
+    .logo span{color:var(--gold)}
+    .header-link{
+      color:var(--green);background:var(--gold);padding:10px 15px;
+      border-radius:30px;font-weight:800;text-decoration:none;
     }
-
-    .logo span { color: var(--gold); }
-
-    .cart-link {
-      padding: 10px 15px;
-      border-radius: 30px;
-      background: var(--gold);
-      color: var(--green);
-      font-weight: 800;
-      text-decoration: none;
+    .page{width:min(950px,92%);margin:auto;padding:28px 0 60px}
+    .back{display:inline-block;margin-bottom:20px;color:var(--green);font-weight:800;text-decoration:none}
+    .hero{
+      padding:clamp(28px,6vw,55px);color:white;border-radius:22px;
+      background:radial-gradient(circle at 90% 10%,rgba(213,179,106,.25),transparent 32%),
+      linear-gradient(135deg,#1d4936,#102d22 75%);
     }
-
-    .page {
-      width: min(1050px, 92%);
-      margin: auto;
-      padding: 25px 0 65px;
+    .eyebrow{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:2px}
+    .hero h1{font-size:clamp(30px,6vw,48px);line-height:1.1;margin:15px 0}
+    .hero h1 span{color:var(--gold)}
+    .hero p{max-width:680px;color:#e4ece5;line-height:1.8}
+    .offer{
+      display:inline-block;margin-top:12px;padding:13px 16px;
+      border:1px solid rgba(213,179,106,.55);border-radius:12px;
+      background:rgba(255,255,255,.08);font-weight:800;line-height:1.6;
     }
-
-    .back {
-      display: inline-block;
-      margin: 0 0 20px;
-      color: var(--green);
-      font-weight: 800;
-      text-decoration: none;
+    .section-title{margin:35px 0 17px;color:var(--green);font-size:26px}
+    .benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .benefit{padding:20px;background:white;border:1px solid var(--border);border-radius:16px}
+    .benefit strong{display:block;color:var(--green);margin:8px 0}
+    .benefit p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+    .form-card{
+      margin-top:30px;padding:clamp(20px,4vw,40px);background:white;
+      border:1px solid var(--border);border-radius:22px;
+      box-shadow:0 14px 40px rgba(16,45,34,.07);
     }
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      padding: clamp(28px, 6vw, 65px);
-      color: white;
-      border: 1px solid rgba(213,179,106,.5);
-      border-radius: 25px;
-      background:
-        radial-gradient(circle at 90% 10%, rgba(213,179,106,.25), transparent 32%),
-        linear-gradient(135deg, #1d4936, #102d22 75%);
-      box-shadow: 0 18px 45px rgba(16,45,34,.1);
+    .form-heading{padding-bottom:18px;margin-bottom:22px;border-bottom:1px solid var(--border)}
+    .form-heading small{color:#98752f;font-weight:900;letter-spacing:1.5px}
+    .form-heading h2{margin:9px 0;color:var(--green);font-size:27px}
+    .form-heading p{color:var(--muted);line-height:1.7}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .form-group{min-width:0}
+    .form-group.full{grid-column:1/-1}
+    label{display:block;margin-bottom:7px;color:var(--green);font-size:14px;font-weight:800}
+    input,select,textarea{
+      width:100%;min-height:49px;padding:12px 14px;
+      border:1px solid #dce3da;border-radius:11px;
+      background:white;color:var(--text);font:inherit;font-size:16px;
     }
-
-    .eyebrow {
-      color: var(--gold);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 2px;
+    textarea{min-height:100px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:2px solid rgba(213,179,106,.35);border-color:#b18b3e}
+    .help{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5}
+    .submit{
+      width:100%;min-height:54px;margin-top:22px;padding:14px;
+      border:0;border-radius:12px;background:var(--gold);
+      color:var(--green);font:inherit;font-weight:900;cursor:pointer;
     }
-
-    .hero h1 {
-      max-width: 720px;
-      margin: 17px 0;
-      font-size: clamp(32px, 6vw, 55px);
-      line-height: 1.08;
-      letter-spacing: -1.5px;
-    }
-
-    .hero h1 span { color: var(--gold); }
-
-    .hero p {
-      max-width: 690px;
-      color: #e4ece5;
-      font-size: 16px;
-      line-height: 1.8;
-    }
-
-    .offer {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      margin-top: 15px;
-      padding: 13px 17px;
-      color: white;
-      background: rgba(255,255,255,.09);
-      border: 1px solid rgba(213,179,106,.55);
-      border-radius: 13px;
-      font-weight: 800;
-      line-height: 1.5;
-    }
-
-    .section-title {
-      margin: 38px 0 18px;
-      color: var(--green);
-      font-size: clamp(23px, 4vw, 30px);
-    }
-
-    .benefits {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-
-    .benefit {
-      padding: 23px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-    }
-
-    .benefit-icon {
-      margin-bottom: 12px;
-      font-size: 30px;
-    }
-
-    .benefit h3 {
-      margin: 0 0 9px;
-      color: var(--green);
-      font-size: 17px;
-    }
-
-    .benefit p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 13px;
-      margin: 20px 0 35px;
-    }
-
-    .step {
-      padding: 18px;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-    }
-
-    .step strong {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--green);
-    }
-
-    .step p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .form-card {
-      padding: clamp(20px, 4vw, 42px);
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 23px;
-      box-shadow: 0 14px 40px rgba(16,45,34,.07);
-    }
-
-    .form-heading {
-      margin-bottom: 25px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .form-heading small {
-      color: #98752f;
-      font-weight: 900;
-      letter-spacing: 1.5px;
-    }
-
-    .form-heading h2 {
-      margin: 9px 0;
-      color: var(--green);
-      font-size: 27px;
-    }
-
-    .form-heading p {
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 15px;
-    }
-
-    .form-group { min-width: 0; }
-
-    .form-group.full { grid-column: 1 / -1; }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--green);
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      min-height: 49px;
-      padding: 12px 14px;
-      border: 1px solid #dce3da;
-      border-radius: 11px;
-      background: white;
-      color: var(--text);
-      font: inherit;
-      font-size: 16px;
-    }
-
-    .form-group textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: 2px solid rgba(213,179,106,.35);
-      border-color: #b18b3e;
-    }
-
-    .submit {
-      width: 100%;
-      min-height: 53px;
-      margin-top: 22px;
-      padding: 14px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--gold);
-      color: var(--green);
-      font: inherit;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .submit:hover { background: #e4c77f; }
-    .submit:disabled { opacity: .7; cursor: wait; }
-
-    .form-message {
-      display: none;
-      margin-top: 15px;
-      padding: 14px;
-      border-radius: 11px;
-      line-height: 1.6;
-      overflow-wrap: anywhere;
-    }
-
-    .form-message.success {
-      display: block;
-      color: #166534;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-    }
-
-    .form-message.error {
-      display: block;
-      color: #991b1b;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-    }
-
-    .reassurance {
-      margin-top: 18px;
-      padding: 17px;
-      border-radius: 13px;
-      background: var(--cream);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-      text-align: center;
-    }
-
-    .footer-note {
-      margin-top: 35px;
-      color: var(--muted);
-      font-size: 13px;
-      text-align: center;
-    }
-
-    @media (max-width: 700px) {
-      .benefits, .steps { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-group.full { grid-column: auto; }
-      .hero { border-radius: 18px; }
-      .hero p { font-size: 14px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-      }
+    .submit:disabled{opacity:.65;cursor:wait}
+    .message{display:none;margin-top:15px;padding:14px;border-radius:11px;line-height:1.6;overflow-wrap:anywhere}
+    .message.success{display:block;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0}
+    .message.error{display:block;color:#991b1b;background:#fef2f2;border:1px solid #fecaca}
+    .message.info{display:block;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe}
+    .login-note{margin-top:18px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
+    .login-note a{color:var(--green);font-weight:900}
+    .reassurance{margin-top:18px;padding:16px;background:var(--cream);border-radius:12px;color:var(--muted);font-size:13px;line-height:1.7;text-align:center}
+    footer{padding:22px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:700px){
+      .benefits{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .form-group.full{grid-column:auto}
+      .hero{border-radius:17px}
     }
   </style>
 </head>
 
 <body>
-  <header class="header">
-    <a href="index.html" class="logo">PK <span>ChapShop</span></a>
-    <a href="cart.html" class="cart-link">
-      🛒 Panier <span id="cartCount">0</span>
-    </a>
-  </header>
+<header class="header">
+  <a href="index.html" class="logo">PK <span>ChapShop</span></a>
+  <a href="merchant.html" class="header-link">Déjà inscrit ? Connexion</a>
+</header>
 
-  <main class="page">
-    <a href="index.html" class="back">← Retour au marché</a>
+<main class="page">
+  <a href="index.html" class="back">← Retour au marché</a>
 
-    <section class="hero">
-      <span class="eyebrow">PARAKOU • OFFRE DE LANCEMENT</span>
-      <h1>Faites découvrir votre commerce sur <span>PK-ChapShop.</span></h1>
+  <section class="hero">
+    <span class="eyebrow">PARAKOU • ESPACE PROFESSIONNEL</span>
+    <h1>Votre commerce mérite sa place sur <span>PK-ChapShop.</span></h1>
+    <p>
+      Inscrivez votre activité et créez votre compte en une seule étape.
+      Après validation de votre demande, vous pourrez accéder directement
+      à votre espace professionnel.
+    </p>
+    <div class="offer">
+      🎁 Inscription gratuite au lancement<br>
+      30 jours de visibilité offerte pour les 50 premiers annonceurs
+    </div>
+  </section>
+
+  <h2 class="section-title">Pourquoi rejoindre PK-ChapShop ?</h2>
+  <section class="benefits">
+    <article class="benefit">
+      <div>📣</div>
+      <strong>Gagnez en visibilité</strong>
+      <p>Faites découvrir votre commerce aux clients de Parakou.</p>
+    </article>
+    <article class="benefit">
+      <div>🛍️</div>
+      <strong>Présentez vos produits</strong>
+      <p>Publiez vos articles, vos photos et vos prix facilement.</p>
+    </article>
+    <article class="benefit">
+      <div>🤝</div>
+      <strong>Gérez votre activité</strong>
+      <p>Retrouvez vos produits et vos commandes dans un espace unique.</p>
+    </article>
+  </section>
+
+  <section class="form-card">
+    <div class="form-heading">
+      <small>UNE SEULE INSCRIPTION, UN SEUL COMPTE</small>
+      <h2>🚀 Inscrire mon commerce</h2>
       <p>
-        Vous êtes commerçant, restaurateur, artisan ou prestataire à Parakou ?
-        Présentez votre activité, vos produits et vos services sur notre
-        marché local en ligne. Nous vous accompagnons pour créer votre boutique.
+        Remplissez les informations ci-dessous. Votre compte sera créé
+        et votre demande sera automatiquement transmise à notre équipe.
       </p>
-      <div class="offer">
-        🎁 Inscription gratuite au lancement
-        <br>
-        30 jours de visibilité offerte pour les 50 premiers annonceurs
-      </div>
-    </section>
+    </div>
 
-    <h2 class="section-title">Pourquoi rejoindre PK-ChapShop ?</h2>
+    <form id="registrationForm">
+      <div class="form-grid">
 
-    <section class="benefits">
-      <article class="benefit">
-        <div class="benefit-icon">📣</div>
-        <h3>Faites-vous connaître</h3>
-        <p>Présentez votre commerce aux personnes qui recherchent des produits et services à Parakou.</p>
-      </article>
-
-      <article class="benefit">
-        <div class="benefit-icon">🛍️</div>
-        <h3>Exposez vos produits</h3>
-        <p>Ajoutez des photos, des descriptions et des prix pour mieux présenter votre offre.</p>
-      </article>
-
-      <article class="benefit">
-        <div class="benefit-icon">🤝</div>
-        <h3>Restez proche des clients</h3>
-        <p>Facilitez les échanges et les demandes de renseignements grâce à vos coordonnées.</p>
-      </article>
-    </section>
-
-    <h2 class="section-title">Comment ça marche ?</h2>
-
-    <section class="steps">
-      <article class="step">
-        <strong>1. Envoyez votre demande</strong>
-        <p>Remplissez le formulaire avec les informations de votre activité.</p>
-      </article>
-      <article class="step">
-        <strong>2. Faites valider votre inscription</strong>
-        <p>Notre équipe examine votre demande et vous accompagne pour la suite.</p>
-      </article>
-      <article class="step">
-        <strong>3. Présentez votre boutique</strong>
-        <p>Ajoutez vos produits et partagez votre boutique avec vos clients.</p>
-      </article>
-    </section>
-
-    <section class="form-card">
-      <div class="form-heading">
-        <small>REJOIGNEZ NOTRE COMMUNAUTÉ</small>
-        <h2>🚀 Créer ma demande annonceur</h2>
-        <p>
-          Les champs marqués d'un astérisque (*) sont obligatoires.
-          Notre équipe pourra vous contacter après réception.
-        </p>
-      </div>
-
-      <form id="advertiserForm">
-        <div class="form-grid">
-
-          <div class="form-group">
-            <label for="fullName">Votre nom complet *</label>
-            <input id="fullName" name="fullName" autocomplete="name"
-              required placeholder="Nom et prénom">
-          </div>
-
-          <div class="form-group">
-            <label for="email">Votre adresse e-mail *</label>
-            <input id="email" name="email" type="email"
-              autocomplete="email" required placeholder="vous@exemple.com">
-          </div>
-
-          <div class="form-group">
-            <label for="businessName">Nom de votre activité *</label>
-            <input id="businessName" name="businessName"
-              required placeholder="Nom du commerce ou de l'entreprise">
-          </div>
-
-          <div class="form-group">
-            <label for="category">Catégorie *</label>
-            <select id="category" name="category" required>
-              <option value="">Choisir une catégorie</option>
-              <option>Restaurants</option>
-              <option>Boutiques</option>
-              <option>Agences</option>
-              <option>Entreprises</option>
-              <option>Garages</option>
-              <option>Services</option>
-              <option>Autre</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="phone">Téléphone *</label>
-            <input id="phone" name="phone" type="tel"
-              autocomplete="tel" required placeholder="+229...">
-          </div>
-
-          <div class="form-group">
-            <label for="whatsapp">Numéro WhatsApp</label>
-            <input id="whatsapp" name="whatsapp" type="tel"
-              placeholder="+229...">
-          </div>
-
-          <div class="form-group">
-            <label for="city">Ville *</label>
-            <input id="city" name="city" value="Parakou"
-              autocomplete="address-level2" required>
-          </div>
-
-          <div class="form-group">
-            <label for="address">Adresse ou localisation</label>
-            <input id="address" name="address"
-              autocomplete="street-address" placeholder="Quartier, rue, repère...">
-          </div>
-
-          <div class="form-group full">
-            <label for="description">Présentez votre activité</label>
-            <textarea id="description" name="description"
-              placeholder="Vos produits, vos services et ce qui vous distingue..."></textarea>
-          </div>
-
-          <div class="form-group full">
-            <label for="goal">Vos objectifs sur PK-ChapShop</label>
-            <textarea id="goal" name="goal"
-              placeholder="Gagner en visibilité, recevoir plus de demandes, présenter mes produits..."></textarea>
-          </div>
-
+        <div class="form-group">
+          <label for="fullName">Votre nom complet *</label>
+          <input id="fullName" type="text" autocomplete="name"
+            required maxlength="100" placeholder="Nom et prénom">
         </div>
 
-        <button class="submit" type="submit">
-          🚀 Envoyer ma demande gratuitement
-        </button>
+        <div class="form-group">
+          <label for="email">Adresse e-mail *</label>
+          <input id="email" type="email" autocomplete="email"
+            required placeholder="vous@exemple.com">
+        </div>
 
-        <div id="formMessage" class="form-message"
-          role="status" aria-live="polite"></div>
-      </form>
+        <div class="form-group">
+          <label for="businessName">Nom du commerce *</label>
+          <input id="businessName" type="text" required maxlength="150"
+            placeholder="Nom de votre boutique ou entreprise">
+        </div>
 
-      <div class="reassurance">
-        🔒 Vos informations servent à traiter votre demande d'inscription.
-        <br>
-        L'inscription de lancement est gratuite. La visibilité offerte
-        concerne les 50 premiers annonceurs, selon les conditions de lancement.
+        <div class="form-group">
+          <label for="category">Catégorie *</label>
+          <select id="category" required>
+            <option value="">Choisir une catégorie</option>
+            <option value="Agences">Agences</option>
+            <option value="Boutiques">Boutiques</option>
+            <option value="Entreprises">Entreprises</option>
+            <option value="Garages">Garages</option>
+            <option value="Restaurants">Restaurants</option>
+            <option value="Services">Services</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Téléphone *</label>
+          <input id="phone" type="tel" autocomplete="tel"
+            required placeholder="+229...">
+        </div>
+
+        <div class="form-group">
+          <label for="whatsapp">Numéro WhatsApp</label>
+          <input id="whatsapp" type="tel" placeholder="+229...">
+          <span class="help">Laissez vide si c'est le même numéro que votre téléphone.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="city">Ville *</label>
+          <input id="city" type="text" value="Parakou" required>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Quartier ou localisation</label>
+          <input id="address" type="text" placeholder="Ex. : Titirou, centre-ville...">
+        </div>
+
+        <div class="form-group full">
+          <label for="description">Présentez votre activité</label>
+          <textarea id="description" maxlength="1000"
+            placeholder="Décrivez brièvement vos produits ou vos services..."></textarea>
+        </div>
+
+        <div class="form-group full">
+          <label for="password">Créer un mot de passe *</label>
+          <input id="password" type="password" autocomplete="new-password"
+            minlength="8" required placeholder="8 caractères minimum">
+          <span class="help">Choisissez un mot de passe personnel que vous pourrez retenir.</span>
+        </div>
+
+        <div class="form-group full">
+          <label for="passwordConfirm">Confirmer le mot de passe *</label>
+          <input id="passwordConfirm" type="password" autocomplete="new-password"
+            minlength="8" required placeholder="Saisissez à nouveau votre mot de passe">
+        </div>
+
       </div>
-    </section>
 
-    <p class="footer-note">
-      PK-ChapShop — Le commerce local, simplement. · Parakou, Bénin
-      <br>
-      <a href="index.html">Retour à l'accueil</a>
-    </p>
-  </main>
+      <button id="submitButton" class="submit" type="submit">
+        🚀 Créer mon compte et envoyer ma demande
+      </button>
 
-  <script src="advertiser.js"></script>
+      <div id="formMessage" class="message" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="login-note">
+      Vous avez déjà un compte ?
+      <a href="merchant.html">Connectez-vous à votre espace professionnel.</a>
+    </div>
+
+    <div class="reassurance">
+      🔒 Vos informations sont utilisées pour créer votre compte et traiter
+      votre demande d'inscription. La création du compte ne signifie pas
+      que votre boutique est déjà approuvée.
+    </div>
+  </section>
+</main>
+
+<footer>
+  PK-ChapShop — Le commerce local, simplement. · Parakou, Bénin
+</footer>
+
+<script>
+(function () {
+  const SUPABASE_URL = "https://ljzonxmlpygfryfmohhd.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
+
+  const form = document.getElementById("registrationForm");
+  const message = document.getElementById("formMessage");
+  const button = document.getElementById("submitButton");
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+  function showMessage(type, content) {
+    message.className = "message " + type;
+    message.textContent = content;
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const fullName = document.getElementById("fullName").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const businessName = document.getElementById("businessName").value.trim();
+    const category = document.getElementById("category").value;
+    const phone = document.getElementById("phone").value.trim();
+    const whatsapp = document.getElementById("whatsapp").value.trim() || phone;
+    const city = document.getElementById("city").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const description = document.getElementById("description").value.trim();
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+    if (password.length < 8) {
+      showMessage("error", "Votre mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      showMessage("error", "Les deux mots de passe ne correspondent pas.");
+      return;
+    }
+
+    if (!fullName || !email || !businessName || !category || !phone || !city) {
+      showMessage("error", "Veuillez remplir tous les champs obligatoires.");
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "⏳ Création de votre compte...";
+    message.className = "message";
+    message.textContent = "";
+
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          emailRedirectTo: "https://coneprod92-max.github.io/PK-ChapShop/merchant.html",
+          data: {
+            full_name: fullName,
+            business_name: businessName,
+            category: category,
+            phone: phone,
+            whatsapp: whatsapp,
+            city: city,
+            address: address,
+            description: description
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        showMessage(
+          "success",
+          "✅ Votre compte est créé et votre demande a été transmise. " +
+          "Vous pouvez maintenant accéder à votre espace professionnel."
+        );
+
+        form.reset();
+        document.getElementById("city").value = "Parakou";
+
+        setTimeout(function () {
+          window.location.href = "merchant.html";
+        }, 2500);
+
+      } else {
+        showMessage(
+          "success",
+          "✅ Votre inscription a été enregistrée. " +
+          "Consultez votre boîte e-mail et cliquez sur le lien de confirmation. " +
+          "Après confirmation, connectez-vous à votre espace professionnel. " +
+          "Votre demande sera ensuite examinée par notre équipe."
+        );
+
+        form.reset();
+        document.getElementById("city").value = "Parakou";
+      }
+
+    } catch (error) {
+      console.error("Erreur inscription PK-ChapShop :", error);
+
+      let errorMessage = error.message || "Une erreur est survenue.";
+
+      if (errorMessage.toLowerCase().includes("already registered")) {
+        errorMessage = "Cette adresse e-mail possède déjà un compte. Essayez de vous connecter.";
+      }
+
+      showMessage("error", "❌ " + errorMessage);
+
+    } finally {
+      button.disabled = false;
+      button.textContent = "🚀 Créer mon compte et envoyer ma demande";
+    }
+  });
+})();
+</script>
 </body>
 </html>

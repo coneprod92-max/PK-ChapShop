@@ -193,58 +193,6 @@ function addShareControls(){
    INSCRIPTION
    ========================================================= */
 
-$("signupForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-
-  const form=e.currentTarget;
-  const button=form.querySelector('button[type="submit"]');
-  const email=$("signupEmail").value.trim();
-  const password=$("signupPassword").value;
-
-  if(!email||!password){
-    message("signupMsg","Renseignez votre adresse e-mail et votre mot de passe.");
-    return;
-  }
-
-  if(button){
-    button.disabled=true;
-    button.textContent="Création du compte...";
-  }
-
-  try{
-    const {data,error}=await sb.auth.signUp({
-      email,
-      password,
-      options:{
-        emailRedirectTo:
-          "https://coneprod92-max.github.io/PK-ChapShop/merchant.html"
-      }
-    });
-
-    if(error)throw error;
-
-    if(data.session){
-      message("signupMsg","Compte créé avec succès. Chargement de votre espace...",true);
-      await init();
-    }else{
-      message(
-        "signupMsg",
-        "Inscription enregistrée. Consultez votre boîte e-mail pour confirmer votre adresse si cela est demandé.",
-        true
-      );
-    }
-  }catch(err){
-    message(
-      "signupMsg",
-      err.message||"Impossible de créer le compte. Réessayez."
-    );
-  }finally{
-    if(button){
-      button.disabled=false;
-      button.textContent="Créer mon compte";
-    }
-  }
-});
 
 /* =========================================================
    CONNEXION

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -256,12 +255,21 @@
 
 <script>
 (function () {
+  "use strict";
+
   const SUPABASE_URL = "https://ljzonxmlpygfryfmohhd.supabase.co";
   const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 
   const form = document.getElementById("registrationForm");
   const message = document.getElementById("formMessage");
   const button = document.getElementById("submitButton");
+
+  if (!window.supabase || !window.supabase.createClient) {
+    message.className = "message error";
+    message.textContent =
+      "Impossible de charger le service d'inscription. Vérifiez votre connexion Internet puis rechargez la page.";
+    return;
+  }
 
   const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
@@ -273,67 +281,163 @@
     message.textContent = content;
   }
 
+  function getValue(id) {
+    return document.getElementById(id).value.trim();
+  }
+
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const fullName = document.getElementById("fullName").value.trim();
-    const email = document.getElementById("email").value.trim().toLowerCase();
-    const businessName = document.getElementById("businessName").value.trim();
-    const category = document.getElementById("category").value;
-    const phone = document.getElementById("phone").value.trim();
-    const whatsapp = document.getElementById("whatsapp").value.trim() || phone;
-    const city = document.getElementById("city").value.trim();
-    const address = document.getElementById("address").value.trim();
-    const description = document.getElementById("description").value.trim();
+    const fullName = getValue("fullName");
+    const email = getValue("email").toLowerCase();
+    const businessName = getValue("businessName");
+    const category = getValue("category");
+    const phone = getValue("phone");
+    const whatsapp = getValue("whatsapp") || phone;
+    const city = getValue("city");
+    const address = getValue("address");
+    const description = getValue("description");
     const password = document.getElementById("password").value;
     const passwordConfirm = document.getElementById("passwordConfirm").value;
 
+    if (
+      fullName.length < 2 ||
+      businessName.length < 2 ||
+      category.length < 2 ||
+      phone.length < 8 ||
+      city.length < 2 ||
+      !email
+    ) {
+      showMessage(
+        "error",
+        "Veuillez vérifier les champs obligatoires : nom, e-mail, commerce, catégorie, téléphone et ville."
+      );
+      return;
+    }
+
     if (password.length < 8) {
-      showMessage("error", "Votre mot de passe doit contenir au moins 8 caractères.");
+      showMessage(
+        "error",
+        "Votre mot de passe doit contenir au moins 8 caractères."
+      );
       return;
     }
 
     if (password !== passwordConfirm) {
-      showMessage("error", "Les deux mots de passe ne correspondent pas.");
-      return;
-    }
-
-    if (!fullName || !email || !businessName || !category || !phone || !city) {
-      showMessage("error", "Veuillez remplir tous les champs obligatoires.");
+      showMessage(
+        "error",
+        "Les deux mots de passe ne correspondent pas."
+      );
       return;
     }
 
     button.disabled = true;
-    button.textContent = "⏳ Création de votre compte...";
+    button.textContent = "⏳ Création du compte et transmission...";
     message.className = "message";
     message.textContent = "";
 
     try {
-      const { data, error } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          emailRedirectTo: "https://coneprod92-max.github.io/PK-ChapShop/merchant.html",
-          data: {
-            full_name: fullName,
-            business_name: businessName,
-            category: category,
-            phone: phone,
-            whatsapp: whatsapp,
-            city: city,
-            address: address,
-            description: description
+      /*
+       * ÉTAPE 1 : CRÉATION DU COMPTE AUTH
+       */
+      showMessage("info", "Étape 1/2 : création de votre compte professionnel...");
+
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            emailRedirectTo:
+              "https://coneprod92-max.github.io/PK-ChapShop/merchant.html",
+            data: {
+              full_name: fullName,
+              business_name: businessName,
+              category: category,
+              phone: phone,
+              whatsapp: whatsapp,
+              city: city,
+              address: address,
+              description: description
+            }
           }
-        }
+        });
+
+      if (authError) {
+        throw new Error(
+          "Création du compte impossible : " + authError.message
+        );
+      }
+
+      if (!authData || !authData.user || !authData.user.id) {
+        throw new Error(
+          "Supabase n'a pas retourné l'identifiant du compte. Votre inscription n'a pas pu être finalisée."
+        );
+      }
+
+      /*
+       * Supabase peut retourner un utilisateur sans identité
+       * lorsqu'une adresse e-mail existe déjà.
+       */
+      if (
+        Array.isArray(authData.user.identities) &&
+        authData.user.identities.length === 0
+      ) {
+        throw new Error(
+          "Cette adresse e-mail possède probablement déjà un compte. Essayez de vous connecter à votre espace professionnel."
+        );
+      }
+
+      const userId = authData.user.id;
+
+      /*
+       * ÉTAPE 2 : ENREGISTREMENT DE LA DEMANDE
+       * C'est cette insertion qui manquait dans l'ancien fichier.
+       */
+      showMessage("info", "Étape 2/2 : transmission de votre demande à l'administration...");
+
+      const application = {
+        full_name: fullName,
+        business_name: businessName,
+        category: category,
+        phone: phone,
+        whatsapp: whatsapp,
+        city: city,
+        address: address || null,
+        description: description || null,
+        email: email,
+        auth_user_id: userId,
+        status: "pending"
+      };
+
+      const { error: applicationError } = await supabaseClient
+        .from("advertiser_applications")
+        .insert([application]);
+
+      if (applicationError) {
+        console.error(
+          "Erreur enregistrement demande annonceur :",
+          applicationError
+        );
+
+        throw new Error(
+          "Votre compte a été créé, mais votre demande n'a pas pu être transmise à l'administration. " +
+          "Détail technique : " + applicationError.message +
+          ". Ne recommencez pas immédiatement avec la même adresse e-mail. Contactez l'administration PK-ChapShop."
+        );
+      }
+
+      /*
+       * LES DEUX OPÉRATIONS ONT RÉUSSI
+       */
+      console.log("Inscription PK-ChapShop réussie :", {
+        user_id: userId,
+        application: application
       });
 
-      if (error) throw error;
-
-      if (data.session) {
+      if (authData.session) {
         showMessage(
           "success",
-          "✅ Votre compte est créé et votre demande a été transmise. " +
-          "Vous pouvez maintenant accéder à votre espace professionnel."
+          "✅ Félicitations ! Votre compte professionnel est créé et votre demande a bien été transmise à l'administration PK-ChapShop. Votre demande est en attente de validation. Redirection vers votre espace professionnel..."
         );
 
         form.reset();
@@ -341,15 +445,12 @@
 
         setTimeout(function () {
           window.location.href = "merchant.html";
-        }, 2500);
+        }, 3000);
 
       } else {
         showMessage(
           "success",
-          "✅ Votre inscription a été enregistrée. " +
-          "Consultez votre boîte e-mail et cliquez sur le lien de confirmation. " +
-          "Après confirmation, connectez-vous à votre espace professionnel. " +
-          "Votre demande sera ensuite examinée par notre équipe."
+          "✅ Votre compte est créé et votre demande a bien été enregistrée dans notre système ! Consultez votre boîte e-mail, y compris les courriers indésirables, puis cliquez sur le lien de confirmation. Vous pourrez ensuite vous connecter à votre espace professionnel. Votre demande est maintenant transmise à notre équipe pour validation."
         );
 
         form.reset();
@@ -359,19 +460,17 @@
     } catch (error) {
       console.error("Erreur inscription PK-ChapShop :", error);
 
-      let errorMessage = error.message || "Une erreur est survenue.";
-
-      if (errorMessage.toLowerCase().includes("already registered")) {
-        errorMessage = "Cette adresse e-mail possède déjà un compte. Essayez de vous connecter.";
-      }
-
-      showMessage("error", "❌ " + errorMessage);
+      showMessage(
+        "error",
+        "❌ " + (error.message || "Une erreur inattendue est survenue.")
+      );
 
     } finally {
       button.disabled = false;
       button.textContent = "🚀 Créer mon compte et envoyer ma demande";
     }
   });
+
 })();
 </script>
 </body>

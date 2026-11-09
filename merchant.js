@@ -4,9 +4,41 @@ const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let store = null;
+let recoverySession = false;
+let wasRecoveryRoute = false;
+let recoveryEventHandled = false;
+function showRecoveryMessage(message, type = "err") {
+  const el = $("recoveryMsg");
+  if (!el) return;
 
+  el.className = "msg " + type;
+  el.textContent = message;
+}
+
+function showLoginMessage(message, type = "err") {
+  const el = $("loginMsg");
+  if (!el) return;
+
+  el.className = "msg " + type;
+  el.textContent = message;
+}
 const $ = id => document.getElementById(id);
+function showRecoveryPanel(show = true) {
+  const panel = $("recoveryPanel");
+  if (panel) panel.classList.toggle("hidden", !show);
+}
 
+function showLoginForm(show = true) {
+  const form = $("loginForm");
+  if (form) form.classList.toggle("hidden", !show);
+}
+
+function cleanRecoveryUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("recovery");
+  url.hash = "";
+  window.history.replaceState({}, document.title, url.pathname + url.search);
+}
 const esc = v => String(v ?? "")
   .replaceAll("&","&amp;")
   .replaceAll("<","&lt;")

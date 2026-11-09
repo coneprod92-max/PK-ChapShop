@@ -393,7 +393,12 @@ async function init(){
   const {data:{session}}=await sb.auth.getSession();
 
   if(!session)return;
-
+  if (isRecoveryRoute()) {
+    wasRecoveryRoute = true;
+    showLoginForm(false);
+    showRecoveryPanel(true);
+    return;
+  }
   $("authSection").classList.add("hidden");
   $("logoutBtn").classList.remove("hidden");
 

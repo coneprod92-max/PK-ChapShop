@@ -443,6 +443,25 @@ footer strong{color:var(--gold)}
               Annuler
             </button>
             <div id="recoveryMsg" aria-live="polite"></div>
+            <div id="newPasswordPanel" class="hidden">
+  <h3>Créer un nouveau mot de passe</h3>
+
+  <div class="field">
+    <label class="card-label" for="newPassword">Nouveau mot de passe</label>
+    <input id="newPassword" type="password" autocomplete="new-password">
+  </div>
+
+  <div class="field">
+    <label class="card-label" for="confirmNewPassword">Confirmer le mot de passe</label>
+    <input id="confirmNewPassword" type="password" autocomplete="new-password">
+  </div>
+
+  <button id="updatePasswordBtn" class="gold" type="button">
+    Enregistrer le nouveau mot de passe
+  </button>
+
+  <div id="updatePasswordMsg" aria-live="polite"></div>
+</div>
           </div>
         </form>
       </section>

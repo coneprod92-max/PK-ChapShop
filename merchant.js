@@ -39,6 +39,116 @@ function cleanRecoveryUrl() {
   url.hash = "";
   window.history.replaceState({}, document.title, url.pathname + url.search);
 }
+async function sendPasswordRecovery() {
+  const email = $("recoveryEmail")?.value.trim();
+function initPasswordRecoveryButtons() {
+  $("forgotPasswordBtn")?.addEventListener("click", () => {
+    const email = $("loginEmail")?.value.trim();
+    if (email) $("recoveryEmail").value = email;
+async function updateMerchantPassword() {
+  const password = $("newPassword")?.value || "";
+  const confirmation = $("confirmNewPassword")?.value || "";
+function initPasswordUpdateButton() {
+  $("updatePasswordBtn")?.addEventListener(
+    "click",
+    updateMerchantPassword
+  );
+}
+
+function isRecoveryRoute() {
+  return new URLSearchParams(window.location.search).get("recovery") === "1"
+    || window.location.hash.includes("type=recovery");
+}
+
+function handlePasswordRecoveryEvent() {
+  if (recoveryEventHandled) return;
+  recoveryEventHandled = true;
+  recoverySession = true;
+  wasRecoveryRoute = true;
+
+  showLoginForm(false);
+  showRecoveryPanel(true);
+
+  $("newPasswordPanel")?.classList.remove("hidden");
+  showRecoveryMessage("Lien vérifié. Choisissez votre nouveau mot de passe.", "ok");
+}
+  if (password.length < 8) {
+    $("updatePasswordMsg").textContent =
+      "Le mot de passe doit contenir au moins 8 caractères.";
+    return;
+  }
+
+  if (password !== confirmation) {
+    $("updatePasswordMsg").textContent =
+      "Les deux mots de passe ne correspondent pas.";
+    return;
+  }
+
+  const btn = $("updatePasswordBtn");
+  if (btn) btn.disabled = true;
+
+  try {
+    const { error } = await sb.auth.updateUser({ password });
+
+    if (error) throw error;
+
+    $("updatePasswordMsg").textContent =
+      "Mot de passe modifié avec succès. Vous pouvez vous reconnecter.";
+
+    await sb.auth.signOut();
+    recoverySession = false;
+    cleanRecoveryUrl();
+
+    $("newPasswordPanel").classList.add("hidden");
+    showRecoveryPanel(false);
+    showLoginForm(true);
+    showLoginMessage("Votre mot de passe a été modifié. Connectez-vous.", "ok");
+  } catch (error) {
+    console.error("Erreur de changement de mot de passe :", error);
+    $("updatePasswordMsg").textContent =
+      error.message || "Impossible de modifier le mot de passe.";
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+    showRecoveryPanel(true);
+    showRecoveryMessage("");
+  });
+
+  $("cancelRecoveryBtn")?.addEventListener("click", () => {
+    showRecoveryPanel(false);
+    showRecoveryMessage("");
+  });
+
+  $("sendRecoveryBtn")?.addEventListener("click", sendPasswordRecovery);
+}
+  if (!email) {
+    showRecoveryMessage("Saisissez votre adresse e-mail.");
+    return;
+  }
+
+  const btn = $("sendRecoveryBtn");
+  if (btn) btn.disabled = true;
+
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin +
+        window.location.pathname + "?recovery=1"
+    });
+
+    if (error) throw error;
+
+    showRecoveryMessage(
+      "Si cette adresse est associée à un compte, un lien de réinitialisation sera envoyé.",
+      "ok"
+    );
+  } catch (error) {
+    console.error("Erreur de récupération :", error);
+    showRecoveryMessage(error.message || "Impossible d'envoyer le lien.");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 const esc = v => String(v ?? "")
   .replaceAll("&","&amp;")
   .replaceAll("<","&lt;")
@@ -882,5 +992,16 @@ window.updateOrder=async id=>{
 /* =========================================================
    DÉMARRAGE
    ========================================================= */
+
+initPasswordRecoveryButtons();
+initPasswordUpdateButton();
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY" && session) {
+    setTimeout(() => {
+      handlePasswordRecoveryEvent();
+    }, 0);
+  }
+});
 
 init();

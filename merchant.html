@@ -411,59 +411,69 @@ footer strong{color:var(--gold)}
       <section class="panel">
         <h2>🔐 Connexion</h2>
         <p class="field-help">Vous avez déjà un compte commerçant ?</p>
-        <form id="loginForm">
-          <div class="field">
-            <label class="card-label" for="loginEmail">Adresse e-mail</label>
-            <input id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com">
-          </div>
-          <div class="field">
-            <label class="card-label" for="loginPassword">Mot de passe</label>
-            <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Votre mot de passe">
-          </div>
-          <button class="gold" type="submit">Se connecter →</button>
-                    <div id="loginMsg" aria-live="polite"></div>
-
-          <button id="forgotPasswordBtn" class="recovery-link" type="button">
-            Mot de passe oublié ?
-          </button>
-
-          <div id="recoveryPanel" class="recovery-panel hidden">
-            <h3>Réinitialiser mon mot de passe</h3>
-            <p class="field-help">
-              Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.
-            </p>
-            <div class="field">
-              <label class="card-label" for="recoveryEmail">Adresse e-mail</label>
-              <input id="recoveryEmail" type="email" autocomplete="email">
-            </div>
-            <button id="sendRecoveryBtn" class="gold" type="button">
-              Envoyer le lien
-            </button>
-            <button id="cancelRecoveryBtn" class="btn" type="button">
-              Annuler
-            </button>
-            <div id="recoveryMsg" aria-live="polite"></div>
-            <div id="newPasswordPanel" class="hidden">
-  <h3>Créer un nouveau mot de passe</h3>
-
+        
+<form id="loginForm">
   <div class="field">
-    <label class="card-label" for="newPassword">Nouveau mot de passe</label>
-    <input id="newPassword" type="password" autocomplete="new-password">
+    <label class="card-label" for="loginEmail">Adresse e-mail</label>
+    <input id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com">
   </div>
 
   <div class="field">
-    <label class="card-label" for="confirmNewPassword">Confirmer le mot de passe</label>
-    <input id="confirmNewPassword" type="password" autocomplete="new-password">
+    <label class="card-label" for="loginPassword">Mot de passe</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Votre mot de passe">
   </div>
 
-  <button id="updatePasswordBtn" class="gold" type="button">
-    Enregistrer le nouveau mot de passe
+  <button class="gold" type="submit">Se connecter →</button>
+  <div id="loginMsg" aria-live="polite"></div>
+</form>
+
+<button id="forgotPasswordBtn" class="recovery-link" type="button">
+  Mot de passe oublié ?
+</button>
+
+<div id="recoveryPanel" class="recovery-panel hidden">
+  <h3>Réinitialiser mon mot de passe</h3>
+
+  <p class="field-help">
+    Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.
+  </p>
+
+  <div class="field">
+    <label class="card-label" for="recoveryEmail">Adresse e-mail</label>
+    <input id="recoveryEmail" type="email" autocomplete="email">
+  </div>
+
+  <button id="sendRecoveryBtn" class="gold" type="button">
+    Envoyer le lien
   </button>
 
-  <div id="updatePasswordMsg" aria-live="polite"></div>
+  <button id="cancelRecoveryBtn" class="btn" type="button">
+    Annuler
+  </button>
+
+  <div id="recoveryMsg" aria-live="polite"></div>
+
+  <div id="newPasswordPanel" class="hidden">
+    <h3>Créer un nouveau mot de passe</h3>
+
+    <div class="field">
+      <label class="card-label" for="newPassword">Nouveau mot de passe</label>
+      <input id="newPassword" type="password" autocomplete="new-password">
+    </div>
+
+    <div class="field">
+      <label class="card-label" for="confirmNewPassword">Confirmer le mot de passe</label>
+      <input id="confirmNewPassword" type="password" autocomplete="new-password">
+    </div>
+
+    <button id="updatePasswordBtn" class="gold" type="button">
+      Enregistrer le nouveau mot de passe
+    </button>
+
+    <div id="updatePasswordMsg" aria-live="polite"></div>
+  </div>
 </div>
-          </div>
-        </form>
+
       </section>
 
       <section class="panel">

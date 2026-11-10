@@ -3,10 +3,230 @@ const SUPABASE_URL = "https://ljzonxmlpygfryfmohhd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let store = null;
-
 const $ = id => document.getElementById(id);
 
+let store = null;
+let recoverySession = false;
+let wasRecoveryRoute = false;
+let recoveryEventHandled = false;
+let recoveryCancelled = false;
+
+function clearRecoveryMessage() {
+  const el = $("recoveryMsg");
+  if (!el) return;
+  el.textContent = "";
+  el.className = "";
+}
+
+function clearUpdatePasswordMessage() {
+  const el = $("updatePasswordMsg");
+  if (!el) return;
+  el.textContent = "";
+  el.className = "";
+}
+
+function showRecoveryMessage(message, type = "err") {
+  const el = $("recoveryMsg");
+  if (!el) return;
+  el.className = "msg " + type;
+  el.textContent = message;
+}
+
+function showLoginMessage(message, type = "err") {
+  const el = $("loginMsg");
+  if (!el) return;
+  el.className = "msg " + type;
+  el.textContent = message;
+}
+
+function showUpdatePasswordMessage(message, type = "err") {
+  const el = $("updatePasswordMsg");
+  if (!el) return;
+  el.className = "msg " + type;
+  el.textContent = message;
+}
+
+function showRecoveryPanel(show = true) {
+  const panel = $("recoveryPanel");
+  if (panel) panel.classList.toggle("hidden", !show);
+}
+
+function showLoginForm(show = true) {
+  const form = $("loginForm");
+  if (form) form.classList.toggle("hidden", !show);
+}
+
+function cleanRecoveryUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("recovery");
+  url.hash = "";
+  window.history.replaceState(
+    {},
+    document.title,
+    url.pathname + url.search
+  );
+}
+
+function isRecoveryRoute() {
+  return new URLSearchParams(window.location.search).get("recovery") === "1"
+    || window.location.hash.includes("type=recovery");
+}
+
+function handlePasswordRecoveryEvent() {
+  if (recoveryCancelled || recoveryEventHandled) return;
+
+  recoveryEventHandled = true;
+  recoverySession = true;
+  wasRecoveryRoute = true;
+
+  showLoginForm(false);
+  showRecoveryPanel(true);
+
+  $("newPasswordPanel")?.classList.remove("hidden");
+
+  showRecoveryMessage(
+    "Lien vérifié. Choisissez votre nouveau mot de passe.",
+    "ok"
+  );
+}
+
+async function sendPasswordRecovery() {
+  const email = $("recoveryEmail")?.value.trim();
+
+  if (!email) {
+    showRecoveryMessage("Saisissez votre adresse e-mail.");
+    return;
+  }
+
+  const btn = $("sendRecoveryBtn");
+  if (btn) btn.disabled = true;
+
+  clearRecoveryMessage();
+
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+        + window.location.pathname
+        + "?recovery=1"
+    });
+
+    if (error) throw error;
+
+    showRecoveryMessage(
+      "Si cette adresse est associée à un compte, un lien de réinitialisation sera envoyé.",
+      "ok"
+    );
+  } catch (error) {
+    console.error("Erreur de récupération :", error);
+    showRecoveryMessage(
+      error.message || "Impossible d'envoyer le lien."
+    );
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function initPasswordRecoveryButtons() {
+  $("forgotPasswordBtn")?.addEventListener("click", () => {
+    const email = $("loginEmail")?.value.trim();
+
+    if (email && $("recoveryEmail")) {
+      $("recoveryEmail").value = email;
+    }
+
+    clearRecoveryMessage();
+    showRecoveryPanel(true);
+  });
+
+  $("cancelRecoveryBtn")?.addEventListener("click", async () => {
+    recoveryCancelled = true;
+
+    showRecoveryPanel(false);
+    $("newPasswordPanel")?.classList.add("hidden");
+    showLoginForm(true);
+
+    clearRecoveryMessage();
+    clearUpdatePasswordMessage();
+    cleanRecoveryUrl();
+
+    if (recoverySession) {
+      try {
+        await sb.auth.signOut({ scope: "local" });
+      } catch (error) {
+        console.error("Erreur de fermeture de session :", error);
+      }
+      recoverySession = false;
+    }
+  });
+
+  $("sendRecoveryBtn")?.addEventListener(
+    "click",
+    sendPasswordRecovery
+  );
+}
+
+async function updateMerchantPassword() {
+  if (!recoverySession || recoveryCancelled) return;
+
+  const password = $("newPassword")?.value || "";
+  const confirmation = $("confirmNewPassword")?.value || "";
+
+  if (password.length < 8) {
+    showUpdatePasswordMessage(
+      "Le mot de passe doit contenir au moins 8 caractères."
+    );
+    return;
+  }
+
+  if (password !== confirmation) {
+    showUpdatePasswordMessage(
+      "Les deux mots de passe ne correspondent pas."
+    );
+    return;
+  }
+
+  const btn = $("updatePasswordBtn");
+  if (btn) btn.disabled = true;
+
+  clearUpdatePasswordMessage();
+
+  try {
+    const { error } = await sb.auth.updateUser({ password });
+
+    if (error) throw error;
+
+    await sb.auth.signOut({ scope: "local" });
+
+    recoverySession = false;
+    recoveryCancelled = true;
+
+    cleanRecoveryUrl();
+
+    $("newPasswordPanel")?.classList.add("hidden");
+    showRecoveryPanel(false);
+    showLoginForm(true);
+
+    showLoginMessage(
+      "Votre mot de passe a été modifié. Connectez-vous.",
+      "ok"
+    );
+  } catch (error) {
+    console.error("Erreur de changement de mot de passe :", error);
+
+    showUpdatePasswordMessage(
+      error.message || "Impossible de modifier le mot de passe."
+    );
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function initPasswordUpdateButton() {
+  $("updatePasswordBtn")?.addEventListener(
+    "click",
+    updateMerchantPassword
+  );
+}
 const esc = v => String(v ?? "")
   .replaceAll("&","&amp;")
   .replaceAll("<","&lt;")
@@ -248,10 +468,16 @@ $("logoutBtn").addEventListener("click",async()=>{
 });
 
 async function init(){
+  if (isRecoveryRoute()) {
+    wasRecoveryRoute = true;
+    showLoginForm(false);
+    showRecoveryPanel(true);
+    return;
+  }
+
   const {data:{session}}=await sb.auth.getSession();
 
   if(!session)return;
-
   $("authSection").classList.add("hidden");
   $("logoutBtn").classList.remove("hidden");
 
@@ -850,5 +1076,16 @@ window.updateOrder=async id=>{
 /* =========================================================
    DÉMARRAGE
    ========================================================= */
+
+initPasswordRecoveryButtons();
+initPasswordUpdateButton();
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY" && session) {
+    setTimeout(() => {
+      handlePasswordRecoveryEvent();
+    }, 0);
+  }
+});
 
 init();

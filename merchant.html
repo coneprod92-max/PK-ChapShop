@@ -256,7 +256,29 @@ input[type="file"]{padding:9px;background:white;font-size:11px}
 }
 .msg.ok{background:#e9f8ed;color:#17683b;border:1px solid #c8ebd2}
 .msg.err{background:#fff0ef;color:#a12720;border:1px solid #f4d1ce}
-
+.msg.warn{
+  background:#fff8e7;
+  color:#805b12;
+  border:1px solid #f0dfad;
+}
+.recovery-link{
+  display:block;
+  margin-top:12px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--green2);
+  font-size:12px;
+  font-weight:800;
+  text-decoration:underline;
+}
+.recovery-panel{
+  margin-top:15px;
+  padding:17px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#fbfcfa;
+}
 /* PRODUITS, GALERIE ET COMMANDES */
 .list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .product,.order{
@@ -389,18 +411,69 @@ footer strong{color:var(--gold)}
       <section class="panel">
         <h2>🔐 Connexion</h2>
         <p class="field-help">Vous avez déjà un compte commerçant ?</p>
-        <form id="loginForm">
-          <div class="field">
-            <label class="card-label" for="loginEmail">Adresse e-mail</label>
-            <input id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com">
-          </div>
-          <div class="field">
-            <label class="card-label" for="loginPassword">Mot de passe</label>
-            <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Votre mot de passe">
-          </div>
-          <button class="gold" type="submit">Se connecter →</button>
-          <div id="loginMsg" aria-live="polite"></div>
-        </form>
+        
+<form id="loginForm">
+  <div class="field">
+    <label class="card-label" for="loginEmail">Adresse e-mail</label>
+    <input id="loginEmail" type="email" autocomplete="email" required placeholder="vous@exemple.com">
+  </div>
+
+  <div class="field">
+    <label class="card-label" for="loginPassword">Mot de passe</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Votre mot de passe">
+  </div>
+
+  <button class="gold" type="submit">Se connecter →</button>
+  <div id="loginMsg" aria-live="polite"></div>
+</form>
+
+<button id="forgotPasswordBtn" class="recovery-link" type="button">
+  Mot de passe oublié ?
+</button>
+
+<div id="recoveryPanel" class="recovery-panel hidden">
+  <h3>Réinitialiser mon mot de passe</h3>
+
+  <p class="field-help">
+    Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.
+  </p>
+
+  <div class="field">
+    <label class="card-label" for="recoveryEmail">Adresse e-mail</label>
+    <input id="recoveryEmail" type="email" autocomplete="email">
+  </div>
+
+  <button id="sendRecoveryBtn" class="gold" type="button">
+    Envoyer le lien
+  </button>
+
+  <button id="cancelRecoveryBtn" class="btn" type="button">
+    Annuler
+  </button>
+
+  <div id="recoveryMsg" aria-live="polite"></div>
+
+  <div id="newPasswordPanel" class="hidden">
+    <h3>Créer un nouveau mot de passe</h3>
+
+    <div class="field">
+      <label class="card-label" for="newPassword">Nouveau mot de passe</label>
+      <input id="newPassword" type="password" autocomplete="new-password">
+    </div>
+
+    <div class="field">
+      <label class="card-label" for="confirmNewPassword">Confirmer le mot de passe</label>
+      <input id="confirmNewPassword" type="password" autocomplete="new-password">
+    </div>
+
+    <button id="updatePasswordBtn" class="gold" type="button">
+      Enregistrer le nouveau mot de passe
+    </button>
+
+    <div id="updatePasswordMsg" aria-live="polite"></div>
+  </div>
+</div>
+
       </section>
 
       <section class="panel">

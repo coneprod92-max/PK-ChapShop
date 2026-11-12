@@ -71,15 +71,7 @@
       background:rgba(255,255,255,.08);
       color:white;
     }
-.hero-app-button {
-  border:1px solid #d5b36a;
-  background:#f6f0df;
-  color:#173326;
-}
 
-.hero-app-button:hover {
-  background:#ead9ad;
-}
     .launch-benefit {
       display:flex;
       align-items:center;
@@ -232,7 +224,8 @@
             </label>
             <input type="search" id="searchInput"
               placeholder="Un commerce, un produit, un service…"
-              autocomplete="off">
+              autocomplete="off" aria-autocomplete="list"
+              aria-controls="searchSuggestions" aria-expanded="false">
             <button type="submit">
               Rechercher <span aria-hidden="true">→</span>
             </button>
@@ -245,16 +238,6 @@
             <a href="annonceur.html" class="hero-merchant-button">
               🏪 Je suis commerçant <span>↗</span>
             </a>
-            <a
-  href="https://github.com/coneprod92-max/PK-ChapShop/releases/download/v1.0.0/app-release.apk"
-  class="hero-app-button"
-  download
-  aria-label="Télécharger l'application Android PK-ChapShop"
->
-  <span aria-hidden="true">📲</span>
-  Télécharger l'application
-  <small>Android · APK gratuit</small>
-</a>
           </div>
 
           <div class="launch-benefit">
@@ -515,6 +498,7 @@
   </footer>
 
 <script src="app.js?v=20261031"></script>
+<script src="hybrid-search.js?v=20261111"></script>
 <script src="featured-carousel.js?v=20261030"></script>
 
 

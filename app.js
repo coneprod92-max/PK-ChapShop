@@ -20,6 +20,12 @@ let selectedCategory = null;
 let storesError = null;
 let productsError = null;
 
+window.PKChapShopGetSearchData = () => ({
+  stores,
+  categories,
+  products
+});
+
 /* ---------- Utilitaires ---------- */
 
 function escapeHTML(value) {
@@ -282,7 +288,9 @@ async function loadProducts() {
 /* ---------- Recherche et filtrage ---------- */
 
 function getVisibleStores() {
-  const search = normalizeText(searchInput?.value || "");
+  const search = searchInput?.value || "";
+  const hybridSearch = window.PKChapShopHybridSearch;
+  const searchData = hybridSearch ? window.PKChapShopGetSearchData() : null;
 
   return stores.filter(store => {
     const categoryMatches =
@@ -291,27 +299,30 @@ function getVisibleStores() {
 
     const storeMatches =
       !search ||
-      normalizeText(store.name).includes(search) ||
-      normalizeText(store.description).includes(search) ||
-      normalizeText(store.city).includes(search) ||
-      normalizeText(store.address).includes(search);
+      (hybridSearch
+        ? hybridSearch.matchStore(store, search, searchData) > 0
+        : normalizeText(store.name).includes(normalizeText(search)) ||
+          normalizeText(store.description).includes(normalizeText(search)) ||
+          normalizeText(store.city).includes(normalizeText(search)) ||
+          normalizeText(store.address).includes(normalizeText(search)) ||
+          products.some(product =>
+            String(product.store_id) === String(store.id) &&
+            (
+              normalizeText(product.name).includes(normalizeText(search)) ||
+              normalizeText(product.description).includes(normalizeText(search))
+            )
+          ));
 
-    const productMatches = search && products.some(product =>
-      String(product.store_id) === String(store.id) &&
-      (
-        normalizeText(product.name).includes(search) ||
-        normalizeText(product.description).includes(search)
-      )
-    );
-
-    return categoryMatches && (storeMatches || productMatches);
+    return categoryMatches && storeMatches;
   }).sort((a, b) =>
     Number(isFeaturedActive(b)) - Number(isFeaturedActive(a))
   );
 }
 
 function getVisibleFeaturedProducts() {
-  const search = normalizeText(searchInput?.value || "");
+  const search = searchInput?.value || "";
+  const hybridSearch = window.PKChapShopHybridSearch;
+  const searchData = hybridSearch ? window.PKChapShopGetSearchData() : null;
 
   return products.filter(product => {
     if (!isFeaturedActive(product)) return false;
@@ -332,11 +343,16 @@ function getVisibleFeaturedProducts() {
 
     if (!search) return true;
 
+    if (hybridSearch) {
+      return hybridSearch.matchProduct(product, search, searchData) > 0;
+    }
+
+    const normalizedSearch = normalizeText(search);
     return (
-      normalizeText(product.name).includes(search) ||
-      normalizeText(product.description).includes(search) ||
-      normalizeText(parentStore.name).includes(search) ||
-      normalizeText(parentStore.city).includes(search)
+      normalizeText(product.name).includes(normalizedSearch) ||
+      normalizeText(product.description).includes(normalizedSearch) ||
+      normalizeText(parentStore.name).includes(normalizedSearch) ||
+      normalizeText(parentStore.city).includes(normalizedSearch)
     );
   });
 }

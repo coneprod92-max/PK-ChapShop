@@ -76,10 +76,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const priorityButton = event.target.closest("[data-save-feature-priority]");
-    if (priorityButton) {
-      await saveFeaturedPriority(priorityButton.dataset.saveFeaturePriority);
-    }
+   const priorityButton = event.target.closest("[data-save-feature-priority]");
+
+if (priorityButton) {
+  const table = priorityButton.dataset.priorityTable;
+  const id = priorityButton.dataset.priorityId;
+  const priority = priorityButton.dataset.priorityValue;
+
+  await saveFeaturedPriority(table, id, priority);
+}
   });
 
   showLogin();

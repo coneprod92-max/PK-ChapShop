@@ -885,12 +885,32 @@ async function loadFeatured() {
               Priorité : ${store.featured_priority ?? 9999}
               ${expired ? "<br>La date de mise en avant est dépassée." : ""}
             </div>
-            <button type="button"
+                        <button type="button"
               data-feature-store="${attr(store.id)}"
               data-feature-value="${active ? "true" : "false"}"
               ${!store.is_published ? "disabled" : ""}>
               ${active ? "Retirer de la une" : "⭐ Mettre à la une"}
             </button>
+
+            <div class="featured-priority-controls">
+              <label>
+                Rang de priorité :
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="${store.featured_priority ?? 9999}"
+                  data-priority-input="${attr(store.id)}">
+              </label>
+
+              <button type="button"
+                data-save-feature-priority="${attr(store.id)}"
+                data-priority-table="stores"
+                data-priority-id="${attr(store.id)}"
+                data-priority-value="${store.featured_priority ?? 9999}">
+                Enregistrer le rang
+              </button>
+            </div>
           `;
 
           storesBox.appendChild(card);

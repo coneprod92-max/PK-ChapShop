@@ -847,8 +847,10 @@ async function loadFeatured() {
   if (storesBox) storesBox.textContent = "Chargement des boutiques...";
 
   try {
-    const { data, error } = await supabaseClient.from("stores")
-      .select("id,name,city,is_published,is_featured,featured_until")
+    const { data, error } = await supabaseClient
+      .from("stores")
+      .select("id,name,city,is_published,is_featured,featured_until,featured_priority")
+      .order("featured_priority", { ascending: true })
       .order("name", { ascending: true });
 
     if (error) throw error;
@@ -860,17 +862,22 @@ async function loadFeatured() {
         storesBox.textContent = "Aucune boutique.";
       } else {
         data.forEach(store => {
-          const expired = store.featured_until && new Date(store.featured_until) < new Date();
+          const expired =
+            store.featured_until &&
+            new Date(store.featured_until) < new Date();
+
           const active = store.is_featured && !expired;
 
           const card = document.createElement("article");
           card.className = "item-row";
+
           card.innerHTML = `
             <strong>${esc(store.name)}</strong>
             <div class="item-meta">
               ${esc(store.city || "-")}<br>
               Publication : ${store.is_published ? "Publiée" : "Non publiée"}<br>
-              Mise en avant : ${active ? "Active" : "Inactive"}
+              Mise en avant : ${active ? "Active" : "Inactive"}<br>
+              Priorité : ${store.featured_priority ?? 9999}
               ${expired ? "<br>La date de mise en avant est dépassée." : ""}
             </div>
             <button type="button"
@@ -880,6 +887,7 @@ async function loadFeatured() {
               ${active ? "Retirer de la une" : "⭐ Mettre à la une"}
             </button>
           `;
+
           storesBox.appendChild(card);
         });
       }
@@ -888,10 +896,13 @@ async function loadFeatured() {
     cachedStores = data || [];
     fillFeaturedStoreSelector(cachedStores);
     await loadFeaturedProducts();
+
   } catch (error) {
     console.error("Mise en avant :", error);
+
     if (storesBox) {
-      storesBox.innerHTML = `<div class="admin-error">Impossible de charger les boutiques : ${esc(error.message)}</div>`;
+      storesBox.innerHTML =
+        `<div class="admin-error">Impossible de charger les boutiques : ${esc(error.message)}</div>`;
     }
   }
 }
@@ -920,8 +931,26 @@ async function loadFeaturedProducts() {
   box.textContent = "Chargement des produits...";
 
   try {
-    let query = supabaseClient.from("products")
-      .select("id,store_id,name,price,is_available,is_featured,featured_until,stores(name)")
+    let query = supabaseClient
+      .from("products")
+      .select(`
+        id,
+        store_id,
+        name,
+        price,
+        is_available,
+        is_featured,
+        featured_until,
+        featured_priority,
+        stores(
+          name,
+          is_published,
+          is_featured,
+          featured_until,
+          featured_priority
+        )
+      `)
+      .order("featured_priority", { ascending: true })
       .order("name", { ascending: true });
 
     const storeId = $("featuredProductStore")?.value;
@@ -938,32 +967,63 @@ async function loadFeaturedProducts() {
     }
 
     data.forEach(product => {
-      const expired = product.featured_until && new Date(product.featured_until) < new Date();
-      const active = product.is_featured && !expired;
+      const now = new Date();
+
+      const productExpired =
+        product.featured_until &&
+        new Date(product.featured_until) < now;
+
+      const store = product.stores || {};
+
+      const storeExpired =
+        store.featured_until &&
+        new Date(store.featured_until) < now;
+
+      const individuallyActive =
+        product.is_featured && !productExpired;
+
+      const inherited =
+        product.is_available &&
+        store.is_published &&
+        store.is_featured &&
+        !storeExpired;
+
       const card = document.createElement("article");
       card.className = "item-row";
 
       card.innerHTML = `
         <strong>${esc(product.name)}</strong>
+
         <div class="item-meta">
-          Boutique : ${esc(product.stores?.name || "-")}<br>
+          Boutique : ${esc(store.name || "-")}<br>
           Prix : ${price(product.price)}<br>
           Disponibilité : ${product.is_available ? "Disponible" : "Indisponible"}<br>
-          Mise en avant : ${active ? "Active" : "Inactive"}
+          Sélection individuelle : ${individuallyActive ? "Active" : "Inactive"}<br>
+          Boutique à la une : ${inherited ? "Oui" : "Non"}<br>
+          Priorité individuelle : ${product.featured_priority ?? 9999}
+          ${productExpired ? "<br>La date de mise en avant individuelle est dépassée." : ""}
+          ${inherited ? "<br>⭐ Ce produit bénéficie automatiquement de la mise en avant de sa boutique." : ""}
         </div>
+
         <button type="button"
           data-feature-product="${attr(product.id)}"
-          data-feature-value="${active ? "true" : "false"}"
-          ${!product.is_available ? "disabled" : ""}>
-          ${active ? "Retirer de la une" : "⭐ Mettre à la une"}
+          data-feature-value="${individuallyActive ? "true" : "false"}">
+          ${
+            individuallyActive
+              ? "Retirer la sélection individuelle"
+              : "⭐ Sélectionner individuellement"
+          }
         </button>
       `;
 
       box.appendChild(card);
     });
+
   } catch (error) {
     console.error("Produits à la une :", error);
-    box.innerHTML = `<div class="admin-error">Impossible de charger les produits : ${esc(error.message)}</div>`;
+
+    box.innerHTML =
+      `<div class="admin-error">Impossible de charger les produits : ${esc(error.message)}</div>`;
   }
 }
 

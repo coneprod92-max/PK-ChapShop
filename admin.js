@@ -971,16 +971,42 @@ async function toggleFeatured(table, id, currentlyActive) {
   if (!["stores", "products"].includes(table)) return;
 
   const enable = !currentlyActive;
+
   const message = enable
     ? "Mettre cet élément à la une sur le site public ?"
     : "Retirer cet élément de la une ?";
 
   if (!confirm(message)) return;
 
-  const { data, error } = await supabaseClient.from(table)
+  let priority = 9999;
+
+  // Lors de l'activation, attribuer le rang suivant
+  if (enable) {
+    const { data: highest, error: priorityError } = await supabaseClient
+      .from(table)
+      .select("featured_priority")
+      .lt("featured_priority", 9999)
+      .order("featured_priority", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (priorityError) {
+      console.error(priorityError);
+      return alert(
+        "Impossible de récupérer le classement : " + priorityError.message
+      );
+    }
+
+    priority = highest
+      ? Number(highest.featured_priority) + 1
+      : 1;
+  }
+
+  const { data, error } = await supabaseClient
+    .from(table)
     .update({
       is_featured: enable,
-      featured_until: null,
+      featured_priority: priority,
       updated_at: new Date().toISOString()
     })
     .eq("id", id)
@@ -989,15 +1015,24 @@ async function toggleFeatured(table, id, currentlyActive) {
 
   if (error) {
     console.error(error);
-    return alert("Impossible de modifier la mise en avant : " + error.message);
+    return alert(
+      "Impossible de modifier la mise en avant : " + error.message
+    );
   }
 
   if (!data) {
-    return alert("Aucune modification enregistrée. Vérifie les droits administrateur dans Supabase.");
+    return alert(
+      "Aucune modification enregistrée. Vérifie les droits administrateur dans Supabase."
+    );
   }
 
   if ($("featuredMessage")) {
-    $("featuredMessage").innerHTML = `<div class="admin-success">${enable ? "Élément mis à la une." : "Élément retiré de la une."}</div>`;
+    $("featuredMessage").innerHTML =
+      `<div class="admin-success">${
+        enable
+          ? "Élément mis à la une avec succès."
+          : "Élément retiré de la une."
+      }</div>`;
   }
 
   await loadFeatured();

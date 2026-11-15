@@ -1026,7 +1026,40 @@ async function loadFeaturedProducts() {
       `<div class="admin-error">Impossible de charger les produits : ${esc(error.message)}</div>`;
   }
 }
+async function saveFeaturedPriority(table, id, priority) {
+  if (!["stores", "products"].includes(table)) return;
 
+  const newPriority = Number(priority);
+
+  if (!Number.isInteger(newPriority) || newPriority < 1) {
+    return alert("Le rang doit être un nombre entier supérieur à zéro.");
+  }
+
+  const { data, error } = await supabaseClient
+    .from(table)
+    .update({
+      featured_priority: newPriority,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return alert("Impossible d'enregistrer le classement : " + error.message);
+  }
+
+  if (!data) {
+    return alert("Aucune modification enregistrée. Vérifie les droits administrateur.");
+  }
+
+  if (table === "stores") {
+    await loadFeatured();
+  } else {
+    await loadFeaturedProducts();
+  }
+}
 async function toggleFeatured(table, id, currentlyActive) {
   if (!["stores", "products"].includes(table)) return;
 

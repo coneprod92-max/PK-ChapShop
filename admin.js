@@ -64,6 +64,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   $("featuredStoresList")?.addEventListener("click", async event => {
+    const priorityButton = event.target.closest("[data-save-feature-priority]");
+    if (priorityButton) {
+      await saveFeaturedPriority(priorityButton.dataset.saveFeaturePriority, "stores");
+      return;
+    }
+
     const button = event.target.closest("[data-feature-store]");
     if (!button) return;
     await toggleFeatured("stores", button.dataset.featureStore, button.dataset.featureValue === "true");
@@ -76,15 +82,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-   const priorityButton = event.target.closest("[data-save-feature-priority]");
-
-if (priorityButton) {
-  const table = priorityButton.dataset.priorityTable;
-  const id = priorityButton.dataset.priorityId;
-  const priority = priorityButton.dataset.priorityValue;
-
-  await saveFeaturedPriority(table, id, priority);
-}
+    const priorityButton = event.target.closest("[data-save-feature-priority]");
+    if (priorityButton) {
+      await saveFeaturedPriority(
+        priorityButton.dataset.saveFeaturePriority,
+        priorityButton.dataset.featureTable || "products"
+      );
+      return;
+    }
   });
 
   showLogin();
@@ -885,7 +890,7 @@ async function loadFeatured() {
               Priorité : ${store.featured_priority ?? 9999}
               ${expired ? "<br>La date de mise en avant est dépassée." : ""}
             </div>
-                        <button type="button"
+
               data-feature-store="${attr(store.id)}"
               data-feature-value="${active ? "true" : "false"}"
               ${!store.is_published ? "disabled" : ""}>
@@ -899,15 +904,14 @@ async function loadFeatured() {
                   type="number"
                   min="1"
                   step="1"
-                  value="${store.featured_priority ?? 9999}"
-                  data-priority-input="${attr(store.id)}">
+                  value="${Number.isInteger(Number(store.featured_priority)) && Number(store.featured_priority) >= 1 ? Number(store.featured_priority) : 9999}"
+                  data-feature-priority-input="${attr(store.id)}"
+                  data-feature-table="stores">
               </label>
 
               <button type="button"
                 data-save-feature-priority="${attr(store.id)}"
-                data-priority-table="stores"
-                data-priority-id="${attr(store.id)}"
-                data-priority-value="${store.featured_priority ?? 9999}">
+                data-feature-table="stores">
                 Enregistrer le rang
               </button>
             </div>
@@ -1005,13 +1009,22 @@ async function loadFeaturedProducts() {
         new Date(store.featured_until) < now;
 
       const individuallyActive =
-        product.is_featured && !productExpired;
+        Boolean(product.is_featured && !productExpired);
 
       const inherited =
-        product.is_available &&
-        store.is_published &&
-        store.is_featured &&
-        !storeExpired;
+        Boolean(
+          product.is_available &&
+          store.is_published &&
+          store.is_featured &&
+          !storeExpired
+        );
+
+      const productPriority =
+        product.featured_priority !== null &&
+        product.featured_priority !== "" &&
+        Number.isInteger(Number(product.featured_priority))
+          ? Number(product.featured_priority)
+          : 9999;
 
       const card = document.createElement("article");
       card.className = "item-row";
@@ -1025,14 +1038,28 @@ async function loadFeaturedProducts() {
           Disponibilité : ${product.is_available ? "Disponible" : "Indisponible"}<br>
           Sélection individuelle : ${individuallyActive ? "Active" : "Inactive"}<br>
           Boutique à la une : ${inherited ? "Oui" : "Non"}<br>
-          Priorité individuelle : ${product.featured_priority ?? 9999}
+          Priorité individuelle : ${productPriority}
           ${productExpired ? "<br>La date de mise en avant individuelle est dépassée." : ""}
           ${inherited ? "<br>⭐ Ce produit bénéficie automatiquement de la mise en avant de sa boutique." : ""}
         </div>
 
+        <label>Priorité du produit
+          <input type="number" min="1" step="1"
+            value="${productPriority}"
+            data-feature-priority-input="${attr(product.id)}"
+            data-feature-table="products">
+        </label>
+
+        <button type="button"
+          data-save-feature-priority="${attr(product.id)}"
+          data-feature-table="products">
+          Enregistrer la priorité
+        </button>
+
         <button type="button"
           data-feature-product="${attr(product.id)}"
-          data-feature-value="${individuallyActive ? "true" : "false"}">
+          data-feature-value="${individuallyActive ? "true" : "false"}"
+          ${!product.is_available ? "disabled" : ""}>
           ${
             individuallyActive
               ? "Retirer la sélection individuelle"
@@ -1043,46 +1070,11 @@ async function loadFeaturedProducts() {
 
       box.appendChild(card);
     });
-
   } catch (error) {
     console.error("Produits à la une :", error);
 
     box.innerHTML =
       `<div class="admin-error">Impossible de charger les produits : ${esc(error.message)}</div>`;
-  }
-}
-async function saveFeaturedPriority(table, id, priority) {
-  if (!["stores", "products"].includes(table)) return;
-
-  const newPriority = Number(priority);
-
-  if (!Number.isInteger(newPriority) || newPriority < 1) {
-    return alert("Le rang doit être un nombre entier supérieur à zéro.");
-  }
-
-  const { data, error } = await supabaseClient
-    .from(table)
-    .update({
-      featured_priority: newPriority,
-      updated_at: new Date().toISOString()
-    })
-    .eq("id", id)
-    .select("id")
-    .maybeSingle();
-
-  if (error) {
-    console.error(error);
-    return alert("Impossible d'enregistrer le classement : " + error.message);
-  }
-
-  if (!data) {
-    return alert("Aucune modification enregistrée. Vérifie les droits administrateur.");
-  }
-
-  if (table === "stores") {
-    await loadFeatured();
-  } else {
-    await loadFeaturedProducts();
   }
 }
 async function toggleFeatured(table, id, currentlyActive) {
@@ -1153,10 +1145,67 @@ async function toggleFeatured(table, id, currentlyActive) {
       }</div>`;
   }
 
-  await loadFeatured();
-  await loadStores();
+  if (table === "products") {
+    await loadFeaturedProducts();
+  } else {
+    await loadFeatured();
+    await loadStores();
+  }
 }
 
+async function saveFeaturedPriority(id, table) {
+  if (!["stores", "products"].includes(table)) return;
+
+  const input = document.querySelector(
+    `[data-feature-priority-input="${CSS.escape(String(id))}"][data-feature-table="${table}"]`
+  );
+
+  if (!input) {
+    alert("Champ de priorité introuvable.");
+    return;
+  }
+
+  const priority = Number(input.value);
+
+  if (!Number.isInteger(priority) || priority < 1) {
+    alert("Entre une priorité entière supérieure à zéro.");
+    input.focus();
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from(table)
+    .update({
+      featured_priority: priority,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .select("id,featured_priority")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erreur de priorité :", error);
+    alert("Impossible d'enregistrer la priorité : " + error.message);
+    return;
+  }
+
+  if (!data) {
+    alert("Aucune modification enregistrée. Vérifie les droits administrateur.");
+    return;
+  }
+
+  if ($("featuredMessage")) {
+    $("featuredMessage").textContent =
+      "Priorité enregistrée : " + data.featured_priority;
+  }
+
+  if (table === "products") {
+    await loadFeaturedProducts();
+  } else {
+    await loadFeatured();
+    await loadStores();
+  }
+}
 /* =========================
    LOGO ET COUVERTURE
 ========================= */
@@ -1591,7 +1640,7 @@ async function loadStores() {
 
   try {
     const { data, error } = await supabaseClient.from("stores")
-      .select("id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,is_published,delivery_available,merchant_code,category_id,is_featured,featured_until,store_categories(name)")
+      .select("id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,is_published,delivery_available,merchant_code,category_id,is_featured,featured_until,featured_priority,store_categories(name)")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -1938,18 +1987,44 @@ async function loadProducts(id) {
     const card = document.createElement("article");
     card.className = "item-row";
 
-    card.innerHTML = `
-      <strong>${esc(product.name)}</strong>
-      <div class="item-meta">
-        ${price(product.price)} — ${product.is_available ? "Disponible" : "Indisponible"}<br>
-        Mise en avant : ${product.is_featured ? "Oui" : "Non"}
-      </div>
-      ${product.image_url ? `<img src="${attr(product.image_url)}" alt="" loading="lazy" style="width:120px;border-radius:10px">` : ""}
-      <div class="status-line">
-        <button type="button" onclick="editAdminProduct('${product.id}')">Modifier</button>
-        <button type="button" class="danger" onclick="deleteAdminProduct('${product.id}','${attr(product.name)}')">Supprimer</button>
-      </div>
-    `;
+    const title = document.createElement("strong");
+    title.textContent = product.name;
+
+    const meta = document.createElement("div");
+    meta.className = "item-meta";
+    meta.innerHTML = `${price(product.price)} — ${product.is_available ? "Disponible" : "Indisponible"}<br>
+      Mise en avant : ${product.is_featured ? "Oui" : "Non"}`;
+
+    const statusLine = document.createElement("div");
+    statusLine.className = "status-line";
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.textContent = "Modifier";
+    editButton.addEventListener("click", () => editAdminProduct(product.id));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "danger";
+    deleteButton.textContent = "Supprimer";
+    deleteButton.addEventListener("click", () => deleteAdminProduct(product.id, product.name));
+
+    if (product.image_url) {
+      const image = document.createElement("img");
+      image.src = product.image_url;
+      image.alt = "";
+      image.loading = "lazy";
+      image.style.width = "120px";
+      image.style.borderRadius = "10px";
+      card.appendChild(image);
+    }
+
+    statusLine.appendChild(editButton);
+    statusLine.appendChild(deleteButton);
+
+    card.appendChild(title);
+    card.appendChild(meta);
+    card.appendChild(statusLine);
 
     box.appendChild(card);
   });

@@ -16,53 +16,75 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261118-2">
+  <link rel="stylesheet" href="style.css?v=20261118-5">
 </head>
 
-<body>
+<body class="homepage">
   <a class="skip-link" href="#contenu">Aller au contenu</a>
 
   <div class="top-strip">
     <div class="top-strip-inner">
-      <span><i class="top-dot"></i> Le marché local de Parakou</span>
-      <span>📍 Parakou &amp; environs, Bénin</span>
+      <span><i class="top-dot"></i> Acheter · Vendre · Découvrir</span>
+      <span>Parakou et environs, Bénin</span>
     </div>
   </div>
 
-  <header class="header">
+  <header class="header home-header">
     <a href="index.html" class="logo" aria-label="PK-ChapShop, accueil">
       <span class="logo-mark">PK</span>
       <span class="logo-word">Chap<span>Shop</span><small>LE MARCHÉ LOCAL</small></span>
     </a>
 
-    <nav class="main-nav" aria-label="Navigation principale">
-      <a class="nav-active" href="#accueil">Accueil</a>
-      <a href="#categories-section">Catégories</a>
-      <a href="#featured-section">À la une</a>
-      <a href="#annuaire-section">Annuaire</a>
-    </nav>
+    <form class="search-box header-search" id="searchForm" role="search">
+      <label class="visually-hidden" for="searchInput">
+        Rechercher un produit, une boutique ou un service
+      </label>
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input type="search" id="searchInput"
+        placeholder="Produit, boutique ou service…"
+        autocomplete="off" aria-autocomplete="list"
+        aria-controls="searchSuggestions" aria-expanded="false">
+      <button type="submit">Rechercher <span aria-hidden="true">→</span></button>
+    </form>
+
+    <div class="header-location" aria-label="Zone desservie">
+      <span class="location-icon" aria-hidden="true">⌖</span>
+      <span><strong>Parakou</strong><small>Bénin</small></span>
+    </div>
 
     <div class="header-actions">
       <a class="track-header" href="tracking.html">Suivre une commande</a>
       <a href="cart.html" class="cart-link" aria-label="Ouvrir le panier">
-        <span aria-hidden="true">🛒</span>
-        <span>Panier</span>
+        <span aria-hidden="true">▣</span>
+        <span class="cart-label">Panier</span>
         <span id="cartCount" class="cart-count">0</span>
       </a>
+      <a href="annonceur.html" class="publish-link">Publier une annonce <span aria-hidden="true">＋</span></a>
       <button class="menu-toggle" id="menuToggle" type="button"
         aria-label="Ouvrir le menu" aria-expanded="false"
         aria-controls="mobileNav">☰</button>
     </div>
   </header>
 
+  <nav class="secondary-nav" aria-label="Navigation des catégories et rayons">
+    <a class="secondary-nav-all" href="#categories-section">Toutes les catégories</a>
+    <div class="category-nav-list" id="categoryNav" aria-label="Catégories disponibles">
+      <span class="category-nav-loading">Chargement des catégories…</span>
+    </div>
+    <a href="#featured-stores-section">Boutiques</a>
+    <a href="#products-section">Produits</a>
+    <a href="#annuaire-section">Annuaire</a>
+  </nav>
+
   <nav class="mobile-nav" id="mobileNav" aria-label="Navigation mobile" hidden>
     <a href="#accueil">Accueil</a>
     <a href="#categories-section">Catégories</a>
-    <a href="#featured-section">À la une</a>
+    <a href="#featured-stores-section">Boutiques à la une</a>
+    <a href="#products-section">Produits</a>
     <a href="#annuaire-section">Annuaire</a>
     <a href="tracking.html">Suivre une commande</a>
     <a href="cart.html">Mon panier</a>
-    <a href="annonceur.html">Espace commerçant</a>
+    <a href="annonceur.html">Publier une annonce</a>
   </nav>
 
   <main id="contenu">
@@ -70,123 +92,130 @@
       <div class="hero-inner">
         <div class="hero-copy">
           <span class="eyebrow hero-kicker">
-            <i class="eyebrow-line"></i> LE COMMERCE LOCAL, EN UN CLIC
+            <i class="eyebrow-line"></i> PK-CHAPSHOP · LE MARCHÉ LOCAL
           </span>
-          <h1>Tout Parakou,<br><span>à portée de main.</span></h1>
+          <h1>Découvrez, achetez et soutenez<br><span>les commerces de Parakou !</span></h1>
           <p class="hero-description">
-            Boutiques, produits et services de la ville : explorez les bonnes
-            adresses, trouvez ce qu'il vous faut et échangez directement avec
-            les commerçants.
+            Produits, services, boutiques… tout au même endroit. Trouvez une
+            adresse locale, consultez ses produits et choisissez comment la contacter.
           </p>
-
-          <form class="search-box" id="searchForm" role="search">
-            <span class="search-icon" aria-hidden="true">⌕</span>
-            <label class="visually-hidden" for="searchInput">
-              Rechercher un commerce, un produit ou un service
-            </label>
-            <input type="search" id="searchInput"
-              placeholder="Que recherchez-vous à Parakou ?"
-              autocomplete="off" aria-autocomplete="list"
-              aria-controls="searchSuggestions" aria-expanded="false">
-            <button type="submit">Rechercher <span aria-hidden="true">→</span></button>
-          </form>
-
           <div class="hero-links">
-            <a href="#featured-section" class="hero-primary">
-              Explorer le marché <span aria-hidden="true">→</span>
+            <a href="#products-section" class="hero-primary">
+              Explorer les produits <span aria-hidden="true">→</span>
             </a>
-            <a href="annonceur.html" class="hero-secondary">
-              Vous êtes commerçant ? <span aria-hidden="true">↗</span>
+            <a href="#featured-stores-section" class="hero-secondary">
+              Découvrir les boutiques <span aria-hidden="true">↗</span>
             </a>
           </div>
-
-          <div class="hero-trust">
-            <span class="trust-icon" aria-hidden="true">✦</span>
-            <span>Des commerces de proximité, directement à votre portée.</span>
+          <a class="hero-search-link" href="#searchInput">
+            <span aria-hidden="true">⌕</span> Que recherchez-vous à Parakou ?
+          </a>
+          <div class="hero-signature">
+            <span class="signature-mark" aria-hidden="true">PK</span>
+            <span><strong>PK-ChapShop</strong><small>Acheter · Vendre · Découvrir</small></span>
           </div>
         </div>
 
-        <div class="hero-visual" aria-label="Une vitrine du commerce local">
-          <div class="visual-glow"></div>
-          <div class="visual-image">
+        <div class="hero-visual">
+          <div class="hero-photo-scene">
             <img
-              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&amp;fit=crop&amp;w=1000&amp;q=80"
-              alt="Intérieur lumineux d'une boutique"
+              src="assets/rond-point-hubert-maga.jpg"
+              alt="Statue et place Hubert Maga à Parakou, au Bénin"
               fetchpriority="high"
-              onerror="this.style.display='none';this.parentElement.classList.add('is-fallback');">
-            <div class="visual-fallback" aria-hidden="true">
-              <span class="fallback-sun"></span>
-              <span class="fallback-shop">🏬</span>
-              <span class="fallback-basket">🧺</span>
-              <span class="fallback-leaf">✦</span>
+            >
+            <div class="hero-photo-overlay"></div>
+
+            <div class="hero-float-card hero-float-card-top">
+              <span class="float-icon" aria-hidden="true">⌕</span>
+              <span><strong>Les bonnes adresses</strong><small>à Parakou</small></span>
             </div>
+
+            <div class="hero-float-card hero-float-card-bottom">
+              <span class="float-icon float-icon-gold" aria-hidden="true">↗</span>
+              <span><strong>Local, pratique</strong><small>et à découvrir</small></span>
+            </div>
+
+            <a class="hero-photo-credit"
+               href="https://commons.wikimedia.org/wiki/File:Statut_Hubert_Maga_%C3%A0_Parakou_au_B%C3%A9nin.jpg"
+               target="_blank"
+               rel="noopener noreferrer">
+              Photo : Africasounvi · Wikimedia Commons · CC BY-SA 4.0
+            </a>
           </div>
-          <div class="visual-card visual-card-top">
-            <span class="visual-card-icon" aria-hidden="true">⌂</span>
-            <span><strong>Le marché de Parakou</strong><small>Commerces et services près de vous</small></span>
-          </div>
-          <div class="visual-card visual-card-bottom">
-            <span class="online-pulse" aria-hidden="true"></span>
-            <span><strong>Découvrez. Contactez.</strong><small>Choisissez le commerce local.</small></span>
-          </div>
-          <div class="visual-stamp" aria-hidden="true">
-            <span>LOCAL</span><strong>♡</strong><span>BENIN</span>
-          </div>
-          <div class="adinkra-motif" aria-hidden="true">✳</div>
         </div>
       </div>
-      <div class="hero-bottom-rule" aria-hidden="true"><span></span><span></span><span></span></div>
-    </section>
-
-    <section class="quick-benefits" aria-label="Les avantages de PK-ChapShop">
-      <div class="benefit">
-        <span class="benefit-icon" aria-hidden="true">⌕</span>
-        <span><strong>Trouvez facilement</strong><small>Recherche et catégories locales</small></span>
-      </div>
-      <div class="benefit">
-        <span class="benefit-icon" aria-hidden="true">🏪</span>
-        <span><strong>Découvrez les commerces</strong><small>Une vitrine de proximité</small></span>
-      </div>
-      <div class="benefit">
-        <span class="benefit-icon" aria-hidden="true">↗</span>
-        <span><strong>Échangez directement</strong><small>Contactez les commerçants</small></span>
-      </div>
+<div class="hero-bottom-rule" aria-hidden="true"><span></span><span></span><span></span></div>
     </section>
 
     <section class="page-container section-block" id="categories-section">
       <div class="section-heading">
         <div>
-          <span class="eyebrow"><i class="eyebrow-line"></i> TROUVEZ VOTRE UNIVERS</span>
-          <h2>Parcourir par <span>catégorie.</span></h2>
-          <p>Un premier pas vers les bonnes adresses de Parakou.</p>
+          <span class="eyebrow"><i class="eyebrow-line"></i> EXPLORER LE MARCHÉ</span>
+          <h2>Choisissez une <span>catégorie.</span></h2>
+          <p>Les catégories disponibles sur PK-ChapShop.</p>
         </div>
-        <span class="heading-index">01 <i>/ CATÉGORIES</i></span>
+        <a class="section-more" href="#annuaire-section">Voir l’annuaire <span aria-hidden="true">→</span></a>
       </div>
       <div id="categories" class="categories" aria-label="Catégories de commerces">
         <div class="category category-loading">
-          <span class="category-icon">✦</span>
+          <span class="category-icon" aria-hidden="true">…</span>
           <span class="category-name">Chargement des catégories…</span>
         </div>
       </div>
     </section>
 
-    <section class="marketplace-section" id="commerces-section">
+    <section class="marketplace-section featured-stores-section" id="featured-stores-section">
       <div class="page-container">
-        <div class="section-heading marketplace-heading" id="featured-section">
+        <div class="section-heading">
           <div>
-            <span class="eyebrow"><i class="eyebrow-line"></i> LE GOÛT DU LOCAL</span>
-            <h2>À découvrir <span>à Parakou.</span></h2>
-            <p>Produits choisis, commerces partenaires et adresses à explorer.</p>
+            <span class="eyebrow"><i class="eyebrow-line"></i> SÉLECTION DES COMMERCES</span>
+            <h2>Nos boutiques <span>à la une.</span></h2>
+            <p>Les commerces mis en avant selon les sélections disponibles.</p>
           </div>
-          <span class="heading-index">02 <i>/ LE MARCHÉ</i></span>
+          <a class="section-more" href="#annuaire-section">Voir toutes les boutiques <span aria-hidden="true">→</span></a>
         </div>
+        <div id="featuredStores" class="pk-store-grid homepage-data-grid" aria-live="polite">
+          <div class="loading">
+            <span class="loading-spinner"></span>
+            Chargement des boutiques…
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <section class="products-section" id="products-section">
+      <div class="page-container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow"><i class="eyebrow-line"></i> SÉLECTION DE PRODUITS</span>
+            <h2>Des produits à <span>découvrir.</span></h2>
+            <p>Les produits actuellement mis en avant par les commerces locaux.</p>
+          </div>
+          <a class="section-more" href="#annuaire-section">Explorer le marché <span aria-hidden="true">→</span></a>
+        </div>
+        <div id="featuredProducts" class="pk-featured-grid homepage-data-grid" aria-live="polite">
+          <div class="loading">
+            <span class="loading-spinner"></span>
+            Chargement des produits…
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="marketplace-section directory-section" id="commerces-section">
+      <div class="page-container" id="annuaire-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow"><i class="eyebrow-line"></i> DÉCOUVRIR PARAKOU</span>
+            <h2>Tous les commerces <span>locaux.</span></h2>
+            <p>Parcourez les boutiques publiées et leurs informations disponibles.</p>
+          </div>
+        </div>
         <div class="results-toolbar">
           <span id="resultsLabel">Chargement des commerces…</span>
-          <span class="results-note"><i class="results-dot"></i> Explorez les adresses locales</span>
+          <span class="results-note"><i class="results-dot"></i> Parakou et environs</span>
         </div>
-
-        <div id="stores" class="marketplace-results" aria-live="polite">
+        <div id="stores" class="pk-store-grid homepage-data-grid" aria-live="polite">
           <div class="loading">
             <span class="loading-spinner"></span>
             Chargement des commerces…
@@ -195,35 +224,47 @@
       </div>
     </section>
 
+    <section class="local-callout">
+      <div class="page-container">
+        <div class="local-callout-inner">
+          <div class="local-emblem" aria-hidden="true"><span>PK</span><strong>229</strong><span>PARAKOU</span></div>
+          <div class="local-callout-copy">
+            <span class="eyebrow"><i class="eyebrow-line"></i> LE COMMERCE DE PROXIMITÉ</span>
+            <h2>Découvrez les commerces près de chez vous.</h2>
+            <p>Boutiques, restaurants, garages et services publiés sur PK-ChapShop.</p>
+          </div>
+          <a class="local-callout-button" href="#annuaire-section">Parcourir l’annuaire <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
     <section class="how-section" id="how-it-works">
       <div class="page-container">
         <div class="section-heading">
           <div>
-            <span class="eyebrow eyebrow-gold">SIMPLE COMME BONJOUR</span>
+            <span class="eyebrow"><i class="eyebrow-line"></i> SIMPLE ET LOCAL</span>
             <h2>Comment ça <span>marche ?</span></h2>
-            <p>De la découverte au contact, en trois étapes.</p>
+            <p>Trois étapes pour trouver ce qu’il vous faut.</p>
           </div>
-          <span class="heading-index">03 <i>/ LE PARCOURS</i></span>
         </div>
-
         <div class="how-grid">
           <article class="how-card">
             <span class="how-number">01</span>
             <span class="how-icon" aria-hidden="true">⌕</span>
             <h3>Recherchez</h3>
-            <p>Parcourez les catégories ou cherchez un commerce, un produit ou un service.</p>
+            <p>Utilisez la recherche ou parcourez les catégories réellement disponibles.</p>
           </article>
           <article class="how-card">
             <span class="how-number">02</span>
-            <span class="how-icon" aria-hidden="true">🏪</span>
+            <span class="how-icon" aria-hidden="true">⌂</span>
             <h3>Découvrez</h3>
-            <p>Consultez les informations, les produits et les services des commerces locaux.</p>
+            <p>Consultez les boutiques, leurs produits et les informations publiées.</p>
           </article>
           <article class="how-card">
             <span class="how-number">03</span>
             <span class="how-icon" aria-hidden="true">↗</span>
             <h3>Contactez</h3>
-            <p>Échangez avec le commerçant ou passez commande selon les options proposées.</p>
+            <p>Échangez avec le commerçant ou poursuivez votre commande selon les options proposées.</p>
           </article>
         </div>
       </div>
@@ -235,13 +276,29 @@
           <div class="merchant-mark" aria-hidden="true">PK<span>+</span></div>
           <div class="merchant-copy">
             <span class="eyebrow eyebrow-gold">VOUS ÊTES COMMERÇANT ?</span>
-            <h2>Faites découvrir votre activité à Parakou.</h2>
-            <p>Présentez votre commerce et vos offres aux clients qui cherchent près de chez eux.</p>
+            <h2>Développez votre activité avec PK-ChapShop !</h2>
+            <p>Ouvrez votre boutique et faites découvrir votre activité aux clients de Parakou.</p>
           </div>
           <a href="annonceur.html" class="merchant-button">
-            Rejoindre PK-ChapShop <span aria-hidden="true">→</span>
+            Créer ma boutique <span aria-hidden="true">→</span>
           </a>
           <span class="merchant-decoration" aria-hidden="true">✳</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-section" aria-labelledby="trust-heading">
+      <div class="page-container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow"><i class="eyebrow-line"></i> PK-CHAPSHOP</span>
+            <h2 id="trust-heading">Le local, en toute <span>simplicité.</span></h2>
+          </div>
+        </div>
+        <div class="trust-grid">
+          <article><span aria-hidden="true">⌂</span><strong>Commerces locaux</strong><p>Retrouvez les boutiques et services publiés à Parakou.</p></article>
+          <article><span aria-hidden="true">▤</span><strong>Informations claires</strong><p>Consultez les produits, prix et coordonnées disponibles.</p></article>
+          <article><span aria-hidden="true">↗</span><strong>Contact direct</strong><p>Contactez les commerçants via les moyens affichés sur leur boutique.</p></article>
         </div>
       </div>
     </section>
@@ -255,19 +312,20 @@
           <span class="logo-word">Chap<span>Shop</span><small>LE MARCHÉ LOCAL</small></span>
         </a>
         <p>Les boutiques et services de Parakou réunis au même endroit.</p>
-        <span class="footer-location">📍 Parakou, Bénin</span>
+        <span class="footer-location">Parakou, Bénin</span>
       </div>
 
       <div class="footer-column">
         <h3>Découvrir</h3>
         <a href="#categories-section">Catégories</a>
-        <a href="#featured-section">À la une</a>
+        <a href="#featured-stores-section">Boutiques à la une</a>
+        <a href="#products-section">Produits</a>
         <a href="#annuaire-section">Annuaire des commerces</a>
       </div>
 
       <div class="footer-column">
-        <h3>Pour les professionnels</h3>
-        <a href="annonceur.html">Rejoindre PK-ChapShop</a>
+        <h3>Commerçants</h3>
+        <a href="annonceur.html">Créer ma boutique</a>
         <a href="merchant.html">Espace commerçant</a>
       </div>
 
@@ -281,13 +339,20 @@
 
     <div class="footer-bottom">
       <span>© <span id="currentYear"></span> PK-ChapShop. Tous droits réservés.</span>
-      <span>Imaginé pour le commerce local au Bénin <b>♥</b></span>
+      <span>Parakou, au bout des doigts <b>♥</b></span>
     </div>
   </footer>
 
-  <script src="app.js?v=20261118-2"></script>
-  <script src="hybrid-search.js?v=20261118-1"></script>
-  <script src="featured-carousel.js?v=20261118-2"></script>
+  <nav class="mobile-bottom-nav" aria-label="Navigation rapide">
+    <a href="#accueil"><span aria-hidden="true">⌂</span><small>Accueil</small></a>
+    <a href="#categories-section"><span aria-hidden="true">▦</span><small>Catégories</small></a>
+    <a href="#annuaire-section"><span aria-hidden="true">▣</span><small>Boutiques</small></a>
+    <a href="cart.html"><span class="bottom-cart-icon" aria-hidden="true">▤<b id="mobileCartCount">0</b></span><small>Panier</small></a>
+  </nav>
+
+  <script src="app.js?v=20261118-4"></script>
+  <script src="hybrid-search.js?v=20261118-2"></script>
+  <script src="featured-carousel.js?v=20261118-4"></script>
   <script>
     (function () {
       const toggle = document.getElementById("menuToggle");
@@ -318,9 +383,9 @@
       if (form && input) {
         form.addEventListener("submit", function (event) {
           event.preventDefault();
+          input.dispatchEvent(new Event("input", { bubbles: true }));
           document.getElementById("commerces-section")
             .scrollIntoView({ behavior: "smooth" });
-          input.dispatchEvent(new Event("input", { bubbles: true }));
         });
       }
 

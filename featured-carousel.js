@@ -8,8 +8,7 @@
   "use strict";
 
   const STYLE_ID = "pk-featured-carousel-styles";
-  const SELECTOR =
-    "#stores .pk-featured-grid, #stores #pk-featured-stores .pk-store-grid";
+  const SELECTOR = "#featuredStores.pk-store-grid";
 
   const activeTracks = new WeakMap();
   let carouselNumber = 0;
@@ -22,7 +21,7 @@
 
     style.textContent = `
       /* Priorité renforcée face aux styles intégrés dans app.js */
-      #stores .pk-carousel-track {
+      #featuredStores.pk-carousel-track {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
@@ -43,21 +42,21 @@
         touch-action: pan-x pan-y;
       }
 
-      #stores .pk-carousel-track::-webkit-scrollbar {
+      #featuredStores.pk-carousel-track::-webkit-scrollbar {
         height: 6px;
       }
 
-      #stores .pk-carousel-track::-webkit-scrollbar-track {
+      #featuredStores.pk-carousel-track::-webkit-scrollbar-track {
         background: #edf1e9;
         border-radius: 20px;
       }
 
-      #stores .pk-carousel-track::-webkit-scrollbar-thumb {
+      #featuredStores.pk-carousel-track::-webkit-scrollbar-thumb {
         background: #d5ad58;
         border-radius: 20px;
       }
 
-      #stores .pk-carousel-track > .store-card {
+      #featuredStores.pk-carousel-track > .store-card {
         display: flex;
         flex-direction: column;
         flex: 0 0 clamp(250px, 30%, 330px) !important;
@@ -119,12 +118,12 @@
           margin-bottom: 24px;
         }
 
-        #stores .pk-carousel-track {
+        #featuredStores.pk-carousel-track {
           gap: 14px !important;
           padding-bottom: 15px !important;
         }
 
-        #stores .pk-carousel-track > .store-card {
+        #featuredStores.pk-carousel-track > .store-card {
           flex-basis: 84vw !important;
           width: 84vw !important;
           min-width: 250px !important;
@@ -139,7 +138,7 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        #stores .pk-carousel-track {
+        #featuredStores.pk-carousel-track {
           scroll-behavior: auto;
         }
       }
@@ -192,7 +191,9 @@
     wrapper.append(controls, track);
 
     function move(direction) {
-      const cards = track.querySelectorAll(":scope > .store-card");
+      const cards = track.querySelectorAll(
+        ":scope > .store-card, :scope > .product-card"
+      );
       const card = cards[0];
 
       if (!card) return;
@@ -282,6 +283,7 @@
       if (
   !track.isConnected ||
   reducedMotion.matches ||
+  touchDevice.matches ||
   document.hidden ||
   track.scrollWidth <= track.clientWidth + 8
 ) {
@@ -327,6 +329,9 @@
 
     if (reducedMotion.addEventListener) {
       reducedMotion.addEventListener("change", startAutomatic);
+    }
+
+    if (touchDevice.addEventListener) {
       touchDevice.addEventListener("change", startAutomatic);
     }
 
@@ -359,12 +364,12 @@
   function initialize() {
     installStyles();
 
-    const stores = document.getElementById("stores");
-    if (!stores) return;
+    const content = document.getElementById("contenu");
+    if (!content) return;
 
     const observer = new MutationObserver(scan);
 
-    observer.observe(stores, {
+    observer.observe(content, {
       childList: true,
       subtree: true
     });

@@ -9,9 +9,13 @@ const SUPABASE_URL = "https://ljzonxmlpygfryfmohhd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_3i2Mx68x3yO8Z_-xxiakMA_aDsIoZuR";
 
 const categoriesEl = document.getElementById("categories");
+const categoryNavEl = document.getElementById("categoryNav");
+const featuredStoresEl = document.getElementById("featuredStores");
+const featuredProductsEl = document.getElementById("featuredProducts");
 const storesEl = document.getElementById("stores");
 const searchInput = document.getElementById("searchInput");
 const cartCountEl = document.getElementById("cartCount");
+const mobileCartCountEl = document.getElementById("mobileCartCount");
 const resultsLabel = document.getElementById("resultsLabel");
 
 let categories = [];
@@ -261,6 +265,10 @@ async function loadCategories() {
         Les catégories sont momentanément indisponibles.
       </div>
     `;
+    if (categoryNavEl) {
+      categoryNavEl.innerHTML =
+        '<span class="category-nav-loading">Catégories indisponibles</span>';
+    }
   }
 }
 
@@ -290,7 +298,7 @@ function renderCategories() {
       }"
       data-category="${escapeHTML(category.id)}"
     >
-      <span class="category-icon">
+      <span class="category-icon" aria-hidden="true">
         ${escapeHTML(category.icon || "🏪")}
       </span>
 
@@ -303,17 +311,30 @@ function renderCategories() {
   categoriesEl.innerHTML =
     allButton + categoryButtons;
 
-  categoriesEl
-    .querySelectorAll("[data-category]")
-    .forEach(button => {
+  if (categoryNavEl) {
+    categoryNavEl.innerHTML = categories.map(category => `
+      <button
+        type="button"
+        class="category-nav-link ${
+          String(selectedCategory) === String(category.id)
+            ? "active"
+            : ""
+        }"
+        data-category="${escapeHTML(category.id)}"
+      >
+        ${escapeHTML(category.name)}
+      </button>
+    `).join("");
+  }
+
+  [categoriesEl, categoryNavEl].filter(Boolean).forEach(container => {
+    container.querySelectorAll("[data-category]").forEach(button => {
       button.addEventListener("click", () => {
         const value = button.getAttribute("data-category");
-
-        filterCategory(
-          value === "" ? null : value
-        );
+        filterCategory(value === "" ? null : value);
       });
     });
+  });
 }
 
 function filterCategory(categoryId) {
@@ -394,34 +415,13 @@ async function loadStores() {
     renderStores();
   } catch (error) {
     storesError = error;
+    stores = [];
 
     console.error(
       "Erreur de chargement des commerces :",
       error
     );
-
-    storesEl.innerHTML = `
-      <div class="empty error">
-        <p>Impossible de charger les commerces.</p>
-
-        <p style="font-size:12px;margin-top:8px">
-          Vérifie les autorisations de lecture Supabase
-          et les colonnes de la table stores.
-        </p>
-
-        <button
-          type="button"
-          class="view-button"
-          id="retryStores"
-        >
-          Réessayer
-        </button>
-      </div>
-    `;
-
-    document
-      .getElementById("retryStores")
-      ?.addEventListener("click", loadStores);
+    renderStores();
   }
 }
 
@@ -658,7 +658,7 @@ function renderProductCard(product) {
 
   return `
     <article
-      class="store-card pk-product-card"
+      class="product-card pk-product-card"
       data-product-id="${escapeHTML(product.id)}"
     >
 
@@ -686,7 +686,7 @@ function renderProductCard(product) {
 
       </div>
 
-      <div class="store-content">
+      <div class="product-content">
 
         <span class="pk-featured-badge">
           ${
@@ -701,6 +701,7 @@ function renderProductCard(product) {
         <div class="pk-product-price">
           ${price}
         </div>
+        <span class="availability-label">Disponible</span>
 
         <p>
           ${escapeHTML(
@@ -709,10 +710,10 @@ function renderProductCard(product) {
         </p>
 
         <div class="store-meta">
-          🏪 ${escapeHTML(store.name)}
+          ${escapeHTML(store.name)}
           ${
             store.city
-              ? ` · 📍 ${escapeHTML(store.city)}`
+              ? ` · ${escapeHTML(store.city)}`
               : ""
           }
         </div>
@@ -761,6 +762,17 @@ function renderStoreCard(store) {
     store.whatsapp || store.phone,
     `Bonjour ${store.name} ! Je vous contacte depuis PK-ChapShop. Pouvez-vous me renseigner sur vos produits et services ?`
   );
+  const openStatus = store.is_open === true
+    ? "Ouvert"
+    : store.is_open === false
+      ? "Fermé"
+      : "";
+  const location = store.city || store.address || "";
+  const storeMeta = [
+    location,
+    openStatus,
+    store.delivery_available ? "Livraison disponible" : ""
+  ].filter(Boolean).map(escapeHTML).join(" · ");
 
   return `
     <article
@@ -851,15 +863,7 @@ function renderStoreCard(store) {
           )}
         </p>
 
-        <div class="store-meta">
-          📍 ${escapeHTML(store.city || "Bénin")}
-          ${store.is_open === true ? " · 🟢 Ouvert" : ""}
-          ${
-            store.delivery_available
-              ? " · 🚚 Livraison"
-              : ""
-          }
-        </div>
+        <div class="store-meta">${storeMeta}</div>
 
         <a class="view-button" href="${storeLink}">
           Voir le commerce →
@@ -891,30 +895,43 @@ function renderStoreCard(store) {
    ========================================================= */
 
 function renderSpecialSelection(featuredProducts) {
-  if (!featuredProducts.length) return "";
+  if (!featuredProductsEl) return;
 
-  return `
-    <section class="pk-special-section" id="pk-featured-products">
+  const section = featuredProductsEl.closest("#products-section");
 
-      <div class="pk-special-heading">
-        <span class="eyebrow">
-          ⭐ LES TROUVAILLES DU MOMENT
-        </span>
-
-        <h2>
-          Sélection spéciale <span>PK-ChapShop.</span>
-        </h2>
-
-        <p>
-          Des produits choisis dans les commerces de Parakou.
-        </p>
+  if (productsError) {
+    featuredProductsEl.innerHTML = `
+      <div class="empty error">
+        <p>Les produits ne sont pas disponibles pour le moment.</p>
+        <button type="button" class="view-button" id="retryProducts">
+          Réessayer
+        </button>
       </div>
+    `;
+    if (section) section.hidden = false;
+  } else if (productFeaturedMetadataError && !featuredProducts.length) {
+    featuredProductsEl.innerHTML = `
+      <p class="pk-load-warning" role="status">
+        Les informations de mise en avant des produits sont indisponibles.
+        Consultez les boutiques pour découvrir les produits publiés.
+      </p>
+    `;
+    if (section) section.hidden = false;
+  } else if (!featuredProducts.length) {
+    featuredProductsEl.replaceChildren();
+    if (section) section.hidden = true;
+  } else {
+    featuredProductsEl.innerHTML =
+      featuredProducts.map(renderProductCard).join("");
+    if (section) section.hidden = false;
+  }
 
-      <div class="pk-featured-grid pk-special-products">
-        ${featuredProducts.map(renderProductCard).join("")}
-      </div>
-    </section>
-  `;
+  document
+    .getElementById("retryProducts")
+    ?.addEventListener("click", async () => {
+      await loadProducts();
+      renderStores();
+    });
 }
 
 /* =========================================================
@@ -923,7 +940,7 @@ function renderSpecialSelection(featuredProducts) {
 
 function getFeaturedStyles() {
   return `
-    <style>
+    <style id="pk-featured-render-styles">
       #stores {
         display: block !important;
         width: 100%;
@@ -1271,14 +1288,21 @@ function getFeaturedStyles() {
   `;
 }
 
+function installFeaturedStyles() {
+  if (document.getElementById("pk-featured-render-styles")) return;
+
+  document.head.insertAdjacentHTML(
+    "beforeend",
+    getFeaturedStyles()
+  );
+}
+
 /* =========================================================
    AFFICHAGE PRINCIPAL
    ========================================================= */
 
 function renderStores() {
   if (!storesEl) return;
-
-  storesEl.style.display = "block";
 
   const visibleStores = getVisibleStores();
 
@@ -1288,144 +1312,91 @@ function renderStores() {
         .sort(comparePriority)
     : [];
 
-  const directoryStores = storeFeaturedMetadataAvailable
-    ? visibleStores.filter(store => !isStoreFeatured(store))
-    : visibleStores;
-
   const featuredProducts = getVisibleFeaturedProducts();
 
   if (resultsLabel) {
-    resultsLabel.textContent =
-      visibleStores.length === 1
+    resultsLabel.textContent = storesError
+      ? "Commerces momentanément indisponibles"
+      : visibleStores.length === 1
         ? "1 commerce affiché"
         : `${visibleStores.length} commerces affichés`;
   }
 
-  /* 1. Commerces mis en avant */
+  renderSpecialSelection(featuredProducts);
 
-  const featuredStoresHTML = featuredStores.length
-    ? `
-      <section
-        class="pk-stores-section"
-        id="pk-featured-stores"
-      >
-        <div class="section-heading">
-          <div>
-            <span class="eyebrow">
-              ⭐ NOS PARTENAIRES
-            </span>
+  if (featuredStoresEl) {
+    const section = featuredStoresEl.closest("#featured-stores-section");
 
-            <h2>
-              Boutiques partenaires
-              <span>à la une.</span>
-            </h2>
-
-            <p>
-              Les commerces mis en avant sur PK-ChapShop.
-            </p>
-          </div>
-        </div>
-
-        <div class="pk-store-grid">
-          ${featuredStores.map(renderStoreCard).join("")}
-        </div>
-      </section>
-    `
-    : "";
-
-  /* 2. Sélection spéciale des produits */
-
-  const specialHTML = renderSpecialSelection(featuredProducts);
-
-  /* 3. Annuaire complet */
-
-  const directoryStoresHTML = directoryStores.length
-    ? `
-      <section class="pk-stores-section pk-directory-section" id="annuaire-section">
-        <div class="section-heading">
-          <div>
-            <span class="eyebrow">
-              ${storeFeaturedMetadataAvailable ? "LE MARCHÉ LOCAL" : "ANNUAIRE LOCAL"}
-            </span>
-
-            <h2>
-              ${
-                searchInput?.value
-                  ? "Résultats de recherche"
-                  : "Tous les commerces"
-              }
-            </h2>
-            ${
-              storeFeaturedMetadataAvailable
-                ? ""
-                : "<p>Les commerces restent consultables ; leur statut de mise en avant est momentanément indisponible.</p>"
-            }
-          </div>
-        </div>
-
-        <div class="pk-store-grid">
-          ${directoryStores.map(renderStoreCard).join("")}
-        </div>
-      </section>
-    `
-    : "";
-
-  const loadWarnings = [];
-
-  if (productsError) {
-    loadWarnings.push(
-      "Les commerces sont affichés, mais les produits n'ont pas pu être chargés."
-    );
+    if (storesError) {
+      featuredStoresEl.replaceChildren();
+      if (section) section.hidden = true;
+    } else if (!storeFeaturedMetadataAvailable) {
+      featuredStoresEl.innerHTML = `
+        <p class="pk-load-warning" role="status">
+          Le statut des boutiques à la une est momentanément indisponible.
+          <a href="#annuaire-section">Consultez toutes les boutiques.</a>
+        </p>
+      `;
+      if (section) section.hidden = false;
+    } else if (!featuredStores.length) {
+      featuredStoresEl.replaceChildren();
+      if (section) section.hidden = true;
+    } else {
+      featuredStoresEl.innerHTML =
+        featuredStores.map(renderStoreCard).join("");
+      if (section) section.hidden = false;
+    }
   }
 
-  if (storeFeaturedMetadataError) {
-    loadWarnings.push(
-      "Les commerces restent consultables, mais leurs informations de mise en avant sont indisponibles."
-    );
-  }
-
-  if (productFeaturedMetadataError) {
-    loadWarnings.push(
-      "Les champs de mise en avant des produits sont indisponibles. Les produits ordinaires restent consultables dans leurs boutiques."
-    );
-  }
-
-  const warningHTML = loadWarnings.length
-    ? `<p class="pk-load-warning" role="status">${loadWarnings.map(escapeHTML).join(" ")}</p>`
+  const metadataWarning = storeFeaturedMetadataError
+    ? `<p class="pk-load-warning" role="status">
+        Les commerces restent consultables, mais leurs informations de mise en avant sont indisponibles.
+      </p>`
     : "";
 
-  const emptyHTML =
-    !visibleStores.length && !featuredProducts.length
-      ? `
-        <div class="empty">
-          <p>
-            Aucun commerce ni produit ne correspond
-            à cette recherche.
-          </p>
+  if (storesError) {
+    storesEl.innerHTML = `
+      <div class="empty error">
+        <p>Impossible de charger les commerces.</p>
+        <p class="load-detail">
+          Vérifiez la connexion et les autorisations de lecture Supabase.
+        </p>
+        <button type="button" class="view-button" id="retryStores">
+          Réessayer
+        </button>
+      </div>
+    `;
+    document
+      .getElementById("retryStores")
+      ?.addEventListener("click", loadStores);
+    return;
+  }
 
-          <button
-            type="button"
-            class="view-button"
-            id="clearSearchButton"
-          >
-            Effacer les filtres
-          </button>
-        </div>
-      `
-      : "";
+  const hasFilters = Boolean(searchInput?.value) || selectedCategory !== null;
+  const directoryContent = visibleStores.length
+    ? visibleStores.map(renderStoreCard).join("")
+    : `
+      <div class="empty">
+        <p>${
+          hasFilters
+            ? "Aucun commerce ne correspond à cette recherche."
+            : "Aucun commerce n’est disponible pour le moment."
+        }</p>
+        ${
+          hasFilters
+            ? `<button type="button" class="view-button" id="clearSearchButton">
+                Effacer les filtres
+              </button>`
+            : ""
+        }
+      </div>
+    `;
 
   storesEl.innerHTML = `
-    ${getFeaturedStyles()}
-
-    ${warningHTML}
-
-    ${specialHTML}
-
-    ${featuredStoresHTML}
-
-    ${directoryStoresHTML}
-
-    ${emptyHTML}
+    ${metadataWarning}
+    <div class="pk-store-grid">
+      ${directoryContent}
+    </div>
   `;
 
   document
@@ -1456,7 +1427,7 @@ window.loadStores = loadStores;
    ========================================================= */
 
 function updateCartCount() {
-  if (!cartCountEl) return;
+  if (!cartCountEl && !mobileCartCountEl) return;
 
   try {
     const cart = JSON.parse(
@@ -1473,14 +1444,16 @@ function updateCartCount() {
         }, 0)
       : 0;
 
-    cartCountEl.textContent = String(count);
+    if (cartCountEl) cartCountEl.textContent = String(count);
+    if (mobileCartCountEl) mobileCartCountEl.textContent = String(count);
   } catch (error) {
     console.warn(
       "Lecture du panier impossible :",
       error
     );
 
-    cartCountEl.textContent = "0";
+    if (cartCountEl) cartCountEl.textContent = "0";
+    if (mobileCartCountEl) mobileCartCountEl.textContent = "0";
   }
 }
 
@@ -1497,14 +1470,14 @@ if (searchInput) {
    ========================================================= */
 
 async function initializePKChapShop() {
+  installFeaturedStyles();
   updateCartCount();
 
   await Promise.allSettled([
     loadCategories(),
-    loadStores()
+    loadStores(),
+    loadProducts()
   ]);
-
-  await loadProducts();
 
   renderStores();
 }

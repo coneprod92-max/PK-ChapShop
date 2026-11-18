@@ -20,6 +20,9 @@ let products = [];
 let selectedCategory = null;
 let storesError = null;
 let productsError = null;
+let storeFeaturedMetadataAvailable = true;
+let storeFeaturedMetadataError = null;
+let productFeaturedMetadataError = null;
 
 window.PKChapShopGetSearchData = () => ({
   stores,
@@ -213,6 +216,21 @@ function getProductFeaturedPriority(product) {
    CATÉGORIES
    ========================================================= */
 
+function formatProductPrice(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    String(value).trim() === "" ||
+    !Number.isFinite(Number(value))
+  ) {
+    return "Prix à confirmer";
+  }
+
+  return `${Number(value).toLocaleString("fr-FR", {
+    maximumFractionDigits: 2
+  })} FCFA`;
+}
+
 async function loadCategories() {
   if (!categoriesEl) return;
 
@@ -315,6 +333,8 @@ async function loadStores() {
   if (!storesEl) return;
 
   storesError = null;
+  storeFeaturedMetadataAvailable = true;
+  storeFeaturedMetadataError = null;
 
   storesEl.innerHTML = `
     <div class="loading">
@@ -324,31 +344,50 @@ async function loadStores() {
   `;
 
   try {
-    try {
-      stores = await supabaseGet(
-        "stores?select=id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published,is_featured,featured_until,featured_priority&is_published=eq.true&order=created_at.desc"
-      );
-    } catch (firstError) {
-      console.warn(
-        "Chargement complet des commerces impossible :",
-        firstError
-      );
+    const publicStores = await supabaseGet(
+      "stores?select=id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published&is_published=eq.true&order=created_at.desc"
+    );
 
-      stores = await supabaseGet(
-        "stores?select=id,name,slug,description,phone,whatsapp,address,city,logo_url,cover_url,is_open,delivery_available,category_id,is_published&is_published=eq.true&order=created_at.desc"
-      );
-
-      stores = stores.map(store => ({
-        ...store,
-        is_featured: false,
-        featured_until: null,
-        featured_priority: 9999
-      }));
-    }
-
-    if (!Array.isArray(stores)) {
+    if (!Array.isArray(publicStores)) {
       throw new Error(
         "La réponse des commerces n'est pas une liste valide."
+      );
+    }
+
+    stores = publicStores;
+
+    try {
+      const featuredMetadata = await supabaseGet(
+        "stores?select=id,is_featured,featured_until,featured_priority&is_published=eq.true"
+      );
+
+      if (!Array.isArray(featuredMetadata)) {
+        throw new Error(
+          "Les métadonnées des mises en avant ne sont pas une liste valide."
+        );
+      }
+
+      const metadataById = new Map(
+        featuredMetadata.map(store => [String(store.id), store])
+      );
+
+      if (publicStores.some(store => !metadataById.has(String(store.id)))) {
+        throw new Error(
+          "Les métadonnées des mises en avant sont incomplètes."
+        );
+      }
+
+      stores = publicStores.map(store => ({
+        ...store,
+        ...metadataById.get(String(store.id))
+      }));
+    } catch (error) {
+      storeFeaturedMetadataAvailable = false;
+      storeFeaturedMetadataError = error;
+
+      console.error(
+        "Lecture des champs de mise en avant des commerces impossible :",
+        error
       );
     }
 
@@ -393,6 +432,7 @@ async function loadStores() {
 async function loadProducts() {
   productsError = null;
   products = [];
+  productFeaturedMetadataError = null;
 
   try {
     try {
@@ -401,7 +441,7 @@ async function loadProducts() {
       );
     } catch (firstError) {
       console.warn(
-        "Chargement complet des produits impossible :",
+        "Chargement des champs de mise en avant des produits impossible :",
         firstError
       );
 
@@ -409,12 +449,7 @@ async function loadProducts() {
         "products?select=id,store_id,name,description,price,image_url,is_available&is_available=eq.true"
       );
 
-      products = products.map(product => ({
-        ...product,
-        is_featured: false,
-        featured_until: null,
-        featured_priority: 9999
-      }));
+      productFeaturedMetadataError = firstError;
     }
 
     if (!Array.isArray(products)) {
@@ -502,19 +537,24 @@ function categoryMatchesStore(store) {
 function getVisibleStores() {
   const search = searchInput?.value || "";
 
-  return stores
+  const visibleStores = stores
     .filter(store =>
       storeIsPublished(store) &&
       categoryMatchesStore(store) &&
       storeMatchesSearch(store, search)
-    )
-    .sort((a, b) => {
-      const featuredDifference =
-        Number(isStoreFeatured(b)) -
-        Number(isStoreFeatured(a));
+    );
 
-      return featuredDifference || comparePriority(a, b);
-    });
+  if (!storeFeaturedMetadataAvailable) {
+    return visibleStores;
+  }
+
+  return visibleStores.sort((a, b) => {
+    const featuredDifference =
+      Number(isStoreFeatured(b)) -
+      Number(isStoreFeatured(a));
+
+    return featuredDifference || comparePriority(a, b);
+  });
 }
 
 /*
@@ -614,15 +654,7 @@ function renderProductCard(product) {
 
   const inherited = type === "inherited";
 
-  const price =
-    product.price !== null &&
-    product.price !== undefined &&
-    String(product.price).trim() !== "" &&
-    Number.isFinite(Number(product.price))
-      ? `${Number(product.price).toLocaleString("fr-FR", {
-          maximumFractionDigits: 2
-        })} FCFA`
-      : "Prix à confirmer";
+  const price = formatProductPrice(product.price);
 
   return `
     <article
@@ -641,10 +673,15 @@ function renderProductCard(product) {
                 src="${escapeHTML(product.image_url)}"
                 alt="${escapeHTML(product.name)}"
                 loading="lazy"
-                onerror="this.remove();this.parentElement.classList.remove('has-image');this.parentElement.textContent='🛍️';"
+                onerror="this.hidden=true;this.parentElement.classList.remove('has-image');this.parentElement.classList.add('image-error');"
               >
             `
-            : "🛍️"
+            : `
+              <span class="pk-product-placeholder">
+                <span aria-hidden="true">🛍️</span>
+                <small>Photo à venir</small>
+              </span>
+            `
         }
 
       </div>
@@ -742,7 +779,7 @@ function renderStoreCard(store) {
                 src="${escapeHTML(cover)}"
                 alt="Vitrine de ${escapeHTML(store.name)}"
                 loading="lazy"
-                onerror="this.remove();"
+                onerror="this.remove();this.parentElement.classList.add('image-error');"
               >
             `
             : `
@@ -853,106 +890,28 @@ function renderStoreCard(store) {
    SÉLECTION SPÉCIALE PK-CHAPSHOP
    ========================================================= */
 
-function renderSpecialSelection(featuredStores, featuredProducts) {
-  if (
-    !featuredStores.length &&
-    !featuredProducts.length
-  ) {
-    return "";
-  }
-
-  const storeLinks = featuredStores
-    .slice(0, 3)
-    .map(store => `
-      <a
-        class="pk-special-link"
-        href="store.html?id=${encodeURIComponent(store.id)}"
-      >
-        🏪 ${escapeHTML(store.name)}
-      </a>
-    `)
-    .join("");
-
-  const productLinks = featuredProducts
-    .slice(0, 3)
-    .map(product => {
-      const store = getStoreById(product.store_id);
-
-      return `
-        <a
-          class="pk-special-link"
-          href="store.html?id=${encodeURIComponent(product.store_id)}"
-        >
-          🛍️ ${escapeHTML(product.name)}
-          ${
-            store
-              ? `<small>Chez ${escapeHTML(store.name)}</small>`
-              : ""
-          }
-        </a>
-      `;
-    })
-    .join("");
+function renderSpecialSelection(featuredProducts) {
+  if (!featuredProducts.length) return "";
 
   return `
-    <section class="pk-special-section">
+    <section class="pk-special-section" id="pk-featured-products">
 
       <div class="pk-special-heading">
         <span class="eyebrow">
-          ⭐ LA SÉLECTION DE PK-CHAPSHOP
+          ⭐ LES TROUVAILLES DU MOMENT
         </span>
 
         <h2>
-          Sélection spéciale
-          <span>PK-ChapShop.</span>
+          Sélection spéciale <span>PK-ChapShop.</span>
         </h2>
 
         <p>
-          Nos boutiques partenaires et les produits
-          qui méritent votre attention.
+          Des produits choisis dans les commerces de Parakou.
         </p>
       </div>
 
-      <div class="pk-special-grid">
-
-        ${
-          featuredStores.length
-            ? `
-              <div class="pk-special-column">
-                <h3>🏪 Boutiques partenaires</h3>
-
-                ${storeLinks}
-
-                <a
-                  class="pk-special-more"
-                  href="#pk-featured-stores"
-                >
-                  Découvrir les boutiques →
-                </a>
-              </div>
-            `
-            : ""
-        }
-
-        ${
-          featuredProducts.length
-            ? `
-              <div class="pk-special-column">
-                <h3>🛍️ Produits sélectionnés</h3>
-
-                ${productLinks}
-
-                <a
-                  class="pk-special-more"
-                  href="#pk-featured-products"
-                >
-                  Découvrir les produits →
-                </a>
-              </div>
-            `
-            : ""
-        }
-
+      <div class="pk-featured-grid pk-special-products">
+        ${featuredProducts.map(renderProductCard).join("")}
       </div>
     </section>
   `;
@@ -1323,12 +1282,15 @@ function renderStores() {
 
   const visibleStores = getVisibleStores();
 
-  const featuredStores = visibleStores
-    .filter(store => isStoreFeatured(store))
-    .sort(comparePriority);
+  const featuredStores = storeFeaturedMetadataAvailable
+    ? visibleStores
+        .filter(store => isStoreFeatured(store))
+        .sort(comparePriority)
+    : [];
 
-  const ordinaryStores = visibleStores
-    .filter(store => !isStoreFeatured(store));
+  const directoryStores = storeFeaturedMetadataAvailable
+    ? visibleStores.filter(store => !isStoreFeatured(store))
+    : visibleStores;
 
   const featuredProducts = getVisibleFeaturedProducts();
 
@@ -1339,14 +1301,7 @@ function renderStores() {
         : `${visibleStores.length} commerces affichés`;
   }
 
-  /* 1. Sélection spéciale */
-
-  const specialHTML = renderSpecialSelection(
-    featuredStores,
-    featuredProducts
-  );
-
-  /* 2. Boutiques partenaires à la une */
+  /* 1. Commerces mis en avant */
 
   const featuredStoresHTML = featuredStores.length
     ? `
@@ -1378,84 +1333,66 @@ function renderStores() {
     `
     : "";
 
-  /* 3. Produits sélectionnés */
+  /* 2. Sélection spéciale des produits */
 
-  const featuredProductsHTML = featuredProducts.length
+  const specialHTML = renderSpecialSelection(featuredProducts);
+
+  /* 3. Annuaire complet */
+
+  const directoryStoresHTML = directoryStores.length
     ? `
-      <section
-        class="pk-featured-section"
-        id="pk-featured-products"
-      >
+      <section class="pk-stores-section pk-directory-section" id="annuaire-section">
         <div class="section-heading">
           <div>
             <span class="eyebrow">
-              ⭐ SÉLECTION DU MOMENT
-            </span>
-
-            <h2>
-              Produits sélectionnés
-              <span>par PK-ChapShop.</span>
-            </h2>
-
-            <p>
-              Découvrez les produits disponibles de nos boutiques
-              partenaires et les produits choisis individuellement.
-            </p>
-          </div>
-        </div>
-
-        <div class="pk-featured-grid">
-          ${featuredProducts.map(renderProductCard).join("")}
-        </div>
-      </section>
-    `
-    : "";
-
-  /* 4. Tous les autres commerces */
-
-  const ordinaryStoresHTML = ordinaryStores.length
-    ? `
-      <section class="pk-stores-section">
-        <div class="section-heading">
-          <div>
-            <span class="eyebrow">
-              LE MARCHÉ LOCAL
+              ${storeFeaturedMetadataAvailable ? "LE MARCHÉ LOCAL" : "ANNUAIRE LOCAL"}
             </span>
 
             <h2>
               ${
                 searchInput?.value
-                  ? "Résultats de"
-                  : "Nos commerces à"
+                  ? "Résultats de recherche"
+                  : "Tous les commerces"
               }
-              <span>
-                ${
-                  searchInput?.value
-                    ? "recherche."
-                    : "découvrir."
-                }
-              </span>
             </h2>
+            ${
+              storeFeaturedMetadataAvailable
+                ? ""
+                : "<p>Les commerces restent consultables ; leur statut de mise en avant est momentanément indisponible.</p>"
+            }
           </div>
         </div>
 
         <div class="pk-store-grid">
-          ${ordinaryStores.map(renderStoreCard).join("")}
+          ${directoryStores.map(renderStoreCard).join("")}
         </div>
       </section>
     `
     : "";
 
-  let productWarning = "";
+  const loadWarnings = [];
 
   if (productsError) {
-    productWarning = `
-      <p class="pk-load-warning">
-        Les commerces sont affichés, mais les produits
-        n'ont pas pu être chargés.
-      </p>
-    `;
+    loadWarnings.push(
+      "Les commerces sont affichés, mais les produits n'ont pas pu être chargés."
+    );
   }
+
+  if (storeFeaturedMetadataError) {
+    loadWarnings.push(
+      "Les commerces restent consultables, mais leurs informations de mise en avant sont indisponibles."
+    );
+  }
+
+  if (productFeaturedMetadataError) {
+    loadWarnings.push(
+      "Les champs de mise en avant des produits sont indisponibles. Les produits ordinaires restent consultables dans leurs boutiques."
+    );
+  }
+
+  const warningHTML = loadWarnings.length
+    ? `<p class="pk-load-warning" role="status">${loadWarnings.map(escapeHTML).join(" ")}</p>`
+    : "";
 
   const emptyHTML =
     !visibleStores.length && !featuredProducts.length
@@ -1480,15 +1417,13 @@ function renderStores() {
   storesEl.innerHTML = `
     ${getFeaturedStyles()}
 
-    ${productWarning}
+    ${warningHTML}
 
     ${specialHTML}
 
     ${featuredStoresHTML}
 
-    ${featuredProductsHTML}
-
-    ${ordinaryStoresHTML}
+    ${directoryStoresHTML}
 
     ${emptyHTML}
   `;

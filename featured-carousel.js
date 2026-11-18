@@ -9,7 +9,7 @@
 
   const STYLE_ID = "pk-featured-carousel-styles";
   const SELECTOR =
-    "#stores .pk-featured-grid, #stores .pk-store-grid";
+    "#stores .pk-featured-grid, #stores #pk-featured-stores .pk-store-grid";
 
   const activeTracks = new WeakMap();
   let carouselNumber = 0;
